@@ -1,0 +1,45 @@
+name: Testsprite + Playwright CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  seed-and-testsprite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install deps
+        run: npm ci
+      - name: Run seed script (requires FIREBASE_SERVICE_ACCOUNT_BASE64 secret)
+        env:
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+        run: npm run seed
+      - name: Sync claims (optional)
+        run: node ./scripts/syncClaimsForOrg.cjs bobs-org
+        env:
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+      - name: Upload TestSprite job definition (placeholder)
+        run: |
+          echo "Uploading TestSprite artifacts (if TESTSPRITE_API_TOKEN provided)..."
+          if [ -n "${{ secrets.TESTSPRITE_API_TOKEN }}" ]; then
+            curl -X POST "https://api.testsprite.ai/v1/tests/import" \
+              -H "Authorization: Bearer ${{ secrets.TESTSPRITE_API_TOKEN }}" \
+              -F "file=@testsprite_tests/rbac_tests.json" \
+              -F "project=default" || echo "Testsprite import failed or unsupported."
+          else
+            echo "No TESTSPRITE_API_TOKEN secret provided — skipping upload."
+          fi
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+
+  # Note: Testsprite execution is done outside of GitHub Actions using your Testsprite account as requested.

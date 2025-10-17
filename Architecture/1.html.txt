@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 1: Core Platform Services & Tenancy Model</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1a202c;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 120px);
+            overflow: auto;
+        }
+        .canvas {
+            position: relative;
+            width: 1600px;
+            height: 1000px;
+            transform-origin: top left;
+        }
+        .node {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-align: center;
+            width: 180px;
+            min-height: 110px;
+        }
+        .node:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+            border-color: #4f46e5;
+        }
+        .node-group {
+            position: absolute;
+            border: 2px dashed #cbd5e1;
+            border-radius: 1rem;
+            background-color: rgba(241, 245, 249, 0.7);
+            padding-top: 2.5rem;
+            padding-bottom: 1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .node-group-label {
+            position: absolute;
+            top: -14px;
+            left: 20px;
+            background-color: #f8fafc;
+            padding: 0 10px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .node-icon {
+            margin-bottom: 0.5rem;
+        }
+        .node-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        .node-sublabel {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        #connector-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .connector-line {
+            stroke-width: 2;
+            fill: none;
+        }
+        .connector-label {
+            font-size: 12px;
+            font-weight: 500;
+            fill: #4b5563;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -20;
+            }
+        }
+        .animated-arrow .connector-line {
+            stroke-dasharray: 8 4;
+            animation: dash 1s linear infinite;
+        }
+        #modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        #modal-panel {
+            transition: all 0.3s ease;
+        }
+        #modal-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+         #modal-content li {
+            margin-bottom: 0.25rem;
+        }
+         #modal-content h6 {
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 0.75rem;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
+        <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600 h-8 w-8 mr-3"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Step 1: Core Platform Services</h1>
+                <p class="text-sm text-gray-500">Bob’s Bath Fitting - Foundational Architecture</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Canvas -->
+    <main class="flex-grow canvas-container">
+        <div id="canvas" class="canvas">
+            <svg id="connector-svg" width="1600" height="1000"></svg>
+            <!-- Nodes will be injected here -->
+        </div>
+    </main>
+    
+    <!-- Details Modal -->
+    <div id="modal" class="relative z-20 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div id="modal-backdrop" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div id="modal-panel" class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div id="modal-icon-container" class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <!-- Modal icon here -->
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title"></h3>
+                                <div class="mt-2">
+                                    <div class="text-sm text-gray-500" id="modal-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button id="modal-close" type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const architectureData = {
+            coreServices: {
+                name: 'Core Platform Services',
+                groups: [
+                    { label: 'User & Request Entry', x: 50, y: 50, width: 220, height: 500 },
+                    { label: 'Control Plane (Global Services)', x: 320, y: 50, width: 420, height: 620 },
+                    { label: 'Tenant Data Plane (Per-Organization Isolation)', x: 790, y: 50, width: 420, height: 620 },
+                    { label: 'Asynchronous Processing', x: 320, y: 720, width: 890, height: 220 },
+                ],
+                nodes: [
+                    { id: 'client', label: 'Client', subLabel: 'Browser/Mobile', icon: 'Smartphone', x: 100, y: 280, 
+                      details: "<h6>Description:</h6><p>The end-user's interface. It initiates all interactions with the platform, starting with authentication against Supabase to get a JWT.</p><h6>Responsibilities:</h6><ul><li>Render UI components</li><li>Handle user input</li><li>Make authenticated API requests to the API Gateway using a JWT Bearer token.</li></ul>" },
+                    
+                    { id: 'gateway', label: 'API Gateway', subLabel: 'Next.js', icon: 'Server', x: 400, y: 150, 
+                      details: "<h6>Description:</h6><p>The single, unified entry point for all incoming client requests. It acts as a security and routing layer, enforcing core policies before any business logic is executed.</p><h6>Middleware Pipeline:</h6><ol><li>1. Verify JWT signature & expiry (vs Supabase).</li><li>2. Check session revocation status against the Control Plane DB.</li><li>3. Perform authorization check via the Policy Engine.</li><li>4. Resolve tenant DB connection string from Control Plane DB.</li><li>5. Route request to the appropriate internal service/module.</li></ol>" },
+                    
+                    { id: 'supabase', label: 'Supabase Auth', subLabel: '3rd Party IdP', icon: 'KeyRound', x: 400, y: 330, 
+                      details: "<h6>Description:</h6><p>The canonical, third-party Identity Provider. It is responsible for handling all user authentication (sign-up, sign-in, password reset) and issuing signed JSON Web Tokens (JWTs).</p><h6>Responsibilities:</h6><ul><li>Manage user credentials securely.</li><li>Issue short-lived JWTs upon successful login.</li><li>Provide an admin API to verify tokens and manage users programmatically.</li></ul>" },
+                    
+                    { id: 'policy_engine', label: 'Policy Engine', subLabel: 'Permify / Ory Keto', icon: 'ShieldCheck', x: 400, y: 510, 
+                      details: "<h6>Description:</h6><p>A specialized service that centralizes and executes all authorization logic. It answers the question: 'Can this user perform this action on this resource?'</p><h6>Key Function:</h6><ul><li>Performs real-time, decision-time authorization checks for every sensitive API request.</li><li>Decouples permission logic from application code, making it easier to manage and audit.</li></ul>" },
+
+                    { id: 'control_plane_db', label: 'Control Plane DB', subLabel: 'Global Postgres', icon: 'Database', x: 580, y: 240, 
+                      details: "<h6>Description:</h6><p>A central, global database that stores all metadata required to operate the multi-tenant platform. It does NOT contain any specific organization's business data.</p><h6>Key Tables:</h6><ul><li><b>tenant_metadata:</b> Maps an organization's identifier to its dedicated database connection string. This is crucial for the tenancy model.</li><li><b>sessions:</b> Stores all active user sessions and their revocation status, enabling instant session invalidation.</li><li><b>user_mappings:</b> Links the Supabase Auth user ID to the internal platform user ID.</li></ul>" },
+
+                    { id: 'tenant_db_a', label: 'Tenant A DB', subLabel: 'Isolated Postgres', icon: 'DatabaseZap', x: 880, y: 150, 
+                      details: "<h6>Description:</h6><p>A dedicated, fully isolated PostgreSQL database instance containing all business data for Organization 'A'.</p><h6>Characteristics:</h6><ul><li>Strict data isolation; no data from other tenants is present.</li><li>Simplifies per-tenant backup, restore, and compliance.</li><li>Data includes vendors, inventory, sales orders, HR records, etc., for this specific tenant.</li></ul>" },
+
+                    { id: 'tenant_db_b', label: 'Tenant B DB', subLabel: 'Isolated Postgres', icon: 'DatabaseZap', x: 880, y: 330, 
+                      details: "<h6>Description:</h6><p>A dedicated, fully isolated PostgreSQL database instance containing all business data for Organization 'B'. This database is completely separate from Tenant A's database.</p>" },
+
+                    { id: 'tenant_db_c', label: 'Tenant C DB', subLabel: 'Isolated Postgres', icon: 'DatabaseZap', x: 880, y: 510, 
+                      details: "<h6>Description:</h6><p>Another example of a dedicated, isolated database for a third organization, demonstrating the scalability of the per-organization tenancy model.</p>" },
+                    
+                    { id: 'event_bus', label: 'Event Bus', subLabel: 'NATS / PubSub', icon: 'RadioTower', x: 400, y: 800, 
+                      details: "<h6>Description:</h6><p>A message broker that enables asynchronous communication between different parts of the system. It decouples services, so that a write operation in one module (e.g., Sales) can trigger actions in other modules (e.g., Inventory) without them being directly linked.</p><h6>Flow:</h6><ul><li>Services publish events (e.g., 'order.created') to the bus after a successful database transaction.</li><li>The bus ensures reliable delivery of these events to any subscribed workers.</li></ul>" },
+                    
+                    { id: 'workers', label: 'Background Workers', subLabel: 'Async Processors', icon: 'Cpu', x: 880, y: 800, 
+                      details: "<h6>Description:</h6><p>Services that subscribe to events from the Event Bus and perform tasks in the background without blocking the user interface.</p><h6>Examples:</h6><ul><li>Sending a confirmation email after an order is placed.</li><li>Processing a large data import.</li><li>Generating a monthly report.</li><li>Syncing data to a third-party system.</li></ul>" },
+                ],
+                edges: [
+                    { from: 'client', to: 'gateway', label: '1. API Request (JWT)', animated: true },
+                    { from: 'gateway', to: 'supabase', label: '2. Verify JWT' },
+                    { from: 'gateway', to: 'policy_engine', label: '4. Authorize Action' },
+                    { from: 'gateway', to: 'control_plane_db', label: '3. Check Session / 5. Get DB Route' },
+                    { from: 'control_plane_db', to: 'tenant_db_a', label: 'Route Info' },
+                    { from: 'gateway', to: 'tenant_db_a', label: '6. Execute Logic', animated: true },
+                    { from: 'gateway', to: 'tenant_db_b', label: '6. Execute Logic (if Tenant B)', animated: true },
+                    { from: 'tenant_db_a', to: 'event_bus', label: '7. Publish Event' },
+                    { from: 'event_bus', to: 'workers', label: '8. Trigger Job', animated: true },
+                    { from: 'workers', to: 'tenant_db_a', label: '9. Process Data' },
+                ]
+            },
+        };
+
+        const canvasEl = document.getElementById('canvas');
+        const modal = document.getElementById('modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalPanel = document.getElementById('modal-panel');
+        const modalClose = document.getElementById('modal-close');
+        
+        function createNode(nodeData) {
+            const node = document.createElement('div');
+            node.id = `node-${nodeData.id}`;
+            node.className = 'node';
+            node.style.left = `${nodeData.x}px`;
+            node.style.top = `${nodeData.y}px`;
+            
+            node.innerHTML = `
+                <div class="node-icon text-indigo-600"></div>
+                <div class="node-label">${nodeData.label}</div>
+                <div class="node-sublabel">${nodeData.subLabel}</div>
+            `;
+
+            const iconContainer = node.querySelector('.node-icon');
+            const iconData = lucide.icons[nodeData.icon];
+            if (iconData) {
+                const iconNode = lucide.createElement(iconData);
+                iconNode.setAttribute('width', '36');
+                iconNode.setAttribute('height', '36');
+                iconContainer.appendChild(iconNode);
+            } else {
+                console.error(`Lucide icon not found: ${nodeData.icon}`);
+                const fallbackIcon = lucide.createElement(lucide.icons['HelpCircle']);
+                fallbackIcon.setAttribute('width', '36');
+                fallbackIcon.setAttribute('height', '36');
+                iconContainer.appendChild(fallbackIcon);
+            }
+
+            node.addEventListener('click', () => showModal(nodeData));
+            canvasEl.appendChild(node);
+        }
+        
+        function createGroup(groupData) {
+            const group = document.createElement('div');
+            group.className = 'node-group';
+            group.style.left = `${groupData.x}px`;
+            group.style.top = `${groupData.y}px`;
+            group.style.width = `${groupData.width}px`;
+            group.style.height = `${groupData.height}px`;
+            group.innerHTML = `<div class="node-group-label">${groupData.label}</div>`;
+            canvasEl.appendChild(group);
+        }
+
+        function createEdge(edgeData) {
+            const fromNode = document.getElementById(`node-${edgeData.from}`);
+            const toNode = document.getElementById(`node-${edgeData.to}`);
+            
+            if (!fromNode || !toNode) return;
+            
+            const svgEl = document.getElementById('connector-svg');
+            const canvasRect = canvasEl.getBoundingClientRect();
+            const scrollTop = document.querySelector('.canvas-container').scrollTop;
+            const scrollLeft = document.querySelector('.canvas-container').scrollLeft;
+
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+
+            const fromX = fromRect.left - canvasRect.left + scrollLeft + fromRect.width / 2;
+            const fromY = fromRect.top - canvasRect.top + scrollTop + fromRect.height / 2;
+            const toX = toRect.left - canvasRect.left + scrollLeft + toRect.width / 2;
+            const toY = toRect.top - canvasRect.top + scrollTop + toRect.height / 2;
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            if(edgeData.animated) {
+                g.classList.add('animated-arrow');
+            }
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const pathId = `path-${edgeData.from}-${edgeData.to}-${Math.random()}`;
+            path.setAttribute('id', pathId);
+            
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const fromPad = (fromNode.offsetWidth / 2) + 5;
+            const toPad = (toNode.offsetWidth / 2) + 5;
+            const startX = fromX + fromPad * Math.cos(angle);
+            const startY = fromY + fromPad * Math.sin(angle);
+            const endX = toX - toPad * Math.cos(angle);
+            const endY = toY - toPad * Math.sin(angle);
+            
+            const d = `M${startX},${startY} L${endX},${endY}`;
+            path.setAttribute('d', d);
+            path.setAttribute('stroke', '#9ca3af');
+            path.setAttribute('marker-end', 'url(#arrowhead)');
+            path.classList.add('connector-line');
+            g.appendChild(path);
+
+            if (edgeData.label) {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                const textPath = document.createElementNS('http://www.w3.org/2000/svg', 'textPath');
+                textPath.setAttribute('href', `#${pathId}`);
+                textPath.setAttribute('startOffset', '50%');
+                textPath.setAttribute('text-anchor', 'middle');
+                textPath.textContent = edgeData.label;
+                text.appendChild(textPath);
+                text.classList.add('connector-label');
+                g.appendChild(text);
+            }
+            svgEl.appendChild(g);
+        }
+
+        function showModal(nodeData) {
+            document.getElementById('modal-title').textContent = `${nodeData.label} (${nodeData.subLabel})`;
+            document.getElementById('modal-content').innerHTML = nodeData.details;
+            const iconContainer = document.getElementById('modal-icon-container');
+            iconContainer.innerHTML = '';
+            const iconData = lucide.icons[nodeData.icon];
+            if (iconData) {
+                 const iconNode = lucide.createElement(iconData);
+                 iconNode.setAttribute('class', 'h-6 w-6 text-indigo-600');
+                 iconContainer.appendChild(iconNode);
+            } else {
+                console.error(`Lucide icon not found in modal: ${nodeData.icon}`);
+                const fallbackIcon = lucide.createElement(lucide.icons['HelpCircle']);
+                fallbackIcon.setAttribute('class', 'h-6 w-6 text-indigo-600');
+                iconContainer.appendChild(fallbackIcon);
+            }
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalPanel.classList.remove('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+            }, 10);
+        }
+
+        function hideModal() {
+            modalBackdrop.classList.add('opacity-0');
+            modalPanel.classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+        
+        function renderView(viewKey) {
+            canvasEl.innerHTML = `<svg id="connector-svg" width="1600" height="1000"></svg>`;
+            const newSvgEl = document.getElementById('connector-svg');
+            
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            defs.innerHTML = `
+                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5"
+                    markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
+                </marker>
+            `;
+            newSvgEl.appendChild(defs);
+
+            const viewData = architectureData[viewKey];
+            if (viewData.groups) {
+                viewData.groups.forEach(createGroup);
+            }
+            viewData.nodes.forEach(createNode);
+            
+            setTimeout(() => {
+                 viewData.edges.forEach(createEdge);
+            }, 100);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderView('coreServices');
+
+            modalClose.addEventListener('click', hideModal);
+            modalBackdrop.addEventListener('click', hideModal);
+        });
+        
+    </script>
+</body>
+</html>
