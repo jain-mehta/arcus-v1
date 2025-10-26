@@ -21,7 +21,13 @@
     "lint": "next lint",
     "env:check": "node ./scripts/env-check.js",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "sync:policies": "node ./scripts/sync-policies.mjs",
+    "seed:control-plane": "node ./scripts/seed-control-plane.mjs",
+    "provision:tenant": "node ./scripts/provision-tenant.mjs",
+    "migrate:domain": "node ./scripts/migrate-domain.mjs",
+    "test:permission": "vitest run src/tests/permission-integration.test.ts",
+    "permission:check": "tsx scripts/check-permission.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
@@ -49,6 +55,7 @@
     "@radix-ui/react-tabs": "^1.1.3",
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
+    "@supabase/supabase-js": "^2.76.1",
     "axios": "^1.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -1,0 +1,309 @@
+schema: |-
+  entity user {}
+
+  entity group {
+      relation member @user
+  }
+
+  entity org {
+      relation admin @user
+      relation group @group
+  }
+
+  entity StorePOS {
+      relation parent @org
+      relation store_admin @user
+      relation group @group
+
+      relation store_operations @StoreOperations
+      relation store_billing @StoreBilling
+
+      action view_store_dashboard = group.member or store_admin
+      action manage_store_data = store_admin
+      action export_store_reports = store_admin
+  }
+
+  entity StoreOperations {
+      relation parent @StorePOS
+      relation group @group
+
+      action view_all_stores = parent.group or parent.store_admin
+      action create_store = parent.store_admin
+      action edit_store = parent.store_admin
+      action delete_store = parent.store_admin
+      action assign_staff = parent.store_admin
+  }
+
+  entity StoreBilling {
+      relation parent @StorePOS
+      relation group @group
+
+      action view_billing = parent.group or parent.store_admin
+      action create_invoice = parent.store_admin
+      action edit_invoice = parent.store_admin
+      action delete_invoice = parent.store_admin
+      action export_billing_data = parent.store_admin
+  }
+
+  entity SupplyChain {
+      relation parent @org
+      relation supply_admin @user
+      relation group @group
+
+      relation purchase_orders @PurchaseOrders
+      relation requisitions @Requisitions
+      relation procurement_reports @ProcurementReports
+
+      action view_supply_dashboard = group.member or supply_admin
+      action export_supply_data = supply_admin
+  }
+
+  entity PurchaseOrders {
+      relation parent @SupplyChain
+      relation group @group
+
+      action view_all_purchase_orders = parent.group or parent.supply_admin
+      action create_purchase_order = parent.supply_admin
+      action edit_purchase_order = parent.supply_admin
+      action delete_purchase_order = parent.supply_admin
+      action approve_purchase_order = parent.supply_admin
+      action export_po_data = parent.supply_admin
+  }
+
+  entity Requisitions {
+      relation parent @SupplyChain
+      relation group @group
+
+      action view_requisitions = parent.group or parent.supply_admin
+      action create_requisition = parent.supply_admin
+      action approve_requisition = parent.supply_admin
+      action reject_requisition = parent.supply_admin
+  }
+
+  entity ProcurementReports {
+      relation parent @SupplyChain
+      relation group @group
+
+      action view_procurement_reports = parent.group or parent.supply_admin
+      action export_procurement_reports = parent.supply_admin
+  }
+
+  entity HRManagement {
+      relation parent @org
+      relation hr_admin @user
+      relation group @group
+
+      relation employees @Employees
+      relation attendance @Attendance
+      relation leaves @Leaves
+      relation performance @Performance
+
+      action view_hr_dashboard = group.member or hr_admin
+      action export_hr_reports = hr_admin
+  }
+
+  entity Employees {
+      relation parent @HRManagement
+      relation group @group
+
+      action view_all_employees = parent.group or parent.hr_admin
+      action create_employee = parent.hr_admin
+      action edit_employee = parent.hr_admin
+      action delete_employee = parent.hr_admin
+  }
+
+  entity Attendance {
+      relation parent @HRManagement
+      relation group @group
+
+      action view_attendance = parent.group or parent.hr_admin
+      action edit_attendance = parent.hr_admin
+      action export_attendance = parent.hr_admin
+  }
+
+  entity Leaves {
+      relation parent @HRManagement
+      relation group @group
+
+      action view_leave_requests = parent.group or parent.hr_admin
+      action approve_leave = parent.hr_admin
+      action reject_leave = parent.hr_admin
+  }
+
+  entity Performance {
+      relation parent @HRManagement
+      relation group @group
+
+      action view_performance_reports = parent.group or parent.hr_admin
+      action update_performance_metrics = parent.hr_admin
+      action export_performance_data = parent.hr_admin
+  }
+
+  entity VendorPortal {
+      relation parent @org
+      relation vendor_admin @user
+      relation group @group
+
+      relation vendor_profiles @VendorProfiles
+      relation vendor_payments @VendorPayments
+      relation vendor_metrics @VendorMetrics
+
+      action view_vendor_dashboard = group.member or vendor_admin
+      action export_vendor_reports = vendor_admin
+  }
+
+  entity VendorProfiles {
+      relation parent @VendorPortal
+      relation group @group
+
+      action view_all_vendors = parent.group or parent.vendor_admin
+      action create_vendor_profile = parent.vendor_admin
+      action edit_vendor = parent.vendor_admin
+      action delete_vendor = parent.vendor_admin
+      action communicate_with_vendor = parent.vendor_admin
+  }
+
+  entity VendorPayments {
+      relation parent @VendorPortal
+      relation group @group
+
+      action view_payment_history = parent.group or parent.vendor_admin
+      action process_vendor_payment = parent.vendor_admin
+      action export_vendor_payments = parent.vendor_admin
+  }
+
+  entity VendorMetrics {
+      relation parent @VendorPortal
+      relation group @group
+
+      action view_performance_metrics = parent.group or parent.vendor_admin
+      action export_vendor_metrics = parent.vendor_admin
+  }
+
+  entity Inventory {
+      relation parent @org
+      relation inventory_admin @user
+      relation group @group
+
+      relation stock_items @StockItems
+      relation stock_history @StockHistory
+      relation stock_reports @StockReports
+
+      action view_inventory_dashboard = group.member or inventory_admin
+  }
+
+  entity StockItems {
+      relation parent @Inventory
+      relation group @group
+
+      action view_inventory = parent.group or parent.inventory_admin
+      action add_inventory_item = parent.inventory_admin
+      action edit_inventory_item = parent.inventory_admin
+      action delete_inventory_item = parent.inventory_admin
+  }
+
+  entity StockHistory {
+      relation parent @Inventory
+      relation group @group
+
+      action view_stock_history = parent.group or parent.inventory_admin
+      action adjust_stock = parent.inventory_admin
+  }
+
+  entity StockReports {
+      relation parent @Inventory
+      relation group @group
+
+      action view_inventory_reports = parent.group or parent.inventory_admin
+      action export_inventory_data = parent.inventory_admin
+  }
+
+  entity SalesManagement {
+      relation parent @org
+      relation sales_admin @user
+      relation group @group
+
+      relation leads_management @LeadsManagement
+      relation sales_invoices @SalesInvoices
+      relation sales_reports @SalesReports
+
+      action view_sales_dashboard = group.member or sales_admin
+      action manage_sales_pipeline = sales_admin
+  }
+
+  entity LeadsManagement {
+      relation parent @SalesManagement
+      relation group @group
+
+      action view_leads = parent.group or parent.sales_admin
+      action create_lead = parent.sales_admin
+      action edit_lead = parent.sales_admin
+      action delete_lead = parent.sales_admin
+      action assign_lead = parent.sales_admin
+      action communicate_with_lead = parent.group or parent.sales_admin
+      action export_lead_data = parent.sales_admin
+  }
+
+  entity SalesInvoices {
+      relation parent @SalesManagement
+      relation group @group
+
+      action view_invoices = parent.group or parent.sales_admin
+      action create_invoice = parent.sales_admin
+      action edit_invoice = parent.sales_admin
+      action delete_invoice = parent.sales_admin
+      action approve_invoice = parent.sales_admin
+      action view_payment_records = parent.group or parent.sales_admin
+      action export_invoice_data = parent.sales_admin
+  }
+
+  entity SalesReports {
+      relation parent @SalesManagement
+      relation group @group
+
+      action view_sales_reports = parent.group or parent.sales_admin
+      action export_sales_reports = parent.sales_admin
+  }
+
+  entity UserManagement {
+      relation parent @org
+      relation user_admin @user
+      relation group @group
+
+      action view_users = group.member or user_admin
+      action create_user = user_admin
+      action edit_user = user_admin
+      action delete_user = user_admin
+      action assign_roles = user_admin
+      action export_user_data = user_admin
+  }
+
+  entity SystemSettings {
+      relation parent @org
+      relation system_admin @user
+      relation group @group
+
+      action view_settings = group.member or system_admin
+      action update_settings = system_admin
+      action manage_integrations = system_admin
+      action configure_notifications = system_admin
+      action manage_backups = system_admin
+      action view_system_logs = system_admin
+  }
+
+  entity Application {
+      relation org @org
+      relation store @StorePOS
+      relation supply_chain @SupplyChain
+      relation hr @HRManagement
+      relation vendor_portal @VendorPortal
+      relation inventory @Inventory
+      relation sales @SalesManagement
+      relation user_management @UserManagement
+      relation system_settings @SystemSettings
+
+      action full_access = org.admin
+  }
+relationships:
+  - organization:1#admin@user:1
+attributes: []

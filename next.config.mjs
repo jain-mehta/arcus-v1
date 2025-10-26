@@ -49,11 +49,24 @@ const nextConfig = {
         '@genkit-ai/firebase',
         'dotprompt',
         'handlebars',
+        'typeorm', // Exclude TypeORM from webpack bundling
       ];
       config.externals = Array.isArray(config.externals)
         ? [...config.externals, ...extraExternals]
         : config.externals;
     }
+
+    // Suppress TypeORM webpack warnings
+    config.ignoreWarnings = config.ignoreWarnings || [];
+    config.ignoreWarnings.push({
+      module: /typeorm/,
+      message: /Critical dependency|request of a dependency/,
+    });
+
+    config.ignoreWarnings.push({
+      module: /typeorm/,
+      message: /Module not found|Can't resolve/,
+    });
     
     return config;
   }

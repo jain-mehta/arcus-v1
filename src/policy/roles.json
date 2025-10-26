@@ -1,0 +1,181 @@
+{
+  "roles": [
+    {
+      "id": "admin",
+      "name": "Admin",
+      "description": "Full system access, no restrictions",
+      "permissions": [
+        "view_dashboard", "view_analytics", "view_reports", "export_data",
+        "sales_leads_view", "sales_leads_viewOwn", "sales_leads_viewTeam", "sales_leads_viewAll", "sales_leads_create", "sales_leads_edit", "sales_leads_editOwn", "sales_leads_delete", "sales_leads_deleteOwn", "sales_leads_assign", "sales_leads_export", "sales_leads_import",
+        "sales_opportunities_view", "sales_opportunities_viewOwn", "sales_opportunities_viewTeam", "sales_opportunities_viewAll", "sales_opportunities_create", "sales_opportunities_edit", "sales_opportunities_editOwn", "sales_opportunities_delete", "sales_opportunities_updateStage", "sales_opportunities_assign", "sales_opportunities_export",
+        "sales_quotations_view", "sales_quotations_viewOwn", "sales_quotations_viewTeam", "sales_quotations_viewAll", "sales_quotations_create", "sales_quotations_edit", "sales_quotations_editOwn", "sales_quotations_delete", "sales_quotations_approve", "sales_quotations_send", "sales_quotations_export", "sales_quotations_viewPricing",
+        "sales_invoices_view", "sales_invoices_viewOwn", "sales_invoices_viewAll", "sales_invoices_create", "sales_invoices_edit", "sales_invoices_delete", "sales_invoices_approve", "sales_invoices_send", "sales_invoices_export", "sales_invoices_viewPaymentStatus",
+        "inventory_products_view", "inventory_products_viewAll", "inventory_products_create", "inventory_products_edit", "inventory_products_delete", "inventory_products_viewCost", "inventory_products_editCost", "inventory_products_viewStock", "inventory_products_manageVariants", "inventory_products_managePricing", "inventory_products_export", "inventory_products_import",
+        "inventory_stock_view", "inventory_stock_viewAll", "inventory_stock_addStock", "inventory_stock_removeStock", "inventory_stock_transferStock", "inventory_stock_adjustStock", "inventory_stock_viewStockValue", "inventory_stock_viewLowStock", "inventory_stock_manageWarehouses", "inventory_stock_viewStockHistory", "inventory_stock_export",
+        "inventory_categories_view", "inventory_categories_create", "inventory_categories_edit", "inventory_categories_delete", "inventory_categories_manageHierarchy",
+        "inventory_alerts_view", "inventory_alerts_configure", "inventory_alerts_receiveNotifications", "inventory_alerts_manageReorderPoints",
+        "inventory_pricing_view", "inventory_pricing_edit", "inventory_pricing_viewMargins", "inventory_pricing_createDiscounts", "inventory_pricing_approveDiscounts",
+        "inventory_barcodes_view", "inventory_barcodes_generate", "inventory_barcodes_print", "inventory_barcodes_scan",
+        "store_bills_view", "store_bills_viewOwn", "store_bills_viewAll", "store_bills_create", "store_bills_edit", "store_bills_editOwn", "store_bills_delete", "store_bills_viewPayments", "store_bills_processPayment", "store_bills_processRefund", "store_bills_export",
+        "store_invoices_view", "store_invoices_viewPastBills", "store_invoices_viewAll", "store_invoices_create", "store_invoices_edit", "store_invoices_delete", "store_invoices_sendEmail", "store_invoices_export",
+        "store_pos_access", "store_pos_viewSales", "store_pos_processSale", "store_pos_processReturn", "store_pos_applyDiscount", "store_pos_viewDailySummary", "store_pos_openCashDrawer", "store_pos_voidTransaction",
+        "store_customers_view", "store_customers_create", "store_customers_edit", "store_customers_delete", "store_customers_viewPurchaseHistory", "store_customers_manageLoyalty",
+        "procurement_vendors_view", "procurement_vendors_viewAll", "procurement_vendors_create", "procurement_vendors_edit", "procurement_vendors_delete", "procurement_vendors_viewPayments", "procurement_vendors_viewPerformance", "procurement_vendors_manageContracts", "procurement_vendors_export",
+        "procurement_po_view", "procurement_po_viewAll", "procurement_po_create", "procurement_po_edit", "procurement_po_delete", "procurement_po_approve", "procurement_po_send", "procurement_po_receiveGoods", "procurement_po_viewPricing", "procurement_po_export",
+        "procurement_bills_view", "procurement_bills_viewAll", "procurement_bills_create", "procurement_bills_edit", "procurement_bills_delete", "procurement_bills_approve", "procurement_bills_processPayment", "procurement_bills_viewPaymentStatus", "procurement_bills_export",
+        "procurement_grn_view", "procurement_grn_create", "procurement_grn_edit", "procurement_grn_approve", "procurement_grn_reject",
+        "hrms_employees_view", "hrms_employees_viewAll", "hrms_employees_viewOwn", "hrms_employees_create", "hrms_employees_edit", "hrms_employees_delete", "hrms_employees_viewSalary", "hrms_employees_editSalary", "hrms_employees_viewDocuments", "hrms_employees_manageDocuments", "hrms_employees_export",
+        "hrms_payroll_view", "hrms_payroll_viewAll", "hrms_payroll_process", "hrms_payroll_approve", "hrms_payroll_viewReports", "hrms_payroll_generatePayslips", "hrms_payroll_export",
+        "hrms_attendance_view", "hrms_attendance_viewAll", "hrms_attendance_viewOwn", "hrms_attendance_mark", "hrms_attendance_edit", "hrms_attendance_approve", "hrms_attendance_viewReports", "hrms_attendance_manageShifts", "hrms_attendance_export",
+        "hrms_settlement_view", "hrms_settlement_viewAll", "hrms_settlement_create", "hrms_settlement_process", "hrms_settlement_approve", "hrms_settlement_viewDocuments", "hrms_settlement_export",
+        "hrms_leave_view", "hrms_leave_viewAll", "hrms_leave_viewOwn", "hrms_leave_apply", "hrms_leave_approve", "hrms_leave_reject", "hrms_leave_viewBalance", "hrms_leave_managePolicy", "hrms_leave_cancelLeave",
+        "hrms_recruitment_viewJobs", "hrms_recruitment_createJob", "hrms_recruitment_viewCandidates", "hrms_recruitment_scheduleInterview", "hrms_recruitment_updateStatus", "hrms_recruitment_makeOffer",
+        "vendor_portal_viewAll", "vendor_portal_viewAssigned", "vendor_portal_create", "vendor_portal_edit", "vendor_portal_delete", "vendor_portal_communicate", "vendor_portal_viewPayments", "vendor_portal_viewPerformance", "vendor_portal_grantPortalAccess", "vendor_portal_export",
+        "admin_users_viewAll", "admin_users_create", "admin_users_edit", "admin_users_delete", "admin_users_resetPassword", "admin_users_assignRoles", "admin_users_deactivate", "admin_users_viewAuditLog",
+        "admin_settings_view", "admin_settings_manageRoles", "admin_settings_manageUsers", "admin_settings_manageOrganization", "admin_settings_viewAuditLog", "admin_settings_manageIntegrations", "admin_settings_manageBilling", "admin_settings_manageNotifications"
+      ],
+      "total_permissions": 230
+    },
+    {
+      "id": "sales_president",
+      "name": "Sales President / Regional Head",
+      "description": "Executive access with viewAll scope across all modules",
+      "permissions": [
+        "view_dashboard", "view_analytics", "view_reports", "export_data",
+        "sales_leads_view", "sales_leads_viewOwn", "sales_leads_viewTeam", "sales_leads_viewAll", "sales_leads_create", "sales_leads_edit", "sales_leads_editOwn", "sales_leads_delete", "sales_leads_deleteOwn", "sales_leads_assign", "sales_leads_export", "sales_leads_import",
+        "sales_opportunities_view", "sales_opportunities_viewOwn", "sales_opportunities_viewTeam", "sales_opportunities_viewAll", "sales_opportunities_create", "sales_opportunities_edit", "sales_opportunities_editOwn", "sales_opportunities_delete", "sales_opportunities_updateStage", "sales_opportunities_assign", "sales_opportunities_export",
+        "sales_quotations_view", "sales_quotations_viewOwn", "sales_quotations_viewTeam", "sales_quotations_viewAll", "sales_quotations_create", "sales_quotations_edit", "sales_quotations_editOwn", "sales_quotations_delete", "sales_quotations_approve", "sales_quotations_send", "sales_quotations_export", "sales_quotations_viewPricing",
+        "sales_invoices_view", "sales_invoices_viewOwn", "sales_invoices_viewAll", "sales_invoices_create", "sales_invoices_edit", "sales_invoices_delete", "sales_invoices_approve", "sales_invoices_send", "sales_invoices_export", "sales_invoices_viewPaymentStatus",
+        "inventory_products_viewAll", "inventory_stock_viewAll", "inventory_alerts_view", "inventory_pricing_viewMargins", "inventory_barcodes_view",
+        "store_bills_viewAll", "store_invoices_viewAll", "store_customers_view",
+        "procurement_vendors_viewAll", "procurement_po_viewAll", "procurement_bills_viewAll", "procurement_grn_view",
+        "hrms_employees_viewAll", "hrms_payroll_viewAll", "hrms_attendance_viewAll", "hrms_settlement_viewAll", "hrms_leave_viewAll", "hrms_recruitment_viewJobs", "hrms_recruitment_viewCandidates",
+        "admin_users_viewAll", "admin_users_viewAuditLog",
+        "admin_settings_view", "admin_settings_viewAuditLog"
+      ],
+      "total_permissions": 135
+    },
+    {
+      "id": "sales_manager",
+      "name": "Sales Manager",
+      "description": "Full sales operations with team leadership access",
+      "permissions": [
+        "view_dashboard", "view_analytics",
+        "sales_leads_view", "sales_leads_viewOwn", "sales_leads_viewTeam", "sales_leads_create", "sales_leads_edit", "sales_leads_editOwn", "sales_leads_delete", "sales_leads_deleteOwn", "sales_leads_assign", "sales_leads_export", "sales_leads_import",
+        "sales_opportunities_view", "sales_opportunities_viewOwn", "sales_opportunities_viewTeam", "sales_opportunities_create", "sales_opportunities_edit", "sales_opportunities_editOwn", "sales_opportunities_delete", "sales_opportunities_updateStage", "sales_opportunities_assign", "sales_opportunities_export",
+        "sales_quotations_view", "sales_quotations_viewOwn", "sales_quotations_viewTeam", "sales_quotations_create", "sales_quotations_edit", "sales_quotations_editOwn", "sales_quotations_delete", "sales_quotations_approve", "sales_quotations_send", "sales_quotations_export", "sales_quotations_viewPricing",
+        "sales_invoices_view", "sales_invoices_viewOwn", "sales_invoices_create", "sales_invoices_edit", "sales_invoices_approve", "sales_invoices_send", "sales_invoices_export", "sales_invoices_viewPaymentStatus",
+        "inventory_products_view", "inventory_stock_view",
+        "hrms_employees_view",
+        "admin_users_viewAuditLog"
+      ],
+      "total_permissions": 52
+    },
+    {
+      "id": "sales_executive",
+      "name": "Sales Executive",
+      "description": "Sales operations with personal account management",
+      "permissions": [
+        "view_dashboard",
+        "sales_leads_viewOwn", "sales_leads_viewTeam", "sales_leads_create", "sales_leads_edit", "sales_leads_editOwn", "sales_leads_export",
+        "sales_opportunities_viewOwn", "sales_opportunities_viewTeam", "sales_opportunities_create", "sales_opportunities_edit", "sales_opportunities_editOwn", "sales_opportunities_export",
+        "sales_quotations_viewOwn", "sales_quotations_viewTeam", "sales_quotations_create", "sales_quotations_edit", "sales_quotations_editOwn", "sales_quotations_send", "sales_quotations_viewPricing",
+        "sales_invoices_viewOwn", "sales_invoices_view", "sales_invoices_export",
+        "inventory_products_view"
+      ],
+      "total_permissions": 17
+    },
+    {
+      "id": "inventory_manager",
+      "name": "Inventory Manager",
+      "description": "Full inventory control with stock and pricing management",
+      "permissions": [
+        "view_dashboard",
+        "inventory_products_view", "inventory_products_viewAll", "inventory_products_create", "inventory_products_edit", "inventory_products_delete", "inventory_products_viewCost", "inventory_products_editCost", "inventory_products_viewStock", "inventory_products_manageVariants", "inventory_products_managePricing", "inventory_products_export", "inventory_products_import",
+        "inventory_stock_view", "inventory_stock_viewAll", "inventory_stock_addStock", "inventory_stock_removeStock", "inventory_stock_transferStock", "inventory_stock_adjustStock", "inventory_stock_viewStockValue", "inventory_stock_viewLowStock", "inventory_stock_manageWarehouses", "inventory_stock_viewStockHistory", "inventory_stock_export",
+        "inventory_categories_view", "inventory_categories_create", "inventory_categories_edit", "inventory_categories_delete", "inventory_categories_manageHierarchy",
+        "inventory_alerts_view", "inventory_alerts_configure", "inventory_alerts_receiveNotifications", "inventory_alerts_manageReorderPoints",
+        "inventory_pricing_view", "inventory_pricing_edit", "inventory_pricing_viewMargins", "inventory_pricing_createDiscounts", "inventory_pricing_approveDiscounts",
+        "inventory_barcodes_view", "inventory_barcodes_generate", "inventory_barcodes_print", "inventory_barcodes_scan",
+        "procurement_vendors_view", "procurement_po_viewAll",
+        "admin_settings_view"
+      ],
+      "total_permissions": 45
+    },
+    {
+      "id": "store_supervisor",
+      "name": "Store Supervisor",
+      "description": "Store and POS operations with billing and customer management",
+      "permissions": [
+        "view_dashboard",
+        "store_bills_view", "store_bills_viewOwn", "store_bills_create", "store_bills_edit", "store_bills_editOwn", "store_bills_delete", "store_bills_viewPayments", "store_bills_processPayment", "store_bills_processRefund", "store_bills_export",
+        "store_invoices_view", "store_invoices_viewPastBills", "store_invoices_create", "store_invoices_edit", "store_invoices_delete", "store_invoices_sendEmail", "store_invoices_export",
+        "store_pos_access", "store_pos_viewSales", "store_pos_processSale", "store_pos_processReturn", "store_pos_applyDiscount", "store_pos_viewDailySummary", "store_pos_openCashDrawer", "store_pos_voidTransaction",
+        "store_customers_view", "store_customers_create", "store_customers_edit", "store_customers_delete", "store_customers_viewPurchaseHistory", "store_customers_manageLoyalty",
+        "inventory_products_view", "inventory_stock_view",
+        "hrms_attendance_mark", "hrms_attendance_viewOwn",
+        "admin_users_viewAuditLog"
+      ],
+      "total_permissions": 39
+    },
+    {
+      "id": "hr_manager",
+      "name": "HR Manager",
+      "description": "Complete human resources and employee management",
+      "permissions": [
+        "view_dashboard",
+        "hrms_employees_view", "hrms_employees_viewAll", "hrms_employees_viewOwn", "hrms_employees_create", "hrms_employees_edit", "hrms_employees_delete", "hrms_employees_viewSalary", "hrms_employees_editSalary", "hrms_employees_viewDocuments", "hrms_employees_manageDocuments", "hrms_employees_export",
+        "hrms_payroll_view", "hrms_payroll_viewAll", "hrms_payroll_process", "hrms_payroll_approve", "hrms_payroll_viewReports", "hrms_payroll_generatePayslips", "hrms_payroll_export",
+        "hrms_attendance_view", "hrms_attendance_viewAll", "hrms_attendance_viewOwn", "hrms_attendance_mark", "hrms_attendance_edit", "hrms_attendance_approve", "hrms_attendance_viewReports", "hrms_attendance_manageShifts", "hrms_attendance_export",
+        "hrms_settlement_view", "hrms_settlement_viewAll", "hrms_settlement_create", "hrms_settlement_process", "hrms_settlement_approve", "hrms_settlement_viewDocuments", "hrms_settlement_export",
+        "hrms_leave_view", "hrms_leave_viewAll", "hrms_leave_viewOwn", "hrms_leave_apply", "hrms_leave_approve", "hrms_leave_reject", "hrms_leave_viewBalance", "hrms_leave_managePolicy", "hrms_leave_cancelLeave",
+        "hrms_recruitment_viewJobs", "hrms_recruitment_createJob", "hrms_recruitment_viewCandidates", "hrms_recruitment_scheduleInterview", "hrms_recruitment_updateStatus", "hrms_recruitment_makeOffer",
+        "admin_users_viewAll", "admin_users_create", "admin_users_edit", "admin_users_delete", "admin_users_resetPassword", "admin_users_assignRoles", "admin_users_deactivate", "admin_users_viewAuditLog",
+        "admin_settings_manageOrganization"
+      ],
+      "total_permissions": 59
+    },
+    {
+      "id": "procurement_officer",
+      "name": "Procurement Officer",
+      "description": "Vendor and purchase order management",
+      "permissions": [
+        "view_dashboard",
+        "procurement_vendors_view", "procurement_vendors_viewAll", "procurement_vendors_create", "procurement_vendors_edit", "procurement_vendors_delete", "procurement_vendors_viewPayments", "procurement_vendors_viewPerformance", "procurement_vendors_manageContracts", "procurement_vendors_export",
+        "procurement_po_view", "procurement_po_viewAll", "procurement_po_create", "procurement_po_edit", "procurement_po_delete", "procurement_po_approve", "procurement_po_send", "procurement_po_receiveGoods", "procurement_po_viewPricing", "procurement_po_export",
+        "procurement_bills_view", "procurement_bills_viewAll", "procurement_bills_create", "procurement_bills_edit", "procurement_bills_delete", "procurement_bills_approve", "procurement_bills_processPayment", "procurement_bills_viewPaymentStatus", "procurement_bills_export",
+        "procurement_grn_view", "procurement_grn_create", "procurement_grn_edit", "procurement_grn_approve", "procurement_grn_reject",
+        "inventory_products_view", "inventory_stock_viewAll",
+        "admin_settings_view"
+      ],
+      "total_permissions": 37
+    },
+    {
+      "id": "finance_approver",
+      "name": "Finance Approver",
+      "description": "Approval authority for financial transactions",
+      "permissions": [
+        "view_dashboard", "view_reports",
+        "sales_quotations_approve", "sales_invoices_approve",
+        "procurement_bills_approve", "procurement_po_approve",
+        "hrms_payroll_approve",
+        "store_bills_viewAll"
+      ],
+      "total_permissions": 8
+    },
+    {
+      "id": "reporting_officer",
+      "name": "Reporting Officer (Read-Only)",
+      "description": "Executive reporting and analytics access",
+      "permissions": [
+        "view_dashboard", "view_analytics", "view_reports", "export_data",
+        "sales_leads_viewAll", "sales_opportunities_viewAll", "sales_quotations_viewAll", "sales_invoices_viewAll",
+        "inventory_products_viewAll", "inventory_stock_viewAll",
+        "procurement_vendors_viewAll", "procurement_po_viewAll",
+        "hrms_employees_viewAll",
+        "store_bills_viewAll"
+      ],
+      "total_permissions": 14
+    }
+  ]
+}
