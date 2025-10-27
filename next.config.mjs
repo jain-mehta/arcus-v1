@@ -1,6 +1,7 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   // Skip static optimization for dynamic routes
   generateBuildId: async () => {
     return 'build-' + Date.now()
