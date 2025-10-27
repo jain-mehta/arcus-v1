@@ -47,7 +47,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { EllipsisVertical, PlusCircle, Search, Trash2, Edit, ShoppingCart, Info, Store } from 'lucide-react';
 import { ProductFormDialog } from './product-form-dialog';
-import type { Product, Store as TStore } from '@/lib/firebase/types';
+import type { Product, Store as TStore } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -341,4 +341,6 @@ export function ProductTable({
     </>
   );
 }
+
+
 

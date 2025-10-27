@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Upload, Download, FileText, Calendar as CalendarIcon, Loader2, MessageSquareWarning, Search } from 'lucide-react';
-import type { Vendor, Invoice, PurchaseOrder } from '@/lib/firebase/types';
+import type { Vendor, Invoice, PurchaseOrder } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { uploadInvoice, updateInvoice, getPurchaseOrders } from './actions';
@@ -162,7 +162,7 @@ export function InvoiceClient({ vendors, initialInvoices }: InvoiceClientProps) 
                                     <TableCell>{getVendorName(inv.vendorId)}</TableCell>
                                     <TableCell>{inv.poNumber}</TableCell>
                                     <TableCell>{new Date(inv.invoiceDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>₹{inv.amount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>?{inv.amount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell><Badge variant={inv.status === 'Paid' ? 'default' : inv.status === 'Overdue' ? 'destructive' : 'secondary'}>{inv.status}</Badge></TableCell>
                                     <TableCell>{inv.discrepancy || 'None'}</TableCell>
                                     <TableCell className="text-right space-x-2">
@@ -282,7 +282,7 @@ function UploadInvoiceDialog({ vendors, onInvoiceUploaded }: { vendors: Vendor[]
                                             <SelectTrigger><SelectValue placeholder="Select a PO" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {purchaseOrders.map(po => <SelectItem key={po.id} value={po.poNumber}>{po.poNumber} - ₹{po.totalAmount.toLocaleString('en-IN')}</SelectItem>)}
+                                            {purchaseOrders.map(po => <SelectItem key={po.id} value={po.poNumber}>{po.poNumber} - ?{po.totalAmount.toLocaleString('en-IN')}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -317,7 +317,7 @@ function UploadInvoiceDialog({ vendors, onInvoiceUploaded }: { vendors: Vendor[]
                             name="amount"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Invoice Amount (₹)</FormLabel>
+                                    <FormLabel>Invoice Amount (?)</FormLabel>
                                     <FormControl><Input type="number" placeholder="Enter amount" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -418,3 +418,5 @@ function DiscrepancyDialog({ invoice, onDiscrepancyLogged }: { invoice: Invoice,
         </Dialog>
     )
 }
+
+

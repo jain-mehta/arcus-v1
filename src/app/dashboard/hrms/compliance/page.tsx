@@ -1,8 +1,8 @@
 
 import { getComplianceDocuments } from './actions';
 import { HrmsComplianceClient } from './client';
-import { getCurrentUser } from '@/lib/firebase/firestore';
-import { getUserPermissions } from '@/lib/firebase/rbac';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
+import { getUserPermissions } from '@/lib/mock-data/rbac';
 
 export default async function HrmsDocumentsPage() {
     // In a real app, this would be a proper async data fetch.
@@ -19,3 +19,5 @@ export default async function HrmsDocumentsPage() {
     
     return <HrmsComplianceClient initialDocuments={documents} isAdmin={isAdmin} />;
 }
+
+

@@ -31,11 +31,11 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { NavLinks } from './components/nav-links';
-import type { User } from '@/lib/firebase/types';
+import type { User } from '@/lib/mock-data/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn } from 'lucide-react';
-import type { NavConfig } from '@/lib/firebase/firestore';
+import type { NavConfig } from '@/lib/mock-data/firestore';
 import type { PermissionMap } from '@/lib/rbac';
 import { filterNavItems } from '@/lib/navigation-mapper';
 
@@ -291,3 +291,5 @@ function UserNav({ user }: { user: DashboardClientLayoutProps['currentUser'] }) 
     </DropdownMenu>
   );
 }
+
+

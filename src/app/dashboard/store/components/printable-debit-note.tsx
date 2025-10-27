@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/firebase/types';
+import type { Order, Customer, Store } from '@/lib/mock-data/types';
 
 interface DebitNoteData {
     originalOrderNumber: string;
@@ -82,14 +82,14 @@ export const PrintableDebitNote = React.forwardRef<HTMLDivElement, PrintableDebi
                     <thead>
                         <tr className='bg-gray-100'>
                             <th className="p-3 text-sm font-semibold uppercase">Description</th>
-                            <th className="p-3 text-sm font-semibold uppercase text-right">Amount (₹)</th>
+                            <th className="p-3 text-sm font-semibold uppercase text-right">Amount (?)</th>
                         </tr>
                     </thead>
                     <tbody>
                         {items.map((item, index) => (
                             <tr key={index} className="border-b">
                                 <td className="p-3 font-medium">{item.description}</td>
-                                <td className="p-3 text-right">₹{item.amount.toLocaleString('en-IN')}</td>
+                                <td className="p-3 text-right">?{item.amount.toLocaleString('en-IN')}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -104,7 +104,7 @@ export const PrintableDebitNote = React.forwardRef<HTMLDivElement, PrintableDebi
              <section className="flex justify-end mt-6">
                 <div className="w-full max-w-sm space-y-2">
                     <div className="border-t-2 border-gray-800 my-2"></div>
-                    <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Total Debit Amount</span><span>₹{totalDebitAmount.toLocaleString('en-IN')}</span></div>
+                    <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Total Debit Amount</span><span>?{totalDebitAmount.toLocaleString('en-IN')}</span></div>
                     <div className="text-right text-xs text-gray-600">{numberToWords(totalDebitAmount)}</div>
                 </div>
             </section>
@@ -118,3 +118,5 @@ export const PrintableDebitNote = React.forwardRef<HTMLDivElement, PrintableDebi
     );
 });
 PrintableDebitNote.displayName = 'PrintableDebitNote';
+
+

@@ -4,8 +4,8 @@
 import {
   MOCK_MATERIAL_MAPPINGS,
   MOCK_VENDORS,
-} from '@/lib/firebase/firestore';
-import type { MaterialMapping } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import type { MaterialMapping } from '@/lib/mock-data/types';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
@@ -46,3 +46,5 @@ export async function fetchPriceComparisonData(material: string) {
 
   return enrichedData;
 }
+
+

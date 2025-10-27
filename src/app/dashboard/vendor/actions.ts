@@ -2,12 +2,12 @@
 
 'use server';
 
-import { MOCK_PRODUCTS, getPurchaseOrders as getPurchaseOrdersFromDb, updatePurchaseOrderInDb, getVendors as getVendorsFromDb, MOCK_COMMUNICATION_LOGS, MOCK_VENDORS, getVendor as getVendorFromDb, getVendorDocuments as getVendorDocumentsFromDb, getCurrentUser, createPurchaseOrderInDb } from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
+import { MOCK_PRODUCTS, getPurchaseOrders as getPurchaseOrdersFromDb, updatePurchaseOrderInDb, getVendors as getVendorsFromDb, MOCK_COMMUNICATION_LOGS, MOCK_VENDORS, getVendor as getVendorFromDb, getVendorDocuments as getVendorDocumentsFromDb, getCurrentUser, createPurchaseOrderInDb } from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
-import type { CommunicationLog, MaterialMapping, UserContext, Vendor, VolumeDiscount, VendorRatingCriteria, VendorRatingHistory, SalesSnapshot, Invoice, VendorDocument, Visit, Store, LeavePolicy, LeaveRequest, JobOpening, Applicant, SalaryStructure, Payslip, AuditLog, PurchaseOrder } from '@/lib/firebase/types';
+import type { CommunicationLog, MaterialMapping, UserContext, Vendor, VolumeDiscount, VendorRatingCriteria, VendorRatingHistory, SalesSnapshot, Invoice, VendorDocument, Visit, Store, LeavePolicy, LeaveRequest, JobOpening, Applicant, SalaryStructure, Payslip, AuditLog, PurchaseOrder } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -224,3 +224,5 @@ export async function calculateAndUpdateVendorScores(vendorId: string, criteria:
     revalidatePath('/dashboard/vendor/rating');
     return { success: true };
 }
+
+

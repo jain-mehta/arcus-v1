@@ -1,5 +1,5 @@
 
-import { getVendors, getInvoices } from '@/lib/firebase/firestore';
+import { getVendors, getInvoices } from '@/lib/mock-data/firestore';
 import { InvoiceClient } from './client';
 
 export default async function InvoiceManagementPage() {
@@ -14,3 +14,5 @@ export default async function InvoiceManagementPage() {
 }
 
     
+
+

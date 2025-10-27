@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table';
 import { Target, TrendingUp, HandCoins, CheckCircle, History, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { Opportunity, SalesSnapshot } from '@/lib/firebase/types';
+import type { Opportunity, SalesSnapshot } from '@/lib/mock-data/types';
 import { Button } from '@/components/ui/button';
 import { useMemo, useState, useTransition } from 'react';
 import { generateMonthlySnapshot } from './actions';
@@ -101,8 +101,8 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
 
   const kpiOptions = [
     { value: 'winRate', label: 'Win Rate (%)' },
-    { value: 'pipelineValue', label: 'Pipeline Value (₹)' },
-    { value: 'avgDealSize', label: 'Average Deal Size (₹)' },
+    { value: 'pipelineValue', label: 'Pipeline Value (?)' },
+    { value: 'avgDealSize', label: 'Average Deal Size (?)' },
     { value: 'salesCycleDays', label: 'Sales Cycle (Days)' },
   ];
 
@@ -176,9 +176,9 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={sourceData} layout="vertical" margin={{ right: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                            <XAxis type="number" tickFormatter={(value) => `₹${value / 100000}L`} />
+                            <XAxis type="number" tickFormatter={(value) => `?${value / 100000}L`} />
                             <YAxis type="category" dataKey="name" width={80} />
-                            <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
+                            <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `?${value.toLocaleString('en-IN')}`} />
                             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Revenue" />
                         </BarChart>
                     </ResponsiveContainer>
@@ -228,7 +228,7 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
                             <TableHead>Customer</TableHead>
                             <TableHead>Stage</TableHead>
                             <TableHead>Expected Close Date</TableHead>
-                            <TableHead className="text-right">Value (₹)</TableHead>
+                            <TableHead className="text-right">Value (?)</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -254,3 +254,4 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
 }
 
     
+

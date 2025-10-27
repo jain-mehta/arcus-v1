@@ -70,7 +70,7 @@ export async function createSession(
 
     await sessionRepo.save(session);
 
-    console.log(`✅ Session created: ${jti} (user: ${userId}, tenant: ${tenantId})`);
+    console.log(`? Session created: ${jti} (user: ${userId}, tenant: ${tenantId})`);
 
     return {
       jti,
@@ -96,7 +96,7 @@ export async function revokeSession(jti: string): Promise<void> {
 
     await sessionRepo.update({ jti }, { revoked: true });
 
-    console.log(`✅ Session revoked: ${jti}`);
+    console.log(`? Session revoked: ${jti}`);
   } catch (error) {
     console.error('Failed to revoke session:', error);
     throw new Error(`Session revocation failed: ${error}`);
@@ -178,7 +178,7 @@ export async function revokeAllUserSessions(userId: string): Promise<void> {
       { revoked: true }
     );
 
-    console.log(`✅ Revoked ${result.affected || 0} sessions for user: ${userId}`);
+    console.log(`? Revoked ${result.affected || 0} sessions for user: ${userId}`);
   } catch (error) {
     console.error('Failed to revoke all user sessions:', error);
     throw new Error(`Bulk revocation failed: ${error}`);
@@ -198,7 +198,7 @@ export async function revokeAllTenantSessions(tenantId: string): Promise<void> {
       { revoked: true }
     );
 
-    console.log(`✅ Revoked ${result.affected || 0} sessions for tenant: ${tenantId}`);
+    console.log(`? Revoked ${result.affected || 0} sessions for tenant: ${tenantId}`);
   } catch (error) {
     console.error('Failed to revoke all tenant sessions:', error);
     throw new Error(`Tenant revocation failed: ${error}`);
@@ -251,7 +251,7 @@ export async function cleanupExpiredSessions(): Promise<void> {
       .where('expires_at < NOW()')
       .execute();
 
-    console.log(`🧹 Cleaned up ${result.affected || 0} expired sessions`);
+    console.log(`?? Cleaned up ${result.affected || 0} expired sessions`);
   } catch (error) {
     console.error('Failed to cleanup expired sessions:', error);
   }
@@ -268,3 +268,4 @@ export default {
   getUserActiveSessions,
   cleanupExpiredSessions,
 };
+

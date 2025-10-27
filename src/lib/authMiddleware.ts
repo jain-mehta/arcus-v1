@@ -67,3 +67,4 @@ export async function authMiddleware(req: NextRequest, ev?: NextFetchEvent) {
 }
 
 export default authMiddleware;
+

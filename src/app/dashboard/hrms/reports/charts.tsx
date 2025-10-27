@@ -52,3 +52,4 @@ export function LeaveChart({ data }: LeaveChartProps) {
         </ResponsiveContainer>
     );
 }
+

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from '@/components/ui/separator';
-import { getOrder, getCustomer, MOCK_STORES } from '@/lib/firebase/firestore';
+import { getOrder, getCustomer, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Printer, Download, MessageCircle, Truck } from 'lucide-react';
@@ -12,7 +12,7 @@ import { PrintableInvoice } from '@/app/dashboard/store/components/printable-inv
 import { PrintableThermalReceipt } from '@/app/dashboard/store/components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '@/app/dashboard/store/components/printable-packing-slip';
 import { PrintableDeliveryChallan } from '@/app/dashboard/store/components/printable-delivery-challan';
-import type { Customer, Store } from '@/lib/firebase/types';
+import type { Customer, Store } from '@/lib/mock-data/types';
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {

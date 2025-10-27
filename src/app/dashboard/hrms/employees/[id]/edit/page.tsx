@@ -23,11 +23,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import type { Store, User, Role } from '@/lib/firebase/types';
+import type { Store, User, Role } from '@/lib/mock-data/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// import { MOCK_USERS, MOCK_ROLES, MOCK_STORES } from '@/lib/firebase/firestore';
+// import { MOCK_USERS, MOCK_ROLES, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { updateStaffMember } from '../../../actions';
 
 // Temporary mock data until we refactor to use server actions

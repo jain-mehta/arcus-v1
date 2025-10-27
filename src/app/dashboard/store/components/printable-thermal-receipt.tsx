@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/firebase/types';
+import type { Order, Customer, Store } from '@/lib/mock-data/types';
 
 interface PrintableThermalReceiptProps {
     order: Order;
@@ -53,7 +53,7 @@ export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, Printabl
             <div className="space-y-1 font-bold text-sm">
                 <div className='grid grid-cols-2'>
                     <span>BALANCE DUE</span>
-                    <span className="text-right">₹{order.totalAmount.toFixed(2)}</span>
+                    <span className="text-right">?{order.totalAmount.toFixed(2)}</span>
                 </div>
             </div>
 
@@ -90,3 +90,5 @@ export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, Printabl
     );
 });
 PrintableThermalReceipt.displayName = 'PrintableThermalReceipt';
+
+

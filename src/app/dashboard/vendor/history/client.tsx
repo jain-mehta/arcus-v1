@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { getPurchaseHistoryForVendor, updatePurchaseHistory } from '../actions';
-import type { PurchaseOrder, Vendor } from '@/lib/firebase/types';
+import type { PurchaseOrder, Vendor } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -240,8 +240,8 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
                                 <TableHead>PO Number</TableHead>
                                 <TableHead>Order Date</TableHead>
                                 <TableHead>Items</TableHead>
-                                <TableHead className="text-right">Total Amount (₹)</TableHead>
-                                <TableHead className="text-right">Amount Given (₹)</TableHead>
+                                <TableHead className="text-right">Total Amount (?)</TableHead>
+                                <TableHead className="text-right">Amount Given (?)</TableHead>
                                 <TableHead>Order Status</TableHead>
                                 <TableHead>Payment Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
@@ -317,3 +317,4 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
     
 
     
+

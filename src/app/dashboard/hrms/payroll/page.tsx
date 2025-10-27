@@ -2,7 +2,7 @@
 
 import { getPayrollPageData } from './actions';
 import { PayrollClient } from './client';
-import { MOCK_STORES } from '@/lib/firebase/firestore';
+import { MOCK_STORES } from '@/lib/mock-data/firestore';
 
 export default async function HrmsPayrollPage() {
   const { users, salaryStructures } = await getPayrollPageData();
@@ -16,3 +16,5 @@ export default async function HrmsPayrollPage() {
             store={masterStore}
         />;
 }
+
+

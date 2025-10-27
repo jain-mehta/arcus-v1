@@ -3,9 +3,9 @@
 import { ProductTable } from "@/components/feature/product-table";
 import { Boxes, Trash2, AlertTriangle } from "lucide-react";
 import { getProducts } from '../data';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
-import type { UserContext, Product, Store } from '@/lib/firebase/types';
-import { getCurrentUser, MOCK_STORES } from '@/lib/firebase/firestore';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
+import type { UserContext, Product, Store } from '@/lib/mock-data/types';
+import { getCurrentUser, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { deleteAllProducts, addProduct, updateProduct, deleteProduct, simulateSale } from "../actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -113,3 +113,4 @@ export default async function ProductMasterPage() {
 
 
     
+

@@ -1,9 +1,9 @@
 
 'use server';
 
-import { MOCK_COMMUNICATION_LOGS, MOCK_USERS, MOCK_VENDORS } from '@/lib/firebase/firestore';
-import { getUser } from '@/lib/firebase/rbac';
-import type { CommunicationLog, Vendor, User } from '@/lib/firebase/types';
+import { MOCK_COMMUNICATION_LOGS, MOCK_USERS, MOCK_VENDORS } from '@/lib/mock-data/firestore';
+import { getUser } from '@/lib/mock-data/rbac';
+import type { CommunicationLog, Vendor, User } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '../../../sales/actions';

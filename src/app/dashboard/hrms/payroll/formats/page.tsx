@@ -335,3 +335,4 @@ function GeneratedPayslipPreview({ layout }: { layout: PayslipLayout }) {
         </Dialog>
     );
 }
+

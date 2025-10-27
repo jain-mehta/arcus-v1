@@ -54,7 +54,7 @@ import { Badge } from '@/components/ui/badge';
 import { Briefcase, PlusCircle, Calendar as CalendarIcon, Check, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { LeaveRequest, LeavePolicy, User, LeaveStatus } from '@/lib/firebase/types';
+import type { LeaveRequest, LeavePolicy, User, LeaveStatus } from '@/lib/mock-data/types';
 import { addLeaveRequest, updateLeaveRequestStatus } from '../actions';
 import type { DateRange } from 'react-day-picker';
 
@@ -409,3 +409,5 @@ function ManagerActionDialog({ request, onStatusUpdated }: { request: LeaveReque
         </Dialog>
     );
 }
+
+

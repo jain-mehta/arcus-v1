@@ -1,4 +1,4 @@
-import { getUserPermissions, userHasPermission, assertUserPermission } from '@/lib/firebase/rbac';
+import { getUserPermissions, userHasPermission, assertUserPermission } from '@/lib/mock-data/rbac';
 import { addProduct } from '@/app/dashboard/inventory/actions';
 
 async function run() {
@@ -21,3 +21,5 @@ async function run() {
 }
 
 run().catch(err => { console.error('permission-tests failed', err); process.exit(1); });
+
+

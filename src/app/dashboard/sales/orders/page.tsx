@@ -11,3 +11,4 @@ export default async function SalesOrdersPage() {
     
     return <OrdersClient initialOrders={orders} customerList={customers} />
 }
+

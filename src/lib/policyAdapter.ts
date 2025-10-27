@@ -96,32 +96,32 @@ export async function loadSchema(filePath?: string): Promise<string> {
  * Sync policies to Permify (schema + roles)
  */
 export async function syncPolicies(tenantId: string): Promise<boolean> {
-  console.log(`\n📋 Syncing policies for tenant ${tenantId}...`);
+  console.log(`\n?? Syncing policies for tenant ${tenantId}...`);
 
   try {
     // 1. Load and sync schema
     const schema = await loadSchema();
     if (!schema) {
-      console.error('❌ Schema file not found');
+      console.error('? Schema file not found');
       return false;
     }
 
-    console.log('📤 Uploading schema to Permify...');
+    console.log('?? Uploading schema to Permify...');
     const schemaSynced = await schemaSync(tenantId, schema);
     if (!schemaSynced) {
-      console.error('❌ Failed to sync schema');
+      console.error('? Failed to sync schema');
       return false;
     }
-    console.log('✅ Schema synced');
+    console.log('? Schema synced');
 
     // 2. Load and sync roles
     const roles = await loadRoles();
     if (!roles || Object.keys(roles).length === 0) {
-      console.warn('⚠️ No roles found');
+      console.warn('?? No roles found');
       return true;
     }
 
-    console.log(`📌 Creating ${Object.keys(roles).length} role relations...`);
+    console.log(`?? Creating ${Object.keys(roles).length} role relations...`);
     let successCount = 0;
 
     for (const [roleName, _roleDefn] of Object.entries(roles)) {
@@ -134,18 +134,18 @@ export async function syncPolicies(tenantId: string): Promise<boolean> {
       const created = await createRelation(tenantId, relation);
       if (created) {
         successCount++;
-        console.log(`  ✓ ${roleName}`);
+        console.log(`  ? ${roleName}`);
       } else {
-        console.log(`  ✗ ${roleName}`);
+        console.log(`  ? ${roleName}`);
       }
     }
 
     console.log(
-      `\n✅ Policy sync complete: ${successCount}/${Object.keys(roles).length} roles synced`
+      `\n? Policy sync complete: ${successCount}/${Object.keys(roles).length} roles synced`
     );
     return true;
   } catch (error) {
-    console.error('❌ Policy sync failed:', error);
+    console.error('? Policy sync failed:', error);
     return false;
   }
 }
@@ -242,3 +242,4 @@ export function invalidateCache(key?: string) {
 }
 
 export default { evaluatePolicy, syncPolicies, loadRoles, loadSchema };
+

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users as UsersIcon, PlusCircle, Edit, Trash2, Key, RefreshCw, Eye, EyeOff } from 'lucide-react';
-import type { User, Role, Permission, Store as TStore } from '@/lib/firebase/types';
+import type { User, Role, Permission, Store as TStore } from '@/lib/mock-data/types';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
@@ -650,3 +650,5 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
     </Dialog>
   );
 }
+
+

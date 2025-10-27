@@ -1,5 +1,5 @@
 
-import { getVendors } from '@/lib/firebase/firestore';
+import { getVendors } from '@/lib/mock-data/firestore';
 import { getDocumentsForVendor } from './actions';
 import { DocumentManagementClient } from './client';
 
@@ -11,3 +11,5 @@ export default async function DocumentManagementPage() {
         <DocumentManagementClient vendors={vendors} initialDocuments={initialDocuments} />
     );
 }
+
+

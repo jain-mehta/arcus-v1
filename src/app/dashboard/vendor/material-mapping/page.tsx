@@ -1,6 +1,6 @@
 
 
-import { getVendors } from '@/lib/firebase/firestore';
+import { getVendors } from '@/lib/mock-data/firestore';
 import { MaterialMappingClient } from './client';
 import { getMaterialMappings, getVolumeDiscounts } from './actions';
 
@@ -24,3 +24,5 @@ export default async function MaterialMappingPage() {
         />
     );
 }
+
+

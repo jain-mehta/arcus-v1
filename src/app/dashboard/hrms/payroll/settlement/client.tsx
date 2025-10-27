@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import type { Store, User } from '@/lib/firebase/types';
+import type { Store, User } from '@/lib/mock-data/types';
 import { Loader2, Users, Printer } from 'lucide-react';
 import { PrintableFnF } from './printable-fnf';
 import { useReactToPrint } from 'react-to-print';
@@ -226,3 +226,5 @@ export function SettlementClient({ stores, staffList }: SettlementClientProps) {
         </div>
     );
 }
+
+

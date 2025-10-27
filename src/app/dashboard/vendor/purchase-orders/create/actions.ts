@@ -5,10 +5,10 @@ import {
   MOCK_MATERIAL_MAPPINGS,
   getVendors,
   createPurchaseOrderInDb,
-} from '@/lib/firebase/firestore';
-import { getCurrentUser as getCurrentUserFromDb } from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
-import type { MaterialMapping, PurchaseOrder } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import { getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
+import type { MaterialMapping, PurchaseOrder } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -33,3 +33,5 @@ export async function createPurchaseOrder(data: any) {
   revalidatePath('/dashboard/vendor/purchase-orders');
   return result;
 }
+
+

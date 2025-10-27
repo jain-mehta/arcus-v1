@@ -34,7 +34,7 @@ export function KeyMetrics({ data }: KeyMetricsProps) {
             <CardTitle className="text-sm font-medium">Outstanding Balance</CardTitle>
             </CardHeader>
             <CardContent>
-            <p className="text-3xl font-bold">₹{outstandingBalance.toLocaleString('en-IN')}</p>
+            <p className="text-3xl font-bold">?{outstandingBalance.toLocaleString('en-IN')}</p>
             </CardContent>
         </Card>
         <Card>
@@ -42,10 +42,11 @@ export function KeyMetrics({ data }: KeyMetricsProps) {
             <CardTitle className="text-sm font-medium">Total Spend (YTD)</CardTitle>
             </CardHeader>
             <CardContent>
-            <p className="text-3xl font-bold">₹{ytdSpend.toLocaleString('en-IN')}</p>
+            <p className="text-3xl font-bold">?{ytdSpend.toLocaleString('en-IN')}</p>
             </CardContent>
         </Card>
         </div>
     </div>
   );
 }
+

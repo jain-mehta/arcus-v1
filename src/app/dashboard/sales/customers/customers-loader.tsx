@@ -8,3 +8,4 @@ export async function CustomersLoader() {
 
     return <CustomersClient initialCustomers={customers} />;
 }
+

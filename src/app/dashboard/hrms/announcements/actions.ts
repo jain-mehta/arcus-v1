@@ -1,10 +1,10 @@
 
 'use server';
 
-import { MOCK_ANNOUNCEMENTS, MOCK_POLICY_DOCS } from '@/lib/firebase/firestore';
+import { MOCK_ANNOUNCEMENTS, MOCK_POLICY_DOCS } from '@/lib/mock-data/firestore';
 import { revalidatePath } from 'next/cache';
-import { getCurrentUser as getCurrentUserFromDb } from '@/lib/firebase/firestore';
-import { getUserPermissions as getUserPermissionsFromDb } from '@/lib/firebase/rbac';
+import { getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
+import { getUserPermissions as getUserPermissionsFromDb } from '@/lib/mock-data/rbac';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
@@ -129,3 +129,5 @@ export async function deletePolicy(id: string): Promise<{ success: boolean; mess
     }
     return { success: false, message: 'Policy not found.' };
 }
+
+

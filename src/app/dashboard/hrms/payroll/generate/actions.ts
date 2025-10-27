@@ -4,7 +4,7 @@
 import { getStaff, getAllStores } from '../../../hrms/actions';
 import { getSalaryStructures, runPayroll as runPayrollServerAction } from '../actions';
 import { getPayrollFormats } from '../formats/actions';
-import type { User, Store, SalaryStructure } from '@/lib/firebase/types';
+import type { User, Store, SalaryStructure } from '@/lib/mock-data/types';
 import type { PayslipLayout } from '../formats/actions';
 
 export async function getPageData(): Promise<{
@@ -23,3 +23,5 @@ export async function getPageData(): Promise<{
 }
 
 export { runPayrollServerAction as runPayroll };
+
+

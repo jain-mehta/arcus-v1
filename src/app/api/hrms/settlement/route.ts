@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser, createSettlementInDb } from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
+import { getCurrentUser, createSettlementInDb } from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
 
 export async function POST(req: Request) {
     try {
@@ -43,3 +43,5 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: err?.message || 'Internal error' }, { status });
     }
 }
+
+

@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 /**
- * User Mapping Entity - Control-plane table for Supabase Auth ↔ Tenant mapping
+ * User Mapping Entity - Control-plane table for Supabase Auth ? Tenant mapping
  * Links Supabase Auth users to their tenant memberships and roles
  */
 @Entity('user_mappings')
@@ -48,3 +48,4 @@ export class UserMapping {
   @Column({ type: 'timestamp', nullable: true })
   deactivated_at?: Date;
 }
+

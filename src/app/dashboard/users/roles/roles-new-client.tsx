@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { KeyRound, PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Role, User } from '@/lib/firebase/types';
+import type { Role, User } from '@/lib/mock-data/types';
 import type { PermissionMap } from '@/lib/rbac';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -930,3 +930,5 @@ function RoleEditorDialog({ role, open, onOpenChange, onRoleSaved }: RoleEditorD
     </Dialog>
   );
 }
+
+

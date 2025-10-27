@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { upsertRoleInDb } from "../../../../lib/firebase/firestore";
+import { upsertRoleInDb } from "../../../../lib/mock-data/firestore";
 
 export async function POST(req: Request) {
   const secret =
@@ -36,3 +36,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

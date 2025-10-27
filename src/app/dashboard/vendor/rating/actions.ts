@@ -5,12 +5,12 @@ import {
   MOCK_VENDORS,
   MOCK_RATING_CRITERIA,
   MOCK_RATING_HISTORY,
-} from '@/lib/firebase/firestore';
+} from '@/lib/mock-data/firestore';
 import type {
   Vendor,
   VendorRatingCriteria,
   VendorRatingHistory,
-} from '@/lib/firebase/types';
+} from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 
 export async function getVendors(): Promise<Vendor[]> {
@@ -81,3 +81,5 @@ export async function calculateAndUpdateVendorScores(
 
   return { success: true };
 }
+
+

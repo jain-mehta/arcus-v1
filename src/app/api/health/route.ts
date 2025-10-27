@@ -11,3 +11,4 @@ import { healthCheckHandler } from '@/lib/api-helpers';
 export async function GET(req: NextRequest) {
   return healthCheckHandler();
 }
+

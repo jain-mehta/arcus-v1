@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { User, Target } from "lucide-react";
-// import { MOCK_EMPLOYEE_REVIEWS, MOCK_USERS } from "@/lib/firebase/firestore-client";
+// import { MOCK_EMPLOYEE_REVIEWS, MOCK_USERS } from "@/lib/mock-data/firestore-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";

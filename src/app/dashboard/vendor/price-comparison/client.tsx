@@ -102,7 +102,7 @@ export function PriceComparisonClient({ materials, initialComparisonData, initia
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Vendor</TableHead>
-                                <TableHead className="text-right">Price (₹)</TableHead>
+                                <TableHead className="text-right">Price (?)</TableHead>
                                 <TableHead className="text-center">Quality Score</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -139,8 +139,8 @@ export function PriceComparisonClient({ materials, initialComparisonData, initia
                             <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-20} textAnchor="end" height={60} />
-                                <YAxis unit="₹" />
-                                <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                                <YAxis unit="?" />
+                                <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} formatter={(value: number) => `?${value.toFixed(2)}`} />
                                 <Bar dataKey="price" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -153,3 +153,4 @@ export function PriceComparisonClient({ materials, initialComparisonData, initia
         </div>
     );
 }
+

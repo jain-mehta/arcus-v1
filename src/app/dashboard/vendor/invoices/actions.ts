@@ -5,8 +5,8 @@ import {
   MOCK_INVOICES,
   MOCK_PURCHASE_ORDERS,
   getPurchaseOrders as getPurchaseOrdersFromDb,
-} from '@/lib/firebase/firestore';
-import type { Invoice, PurchaseOrder } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import type { Invoice, PurchaseOrder } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 
 export async function getPurchaseOrders(vendorId?: string): Promise<PurchaseOrder[]> {
@@ -47,3 +47,5 @@ export async function updateInvoice(
   }
   return { success: false };
 }
+
+

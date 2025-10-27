@@ -46,7 +46,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Target, Trash2, Loader2, Archive } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { addSalesTarget, deleteSalesTarget, getSalesTargetsWithProgress, archiveOldOpportunities } from './actions';
-import type { SalesTargetWithProgress } from '@/lib/firebase/types';
+import type { SalesTargetWithProgress } from '@/lib/mock-data/types';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -197,8 +197,8 @@ export default function SalesSettingsPage() {
                         </TableCell>
                         <TableCell>{target.month}</TableCell>
                         <TableCell>
-                          {target.type === 'Revenue' ? `₹${target.currentValue.toLocaleString('en-IN')}` : target.currentValue}
-                           / {target.type === 'Revenue' ? `₹${target.value.toLocaleString('en-IN')}` : target.value}
+                          {target.type === 'Revenue' ? `?${target.currentValue.toLocaleString('en-IN')}` : target.currentValue}
+                           / {target.type === 'Revenue' ? `?${target.value.toLocaleString('en-IN')}` : target.value}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -331,3 +331,5 @@ export default function SalesSettingsPage() {
     </div>
   );
 }
+
+

@@ -29,3 +29,4 @@ export function InventoryCategoryChart({ data }: { data: ChartData[] }) {
     </ResponsiveContainer>
   );
 }
+

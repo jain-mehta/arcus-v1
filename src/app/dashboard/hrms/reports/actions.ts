@@ -2,8 +2,8 @@
 
 'use server';
 
-import { MOCK_USERS, MOCK_LEAVE_REQUESTS, MOCK_ROLES } from '@/lib/firebase/firestore';
-import type { LeaveType, LeaveRequest } from '@/lib/firebase/types';
+import { MOCK_USERS, MOCK_LEAVE_REQUESTS, MOCK_ROLES } from '@/lib/mock-data/firestore';
+import type { LeaveType, LeaveRequest } from '@/lib/mock-data/types';
 import { differenceInDays, isWithinInterval } from 'date-fns';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -107,3 +107,5 @@ export async function generateHrmsReport(
   csvData = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
   return csvData;
 }
+
+

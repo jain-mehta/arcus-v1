@@ -1,5 +1,5 @@
 
-import { getVendors } from '@/lib/firebase/firestore';
+import { getVendors } from '@/lib/mock-data/firestore';
 import { CreatePOForm } from './create-po-form';
 
 export default async function CreatePurchaseOrderPage() {
@@ -15,3 +15,5 @@ export default async function CreatePurchaseOrderPage() {
     </div>
   );
 }
+
+

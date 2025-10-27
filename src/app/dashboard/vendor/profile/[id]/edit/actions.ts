@@ -2,7 +2,7 @@
 'use server';
 
 import { getVendor as getVendorFromDb, getStoreManagers as getStoreManagersFromDb, updateVendor as updateVendorInDb } from '../actions';
-import type { Vendor } from '@/lib/firebase/types';
+import type { Vendor } from '@/lib/mock-data/types';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 

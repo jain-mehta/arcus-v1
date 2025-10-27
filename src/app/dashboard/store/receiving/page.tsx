@@ -2,9 +2,9 @@
 
 import { getStoreShipments } from './actions';
 import { ProductReceivingClient } from './client';
-import { getCurrentUser } from '@/lib/firebase/firestore';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
 import { getStores } from '../manage/actions';
-import { getUserPermissions } from '@/lib/firebase/rbac';
+import { getUserPermissions } from '@/lib/mock-data/rbac';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Box } from 'lucide-react';
 
@@ -56,3 +56,5 @@ export default async function ProductReceivingPage() {
     />
   );
 }
+
+

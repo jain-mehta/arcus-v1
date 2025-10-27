@@ -3,14 +3,12 @@
  * 
  * GET /api/admin/roles - List all roles for organization
  * POST /api/admin/roles - Create new role
- * PUT /api/admin/roles/[roleId] - Update role
- * DELETE /api/admin/roles/[roleId] - Delete role
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionClaims } from '@/lib/session';
 import { assertPermission } from '@/lib/rbac';
-import { getFirebaseAdmin } from '@/lib/firebase/firebase-admin';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 
 /**
  * GET - List all roles for the user's organization
@@ -27,8 +25,6 @@ export async function GET() {
     }
 
     // Only admins or users with manage-roles permission can list roles.
-    // Additionally allow users who can create/manage users to fetch roles so
-    // they can assign roles while creating users (common UX requirement).
     try {
       await assertPermission(sessionClaims, 'settings', 'manageRoles');
     } catch (err) {
@@ -44,40 +40,23 @@ export async function GET() {
       }
     }
 
-    const { db } = getFirebaseAdmin();
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Admin client not available' }, { status: 500 });
+    }
     
-    // Fetch roles from Firestore (real roles defined in Roles & Hierarchy)
-    // If orgId is not set (dev/mock scenario), return empty array
-    if (!sessionClaims.orgId) {
-      console.warn('[Roles API] No orgId in session, returning empty roles');
-      return NextResponse.json({ roles: [] });
+    // Fetch roles from Supabase
+    const { data: roles, error } = await supabaseAdmin
+      .from('roles')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw error;
     }
 
-    const rolesSnapshot = await db
-      .collection('roles')
-      .where('orgId', '==', sessionClaims.orgId)
-      .get();
-
-    const roles = rolesSnapshot.docs.map(doc => {
-      const data = doc.data();
-      // Serialize Firestore Timestamps to plain objects for JSON response
-      return {
-        id: doc.id,
-        ...data,
-        createdAt: data.createdAt?.toDate?.() ? data.createdAt.toDate().toISOString() : data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.() ? data.updatedAt.toDate().toISOString() : data.updatedAt,
-      };
-    }) as any[];
-
-    // Build hierarchy information if reportsToRoleId exists
-    const hierarchy = roles.map(role => ({
-      ...role,
-      children: roles.filter(r => r.reportsToRoleId === role.id).map(r => r.id),
-    }));
-
     return NextResponse.json({ 
-      roles,
-      hierarchy, // Include hierarchy for UI visualization
+      roles: roles || [],
     });
   } catch (error: any) {
     console.error('List roles error:', error);
@@ -113,7 +92,7 @@ export async function POST(request: NextRequest) {
     await assertPermission(sessionClaims, 'settings', 'manageRoles');
 
     const body = await request.json();
-    const { name, permissions } = body;
+    const { name, permissions, description } = body;
 
     if (!name || !permissions) {
       return NextResponse.json(
@@ -122,26 +101,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { db } = getFirebaseAdmin();
-    const roleRef = db.collection('roles').doc();
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Admin client not available' }, { status: 500 });
+    }
 
     const roleData = {
       name,
-      orgId: sessionClaims.orgId,
       permissions,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: sessionClaims.uid,
+      description: description || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
-    await roleRef.set(roleData);
+    const { data: newRole, error } = await supabaseAdmin
+      .from('roles')
+      .insert([roleData])
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,
-      role: {
-        id: roleRef.id,
-        ...roleData,
-      },
+      role: newRole,
     });
   } catch (error: any) {
     console.error('Create role error:', error);
@@ -159,3 +144,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

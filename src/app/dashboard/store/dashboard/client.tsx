@@ -19,7 +19,7 @@ import {
 import { DollarSign, Package, Store, TrendingUp } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { useRouter } from 'next/navigation';
-import type { Store as TStore } from '@/lib/firebase/types';
+import type { Store as TStore } from '@/lib/mock-data/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -42,7 +42,7 @@ export function AdminStoreDashboardClient({ dashboardData, activeFilter }: Admin
   
   const kpis = [
     { title: 'Total Stores', value: totalStores, icon: Store },
-    { title: 'Total Sales', value: `₹${totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
+    { title: 'Total Sales', value: `?${totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
     { title: 'Total Items Sold', value: totalItemsSold.toLocaleString(), icon: Package },
     { title: 'Top Performing Store', value: topPerformingStore, icon: TrendingUp },
   ];
@@ -114,7 +114,7 @@ export function AdminStoreDashboardClient({ dashboardData, activeFilter }: Admin
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={salesByStore}>
                     <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`} />
+                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `?${value / 1000}k`} />
                     <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} />
                     <Bar dataKey="sales" fill="hsl(var(--primary))" name="Sales" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -203,3 +203,5 @@ export function AdminStoreDashboardClient({ dashboardData, activeFilter }: Admin
     </div>
   );
 }
+
+

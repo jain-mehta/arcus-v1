@@ -2,10 +2,10 @@
 'use server';
 
 import { getProducts as getProductsFromDb } from '../data';
-import type { Product, UserContext } from '@/lib/firebase/types';
-import { getUser, getSubordinates, getUserPermissions } from '@/lib/firebase/rbac';
+import type { Product, UserContext } from '@/lib/mock-data/types';
+import { getUser, getSubordinates, getUserPermissions } from '@/lib/mock-data/rbac';
 import { getCurrentUser } from '@/app/dashboard/sales/actions';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
 
 /**
  * Fetches all products to be used for generating QR codes.
@@ -27,3 +27,5 @@ export async function getProductsForBarcode(): Promise<Product[]> {
 }
 
     
+
+

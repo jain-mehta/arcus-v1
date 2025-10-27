@@ -6,7 +6,7 @@ import {
     getQuotationsByCustomerId, 
     getOrdersByCustomerId, 
     getCommunicationLogsByCustomerId 
-} from '@/lib/firebase/firestore';
+} from '@/lib/mock-data/firestore';
 import { CustomerDetailView } from './customer-detail-view';
 import type { Metadata } from 'next';
 

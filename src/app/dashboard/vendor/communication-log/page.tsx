@@ -1,8 +1,8 @@
 
-import { getVendors, getCommunicationLogs } from '@/lib/firebase/firestore';
+import { getVendors, getCommunicationLogs } from '@/lib/mock-data/firestore';
 import { CommunicationLogClient } from './client';
-import type { CommunicationLog, Vendor, UserContext } from '@/lib/firebase/types';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
+import type { CommunicationLog, Vendor, UserContext } from '@/lib/mock-data/types';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
 import { getCurrentUser } from '../../sales/actions';
 
 
@@ -43,4 +43,6 @@ export default async function CommunicationLogPage() {
         <CommunicationLogClient initialLogs={logsWithVendorNames} vendors={vendors} />
     );
 }
+
+
 

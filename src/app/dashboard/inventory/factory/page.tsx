@@ -4,15 +4,15 @@ import { ProductTable } from "@/components/feature/product-table";
 import { getProducts } from '../data';
 import { Warehouse } from 'lucide-react';
 import { getCurrentUser } from '@/app/dashboard/sales/actions';
-import { getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
-import { MOCK_ORGANIZATION_ID, MOCK_STORES } from '@/lib/firebase/firestore';
-import type { UserContext } from '@/lib/firebase/types';
+import { getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
+import { MOCK_ORGANIZATION_ID, MOCK_STORES } from '@/lib/mock-data/firestore';
+import type { UserContext } from '@/lib/mock-data/types';
 import { addProduct, updateProduct, deleteProduct, simulateSale } from "../actions";
 
 export default async function FactoryInventoryPage() {
     // Correctly build the user context to enforce RBAC
     const user = await getCurrentUser();
-    let factoryProducts: import('@/lib/firebase/types').Product[] = [];
+    let factoryProducts: import('@/lib/mock-data/types').Product[] = [];
 
     if (user) {
         const [permissions, subordinates] = await Promise.all([
@@ -59,5 +59,7 @@ export default async function FactoryInventoryPage() {
 }
 
     
+
+
 
 

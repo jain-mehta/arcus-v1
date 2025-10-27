@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { History, Phone, Mail, Users, Calendar as CalendarIcon } from "lucide-react";
-import type { CommunicationLog } from '@/lib/firebase/types';
+import type { CommunicationLog } from '@/lib/mock-data/types';
 import { useMemo, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -156,3 +156,5 @@ export function SalesActivitiesClient({ initialActivities }: SalesActivitiesClie
     </div>
   );
 }
+
+

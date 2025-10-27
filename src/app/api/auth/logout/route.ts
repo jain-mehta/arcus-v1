@@ -1,31 +1,58 @@
 import { NextResponse } from 'next/server';
-import { clearSessionCookie, SESSION_COOKIE_NAME, buildSessionSetCookieHeader } from '@/lib/session';
+import { signOut } from '@/lib/supabase/auth';
+import { clearSessionCookies } from '@/lib/supabase/session';
 
 /**
- * Logout API Route
+ * POST /api/auth/logout
  * 
- * Clears the session cookie to log out the user.
+ * Sign out user by clearing session cookies and signout from Supabase.
+ * 
+ * Response (200):
+ * {
+ *   "success": true,
+ *   "message": "Logged out successfully"
+ * }
  */
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    // Clear server-side cookie store (Next's cookies API)
-    await clearSessionCookie();
+    // Clear session cookies
+    await clearSessionCookies();
 
-    // Also send an explicit Set-Cookie header that expires the cookie in the browser.
-    // This is important when a cookie was originally set with a Domain attribute
-    // (or when the runtime's cookie delete doesn't serialize the domain), because
-    // the browser will only remove a cookie when the name+domain+path match.
-  const deleteCookie = buildSessionSetCookieHeader('', 0);
+    // Sign out from Supabase (this is optional, mainly clears client sessions)
+    await signOut().catch((err) => {
+      console.warn('[Auth] Supabase signOut warning (non-critical):', err);
+    });
 
-  const res = NextResponse.json({ success: true });
-  res.headers.append('Set-Cookie', deleteCookie);
-
-  return res;
-  } catch (error: any) {
-    console.error('[Logout] Error:', error);
-    return NextResponse.json(
-      { success: false, message: error.message }, 
-      { status: 500 }
+    // Build response
+    const response = NextResponse.json(
+      {
+        success: true,
+        message: 'Logged out successfully',
+      },
+      { status: 200 }
     );
+
+    // Clear cookies via headers (explicit)
+      response.headers.append('Set-Cookie', '__supabase_access_token=; Path=/; HttpOnly; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+      response.headers.append('Set-Cookie', '__supabase_refresh_token=; Path=/; HttpOnly; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+  
+      return response;
+    } catch (error: any) {
+      console.error('[Auth] Logout error:', error);
+  
+      // Always return 200 for logout (best effort)
+      const response = NextResponse.json(
+        {
+          success: true,
+          message: 'Logged out',
+        },
+        { status: 200 }
+      );
+  
+      response.headers.append('Set-Cookie', '__supabase_access_token=; Path=/; HttpOnly; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+      response.headers.append('Set-Cookie', '__supabase_refresh_token=; Path=/; HttpOnly; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+  
+      return response;
+    }
   }
-}
+

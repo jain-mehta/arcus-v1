@@ -49,7 +49,7 @@ import { Label } from '@/components/ui/label';
 import { Trash2, PlusCircle, CreditCard, ChevronsUpDown, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { Product, Customer } from '@/lib/firebase/types';
+import type { Product, Customer } from '@/lib/mock-data/types';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '@/components/ui/form';
 import { createOrder } from '../../sales/actions';
 import { useRouter } from 'next/navigation';
@@ -321,7 +321,7 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
                             fields.map((item, index) => (
                                 <TableRow key={item.id}>
                                     <TableCell className="font-medium">{item.name}</TableCell>
-                                    <TableCell>₹{item.unitPrice.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>?{item.unitPrice.toLocaleString('en-IN')}</TableCell>
                                     <TableCell>
                                         <Input
                                             type="number"
@@ -331,7 +331,7 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
                                         />
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        ₹{(item.unitPrice * item.quantity).toLocaleString('en-IN')}
+                                        ?{(item.unitPrice * item.quantity).toLocaleString('en-IN')}
                                     </TableCell>
                                     <TableCell>
                                         <Button variant="ghost" size="icon" onClick={() => remove(index)}>
@@ -406,11 +406,11 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
                         />
                         
                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
-                            <div className="flex justify-between text-destructive"><span className="text-muted-foreground">Discount</span><span>- ₹{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">GST (18%)</span><span>₹{taxAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>?{subtotal.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between text-destructive"><span className="text-muted-foreground">Discount</span><span>- ?{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">GST (18%)</span><span>?{taxAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
                             <Separator className="my-2" />
-                            <div className="flex justify-between font-bold text-lg"><span>Total</span><span>₹{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
+                            <div className="flex justify-between font-bold text-lg"><span>Total</span><span>?{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
                         </div>
                     </CardContent>
                     <CardFooter>
@@ -426,3 +426,5 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
     </div>
   );
 }
+
+

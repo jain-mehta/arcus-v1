@@ -2,8 +2,8 @@
 
 'use server';
 
-import { getCurrentUser, MOCK_USERS } from "@/lib/firebase/firestore";
-import type { User } from "@/lib/firebase/types";
+import { getCurrentUser, MOCK_USERS } from "@/lib/mock-data/firestore";
+import type { User } from "@/lib/mock-data/types";
 import { revalidatePath } from "next/cache";
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -63,3 +63,5 @@ export async function updateCurrentUserProfile(data: Partial<User>): Promise<{ s
     revalidatePath('/dashboard/settings/profile');
     return { success: true, user: MOCK_USERS[userIndex] };
 }
+
+

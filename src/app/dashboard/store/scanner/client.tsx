@@ -68,7 +68,7 @@ import {
   deleteVendorDocument,
   getDocumentsForVendor,
 } from '@/app/dashboard/vendor/documents/actions';
-import type { Vendor, VendorDocument } from '@/lib/firebase/types';
+import type { Vendor, VendorDocument } from '@/lib/mock-data/types';
 
 const uploadFormSchema = z.object({
   name: z.string().min(3, 'Document name is required.'),
@@ -518,3 +518,4 @@ function UploadDocumentDialog({
     </Dialog>
   );
 }
+

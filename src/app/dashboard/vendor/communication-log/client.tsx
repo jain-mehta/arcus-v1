@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Vendor, CommunicationLog } from '@/lib/firebase/types';
+import type { Vendor, CommunicationLog } from '@/lib/mock-data/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, Phone, Mail, Users } from "lucide-react";
 import { CommunicationLogDialog } from './communication-log-dialog';
@@ -123,3 +123,5 @@ export function CommunicationLogClient({ initialLogs, vendors }: CommunicationLo
         </div>
     );
 }
+
+

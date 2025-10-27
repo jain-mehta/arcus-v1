@@ -92,3 +92,4 @@ export const Icons = {
   monitor: Monitor,
   scan: ScanLine,
 };
+

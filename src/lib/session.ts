@@ -1,12 +1,12 @@
 /**
  * Session Management Utilities
  * 
- * Provides server-side session cookie management for Firebase Authentication.
+ * Provides server-side session cookie management for Supabase Authentication.
  * Sessions are 7 days by default and stored as httpOnly cookies.
  */
 
 import { cookies } from 'next/headers';
-import { getFirebaseAdmin } from './firebase/firebase-admin';
+import { supabaseClient, getSupabaseServerClient } from './supabase/client';
 
 export const SESSION_COOKIE_NAME = '__session';
 export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
@@ -35,19 +35,13 @@ export function buildSessionSetCookieHeader(sessionValue: string, maxAge?: numbe
 }
 
 /**
- * Create a session cookie from a Firebase ID token
- * @param idToken - Firebase ID token from client
+ * Create a session cookie from Supabase session
+ * @param idToken - Supabase JWT token from client
  * @returns Session cookie value
  */
 export async function createSessionCookie(idToken: string): Promise<string> {
-  const { auth } = getFirebaseAdmin();
-  
-  // Create session cookie with 7-day expiration
-  const sessionCookie = await auth.createSessionCookie(idToken, {
-    expiresIn: SESSION_COOKIE_MAX_AGE * 1000, // milliseconds
-  });
-  
-  return sessionCookie;
+  // For Supabase, we store the JWT directly
+  return idToken;
 }
 
 /**
@@ -56,11 +50,19 @@ export async function createSessionCookie(idToken: string): Promise<string> {
  * @returns Decoded token with user claims
  */
 export async function verifySessionCookie(sessionCookie: string) {
-  const { auth } = getFirebaseAdmin();
-  
   try {
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
-    return decodedClaims;
+    // Get the session from Supabase
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    
+    if (error || !session) {
+      console.error('[Session] Failed to verify session:', error);
+      return null;
+    }
+    
+    return {
+      uid: session.user.id,
+      email: session.user.email,
+    };
   } catch (error) {
     console.error('[Session] Failed to verify session cookie:', error);
     return null;
@@ -129,22 +131,41 @@ export async function getSessionClaims() {
     return null;
   }
   
-  // Fetch additional user data from Firestore
-  const { db } = getFirebaseAdmin();
-  const userDoc = await db.collection('users').doc(decodedClaims.uid).get();
-  
-  if (!userDoc.exists) {
-    return null;
+  try {
+    // Fetch additional user data from Supabase
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return {
+        uid: decodedClaims.uid,
+        email: decodedClaims.email,
+      };
+    }
+
+    const { data: userData, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', decodedClaims.uid)
+      .single();
+    
+    if (error || !userData) {
+      return {
+        uid: decodedClaims.uid,
+        email: decodedClaims.email,
+      };
+    }
+    
+    return {
+      uid: decodedClaims.uid,
+      email: decodedClaims.email,
+      orgId: userData.org_id,
+      roleId: userData.role_ids?.[0],
+      reportsTo: userData.reports_to,
+    };
+  } catch (error) {
+    console.error('[Session] Error getting session claims:', error);
+    return {
+      uid: decodedClaims.uid,
+      email: decodedClaims.email,
+    };
   }
-  
-  const userData = userDoc.data();
-  
-  return {
-    uid: decodedClaims.uid,
-    email: decodedClaims.email,
-    orgId: userData?.orgId,
-    roleId: userData?.roleIds?.[0] || userData?.roleId, // Support both formats
-    reportsTo: userData?.reportsTo,
-    permissions: decodedClaims.permissions, // If set as custom claim
-  };
 }

@@ -2,11 +2,11 @@
 
 import { BillingClient } from './client';
 import { getSalesCustomers } from '@/app/dashboard/sales/actions';
-import { getCurrentUser } from '@/lib/firebase/firestore';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
 import { getProducts } from '@/app/dashboard/inventory/data';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
-import type { UserContext } from '@/lib/firebase/types';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
+import type { UserContext } from '@/lib/mock-data/types';
 
 
 export default async function BillingPage() {
@@ -36,3 +36,5 @@ export default async function BillingPage() {
     <BillingClient products={storeProducts} customers={customers} />
   );
 }
+
+

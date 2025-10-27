@@ -1,9 +1,9 @@
 
 'use server';
 
-import { MOCK_VENDORS, MOCK_ORGANIZATION_ID, MOCK_VENDOR_DOCUMENTS, createVendorInDb } from '@/lib/firebase/firestore';
-import { getUser, getUserPermissions, getSubordinates, assertUserPermission } from '@/lib/firebase/rbac';
-import type { Vendor, UserContext, VendorDocument } from '@/lib/firebase/types';
+import { MOCK_VENDORS, MOCK_ORGANIZATION_ID, MOCK_VENDOR_DOCUMENTS, createVendorInDb } from '@/lib/mock-data/firestore';
+import { getUser, getUserPermissions, getSubordinates, assertUserPermission } from '@/lib/mock-data/rbac';
+import type { Vendor, UserContext, VendorDocument } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '../../sales/actions';
@@ -143,3 +143,5 @@ export async function createVendor(formData: FormData) {
     redirect('/dashboard/vendor/list');
   }
 }
+
+

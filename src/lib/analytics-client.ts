@@ -12,7 +12,7 @@ class PostHogClient {
     this.enabled = !!this.apiKey;
 
     if (!this.enabled) {
-      console.warn('⚠️  PostHog not configured - analytics disabled');
+      console.warn('??  PostHog not configured - analytics disabled');
     }
   }
 
@@ -35,7 +35,7 @@ class PostHogClient {
       };
 
       // In production, use: fetch('https://api.posthog.com/capture/', { method: 'POST', body: JSON.stringify(event) })
-      console.log(`📊 [Analytics] ${eventName} - ${userId}`, properties);
+      console.log(`?? [Analytics] ${eventName} - ${userId}`, properties);
     } catch (error) {
       console.error('Error tracking event:', error);
     }
@@ -94,3 +94,4 @@ class PostHogClient {
 }
 
 export const posthogClient = new PostHogClient();
+

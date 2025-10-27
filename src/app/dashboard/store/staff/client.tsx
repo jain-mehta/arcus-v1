@@ -38,7 +38,7 @@ import { PlusCircle, Users2, Loader2 } from "lucide-react";
 import { getStaff, addStaffMember, logShiftActivity } from "../../hrms/actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type { Store, User } from '@/lib/firebase/types';
+import type { Store, User } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -367,3 +367,5 @@ function ShiftLogDialog({ staffMembers, disabled }: { staffMembers: User[], disa
     </Dialog>
     );
 }
+
+

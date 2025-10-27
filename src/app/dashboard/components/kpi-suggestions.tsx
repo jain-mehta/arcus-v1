@@ -224,3 +224,4 @@ export function KpiSuggestions() {
     </Card>
   );
 }
+

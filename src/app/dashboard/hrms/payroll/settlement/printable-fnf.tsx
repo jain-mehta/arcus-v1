@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { User, Store } from '@/lib/firebase/types';
+import type { User, Store } from '@/lib/mock-data/types';
 
 interface FnFData {
     settlementNumber: string;
@@ -90,14 +90,14 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
                             {earnings.map((item, index) => (
                                 <tr key={index} className="border-b">
                                     <td className="p-2">{item.description}</td>
-                                    <td className="p-2 text-right">₹{item.amount.toLocaleString('en-IN')}</td>
+                                    <td className="p-2 text-right">?{item.amount.toLocaleString('en-IN')}</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr className="font-bold border-t-2 border-black">
                                 <td className="p-2">Total Earnings</td>
-                                <td className="p-2 text-right">₹{totalEarnings.toLocaleString('en-IN')}</td>
+                                <td className="p-2 text-right">?{totalEarnings.toLocaleString('en-IN')}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -109,14 +109,14 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
                             {deductions.map((item, index) => (
                                 <tr key={index} className="border-b">
                                     <td className="p-2">{item.description}</td>
-                                    <td className="p-2 text-right">₹{item.amount.toLocaleString('en-IN')}</td>
+                                    <td className="p-2 text-right">?{item.amount.toLocaleString('en-IN')}</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr className="font-bold border-t-2 border-black">
                                 <td className="p-2">Total Deductions</td>
-                                <td className="p-2 text-right">₹{totalDeductions.toLocaleString('en-IN')}</td>
+                                <td className="p-2 text-right">?{totalDeductions.toLocaleString('en-IN')}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -126,7 +126,7 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
              <section className="flex justify-end mt-6">
                 <div className="w-full max-w-sm space-y-2">
                     <div className="border-t-2 border-gray-800 my-2"></div>
-                    <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Net Payable Amount</span><span>₹{netPayable.toLocaleString('en-IN')}</span></div>
+                    <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Net Payable Amount</span><span>?{netPayable.toLocaleString('en-IN')}</span></div>
                     <div className="text-right text-xs text-gray-600">{numberToWords(netPayable)}</div>
                 </div>
             </section>
@@ -140,3 +140,5 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
     );
 });
 PrintableFnF.displayName = 'PrintableFnF';
+
+

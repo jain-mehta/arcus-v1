@@ -13,3 +13,4 @@ export default async function LeadsPage({ searchParams }: any) {
     </div>
   );
 }
+

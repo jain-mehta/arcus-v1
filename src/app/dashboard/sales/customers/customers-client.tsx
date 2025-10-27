@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useMemo, useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { addCustomer } from "../actions";
-import type { Customer } from "@/lib/firebase/types";
+import type { Customer } from "@/lib/mock-data/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 
@@ -173,7 +173,7 @@ export function CustomersClient({ initialCustomers }: CustomersClientProps) {
                                 </TableCell>
                                 <TableCell>{customer.contact}</TableCell>
                                 <TableCell>{customer.email}</TableCell>
-                                <TableCell>₹{customer.totalSpend.toLocaleString('en-IN')}</TableCell>
+                                <TableCell>?{customer.totalSpend.toLocaleString('en-IN')}</TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href={`/dashboard/sales/customers/${customer.id}`}>View Details</Link>
@@ -195,3 +195,5 @@ export function CustomersClient({ initialCustomers }: CustomersClientProps) {
     </div>
   );
 }
+
+

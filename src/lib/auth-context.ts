@@ -1,27 +1,36 @@
 /**
- * Authentication Context
+ * Authentication Context (Supabase Edition)
  * 
  * Defines the shape of the authentication context used throughout the app.
+ * Using Supabase Auth to Supabase Auth.
  */
 
 import { createContext } from 'react';
-import type { User as FirebaseUser } from 'firebase/auth';
-import type { User } from '@/lib/firebase/types';
-import type { PermissionMap } from '@/lib/rbac';
+
+export interface User {
+  id: string;
+  email: string;
+  displayName?: string;
+  photoUrl?: string;
+  name?: string;
+  orgId?: string;
+  roleIds?: string[];
+}
 
 export interface AuthContextValue {
-  /** Current Firebase user (client-side) */
-  firebaseUser: FirebaseUser | null;
-  /** Current user data from Firestore */
+  /** Current user data from Supabase auth + user profile */
   user: User | null;
-  /** Permission map for current user's role */
-  permissions: PermissionMap | null;
   /** Loading state during auth initialization */
   loading: boolean;
+  /** Error message if any */
+  error: string | null;
   /** Sign in with email and password */
   signIn: (email: string, password: string) => Promise<void>;
+  /** Sign up with email and password */
+  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   /** Sign out and clear session */
   signOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+

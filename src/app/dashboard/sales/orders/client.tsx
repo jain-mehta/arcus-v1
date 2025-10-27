@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
-import type { Order, Customer } from '@/lib/firebase/types';
+import type { Order, Customer } from '@/lib/mock-data/types';
 import Link from 'next/link';
 
 interface OrdersClientProps {
@@ -87,7 +87,7 @@ export function OrdersClient({ initialOrders, customerList }: OrdersClientProps)
                                     </TableCell>
                                     <TableCell>{customers[order.customerId] || 'Unknown Customer'}</TableCell>
                                     <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>?{order.totalAmount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                                     </TableCell>
@@ -112,3 +112,5 @@ export function OrdersClient({ initialOrders, customerList }: OrdersClientProps)
     </div>
   );
 }
+
+

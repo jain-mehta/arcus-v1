@@ -1,5 +1,5 @@
 // Client-safe placeholder for master store info used in previews
-import type { Store } from '@/lib/firebase/types';
+import type { Store } from '@/lib/mock-data/types';
 
 export const MOCK_MASTER_STORE: Store = {
     id: 'master-format',
@@ -18,5 +18,7 @@ export const MOCK_MASTER_STORE: Store = {
     receiptFooter: 'This is a Computer Generated Invoice',
     invoiceTemplate: 'A4',
 };
+
+
 
 

@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, AlertTriangle } from 'lucide-react';
-import { getItemsToReorder, getVendor } from '@/lib/firebase/firestore';
-import type { MaterialMapping } from '@/lib/firebase/types';
+import { getItemsToReorder, getVendor } from '@/lib/mock-data/firestore';
+import type { MaterialMapping } from '@/lib/mock-data/types';
 import Link from 'next/link';
 
 interface ReorderItem extends MaterialMapping {
@@ -81,3 +81,5 @@ export default async function ReorderManagementPage() {
         </div>
     );
 }
+
+

@@ -3,7 +3,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/firebase/types';
+import type { Order, Customer, Store } from '@/lib/mock-data/types';
 
 interface PrintableInvoiceProps {
     order: Order;
@@ -180,7 +180,7 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
                 <div className='p-1 border-r border-black'>Amount Chargeable (in words)</div>
                 <div className='p-1 border-r border-black text-center'>Total</div>
                 <div className='p-1 border-r border-black text-center'>{order.lineItems.reduce((acc, item) => acc + item.quantity, 0)} Pcs</div>
-                <div className='p-1 text-right'>₹ {order.totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <div className='p-1 text-right'>? {order.totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                 <div className='p-1 border-r border-black' style={{gridColumn: '1 / span 1'}}>{numberToWords(order.totalAmount)}</div>
                 <div className='p-1 border-r border-black'></div>
                 <div className='p-1 border-r border-black text-center'>{order.lineItems.reduce((acc, item) => acc + item.quantity, 0)} Pcs</div>
@@ -206,3 +206,5 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
     );
 });
 PrintableInvoice.displayName = 'PrintableInvoice';
+
+

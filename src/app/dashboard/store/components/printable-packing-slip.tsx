@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/firebase/types';
+import type { Order, Customer, Store } from '@/lib/mock-data/types';
 
 interface PrintablePackingSlipProps {
     order: Order;
@@ -69,3 +69,5 @@ export const PrintablePackingSlip = React.forwardRef<HTMLDivElement, PrintablePa
     );
 });
 PrintablePackingSlip.displayName = 'PrintablePackingSlip';
+
+

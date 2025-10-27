@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionClaims } from '@/lib/session';
 import { assertPermission } from '@/lib/rbac';
-import { getFirebaseAdmin } from '@/lib/firebase/firebase-admin';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 
 interface RouteContext {
   params: Promise<{ roleId: string }>;
@@ -35,31 +35,26 @@ export async function GET(
 
     await assertPermission(sessionClaims, 'settings', 'manageRoles');
 
-    const { db } = getFirebaseAdmin();
-    const roleDoc = await db.collection('roles').doc(roleId).get();
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Admin client not available' }, { status: 500 });
+    }
 
-    if (!roleDoc.exists) {
+    const { data: role, error } = await supabaseAdmin
+      .from('roles')
+      .select('*')
+      .eq('id', roleId)
+      .single();
+
+    if (error) {
       return NextResponse.json(
         { error: 'Role not found' },
         { status: 404 }
       );
     }
 
-    const roleData = roleDoc.data();
-
-    // Verify role belongs to user's organization
-    if (roleData?.orgId !== sessionClaims.orgId) {
-      return NextResponse.json(
-        { error: 'Permission denied' },
-        { status: 403 }
-      );
-    }
-
     return NextResponse.json({
-      role: {
-        id: roleDoc.id,
-        ...roleData,
-      },
+      role,
     });
   } catch (error: any) {
     console.error('Get role error:', error);
@@ -106,46 +101,39 @@ export async function PUT(
       );
     }
 
-    const { db } = getFirebaseAdmin();
-    const roleDoc = await db.collection('roles').doc(roleId).get();
-
-    if (!roleDoc.exists) {
-      return NextResponse.json(
-        { error: 'Role not found' },
-        { status: 404 }
-      );
-    }
-
-    const existingData = roleDoc.data();
-
-    // Verify role belongs to user's organization
-    if (existingData?.orgId !== sessionClaims.orgId) {
-      return NextResponse.json(
-        { error: 'Permission denied' },
-        { status: 403 }
-      );
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Admin client not available' }, { status: 500 });
     }
 
     const body = await request.json();
-    const { name, permissions } = body;
+    const { name, permissions, description } = body;
 
     const updateData: any = {
-      updatedAt: new Date().toISOString(),
-      updatedBy: sessionClaims.uid,
+      updated_at: new Date().toISOString(),
     };
 
     if (name) updateData.name = name;
     if (permissions) updateData.permissions = permissions;
+    if (description !== undefined) updateData.description = description;
 
-    await roleDoc.ref.update(updateData);
+    const { data: updatedRole, error } = await supabaseAdmin
+      .from('roles')
+      .update(updateData)
+      .eq('id', roleId)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to update role' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      role: {
-        id: roleDoc.id,
-        ...existingData,
-        ...updateData,
-      },
+      role: updatedRole,
     });
   } catch (error: any) {
     console.error('Update role error:', error);
@@ -192,41 +180,36 @@ export async function DELETE(
       );
     }
 
-    const { db } = getFirebaseAdmin();
-    const roleDoc = await db.collection('roles').doc(roleId).get();
-
-    if (!roleDoc.exists) {
-      return NextResponse.json(
-        { error: 'Role not found' },
-        { status: 404 }
-      );
-    }
-
-    const roleData = roleDoc.data();
-
-    // Verify role belongs to user's organization
-    if (roleData?.orgId !== sessionClaims.orgId) {
-      return NextResponse.json(
-        { error: 'Permission denied' },
-        { status: 403 }
-      );
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Admin client not available' }, { status: 500 });
     }
 
     // Check if any users are assigned this role
-    const usersWithRole = await db
-      .collection('users')
-      .where('roleId', '==', roleId)
-      .limit(1)
-      .get();
+    const { data: usersWithRole, error: checkError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .contains('role_ids', [roleId])
+      .limit(1);
 
-    if (!usersWithRole.empty) {
+    if (!checkError && usersWithRole && usersWithRole.length > 0) {
       return NextResponse.json(
         { error: 'Cannot delete role that is assigned to users' },
         { status: 400 }
       );
     }
 
-    await roleDoc.ref.delete();
+    const { error } = await supabaseAdmin
+      .from('roles')
+      .delete()
+      .eq('id', roleId);
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to delete role' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

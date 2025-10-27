@@ -15,3 +15,4 @@ export class TenantMetadata {
   @Column({ type: 'jsonb', default: () => "'{}'" })
   plan!: any; // billing / quota info
 }
+

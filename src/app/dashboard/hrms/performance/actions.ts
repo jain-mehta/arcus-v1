@@ -1,7 +1,7 @@
 
 'use server';
 
-import { MOCK_EMPLOYEE_REVIEWS, MOCK_PERFORMANCE_CYCLES } from "@/lib/firebase/firestore";
+import { MOCK_EMPLOYEE_REVIEWS, MOCK_PERFORMANCE_CYCLES } from "@/lib/mock-data/firestore";
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
@@ -62,3 +62,5 @@ export async function startNewPerformanceCycle(newCycle: any) {
     MOCK_PERFORMANCE_CYCLES.unshift(newCycle);
     return { success: true };
 }
+
+

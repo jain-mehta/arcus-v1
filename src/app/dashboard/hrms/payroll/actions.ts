@@ -2,10 +2,10 @@
 
 'use server';
 
-import { MOCK_USERS, MOCK_SALARY_STRUCTURES, MOCK_PAYSLIPS } from '@/lib/firebase/firestore';
-import { getCurrentUser as getCurrentUserFromDb } from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
-import type { SalaryStructure, Payslip, Customer } from '@/lib/firebase/types';
+import { MOCK_USERS, MOCK_SALARY_STRUCTURES, MOCK_PAYSLIPS } from '@/lib/mock-data/firestore';
+import { getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
+import type { SalaryStructure, Payslip, Customer } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -130,3 +130,5 @@ export async function runPayroll(month: string, staffId?: string): Promise<{ suc
 export async function getSalaryStructures(): Promise<SalaryStructure[]> {
     return MOCK_SALARY_STRUCTURES;
 }
+
+

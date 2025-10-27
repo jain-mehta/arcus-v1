@@ -1,9 +1,9 @@
 'use server';
 
 import type { GenerateQuotationOutput } from '@/ai/flows/generate-quotation-flow';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
-import type { UserContext } from '@/lib/firebase/types';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
+import type { UserContext } from '@/lib/mock-data/types';
 
 async function buildUserContext(userId: string): Promise<UserContext> {
     const [user, permissions, subordinates] = await Promise.all([
@@ -36,3 +36,5 @@ export async function generateQuotation(customerId: string, prompt: string): Pro
     const { generateQuotation: callGenerateQuotation } = await import('@/ai/flows/generate-quotation-flow');
     return callGenerateQuotation({ customerId, prompt });
 }
+
+

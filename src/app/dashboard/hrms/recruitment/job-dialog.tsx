@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
-import type { JobOpening } from '@/lib/firebase/types';
+import type { JobOpening } from '@/lib/mock-data/types';
 
 const jobOpeningSchema = z.object({
   title: z.string().min(3, 'Job title must be at least 3 characters.'),
@@ -239,3 +239,5 @@ export function JobDetailDialog({ job, triggerButton }: JobDetailDialogProps) {
     </Dialog>
   );
 }
+
+

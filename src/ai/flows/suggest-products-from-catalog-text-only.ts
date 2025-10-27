@@ -29,7 +29,7 @@ const ProductSuggestionSchema = z.object({
   brand: z.string().describe("The brand of the product. It should be 'Bobs'."),
   series: z.enum(['Buick', 'Solo', 'Galaxy', 'Cubix-B']).describe("The series the product belongs to."),
   category: z.string().describe('The primary category of the product (e.g., Faucets, Showers).'),
-  price: z.coerce.number().describe('The price of the product in Indian Rupees (₹).'),
+  price: z.coerce.number().describe('The price of the product in Indian Rupees (?).'),
 });
 
 // Define the schema for the output data.
@@ -87,3 +87,4 @@ export async function suggestProductsFromCatalogTextOnly(
   const resultAny = await withTimeout(prompt(input), 15000) as any;
   return resultAny.output || [];
 }
+

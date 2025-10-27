@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 import { useTransition } from 'react';
-import type { Quotation } from '@/lib/firebase/types';
+import type { Quotation } from '@/lib/mock-data/types';
 import { Loader2, ShoppingCart, Download, Printer } from 'lucide-react';
 import Link from 'next/link';
 

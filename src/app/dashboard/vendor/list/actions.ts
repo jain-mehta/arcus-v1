@@ -6,7 +6,7 @@ import {
     approveVendor as approveVendorInDb,
     rejectVendor as rejectVendorInDb,
     deleteVendor as deleteVendorInDb,
-} from '@/lib/firebase/firestore';
+} from '@/lib/mock-data/firestore';
 import { revalidatePath } from 'next/cache';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -64,3 +64,5 @@ export async function deleteVendor(id: string) {
   }
   return result;
 }
+
+

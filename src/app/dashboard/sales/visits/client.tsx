@@ -48,7 +48,7 @@ import { MapPin, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Visit } from '@/lib/firebase/types';
+import type { Visit } from '@/lib/mock-data/types';
 import { logVisit } from '../actions';
 import { useRouter } from 'next/navigation';
 
@@ -360,3 +360,5 @@ export function VisitLoggingClient({ dealers, initialVisits }: VisitLoggingClien
     </div>
   );
 }
+
+

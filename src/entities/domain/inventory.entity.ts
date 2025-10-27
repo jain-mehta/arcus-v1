@@ -73,3 +73,4 @@ export class Inventory {
   @UpdateDateColumn()
   updated_at!: Date;
 }
+

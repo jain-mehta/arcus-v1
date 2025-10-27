@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
 import { PackageOpen, Loader2 } from 'lucide-react';
-import type { Product } from '@/lib/firebase/types';
+import type { Product } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { dispatchStock } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -144,3 +144,5 @@ export function GoodsOutwardClient({ products: initialProducts }: GoodsOutwardCl
         </div>
     );
 }
+
+

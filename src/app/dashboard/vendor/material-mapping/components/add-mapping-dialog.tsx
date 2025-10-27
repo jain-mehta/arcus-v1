@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Loader2 } from "lucide-react";
-import type { MaterialMapping } from '@/lib/firebase/types';
+import type { MaterialMapping } from '@/lib/mock-data/types';
 
 const formSchema = z.object({
     material: z.string().min(1, "Material name is required."),
@@ -109,7 +109,7 @@ export function AddMappingDialog({ onAddMapping, disabled }: AddMappingDialogPro
                                 name="unitPrice"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Unit Price (₹)</FormLabel>
+                                        <FormLabel>Unit Price (?)</FormLabel>
                                         <FormControl><Input type="number" placeholder="e.g., 1240" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -164,3 +164,5 @@ export function AddMappingDialog({ onAddMapping, disabled }: AddMappingDialogPro
         </Dialog>
     );
 }
+
+

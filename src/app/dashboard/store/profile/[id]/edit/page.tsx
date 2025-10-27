@@ -25,7 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import type { Store, User } from '@/lib/firebase/types';
+import type { Store, User } from '@/lib/mock-data/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

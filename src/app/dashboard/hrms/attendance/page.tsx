@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, User, Clock, UserCheck, UserX, PowerOff } from 'lucide-react';
 import { getAttendanceData } from '../actions';
 import { Badge } from '@/components/ui/badge';
-import type { Staff, Shift } from '@/lib/firebase/types';
+import type { Staff, Shift } from '@/lib/mock-data/types';
 import { Suspense, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -134,3 +134,5 @@ export default function HrmsAttendancePage() {
         </Suspense>
     )
 }
+
+

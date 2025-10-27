@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { getOrders, getSalesCustomers } from '@/app/dashboard/sales/actions';
-import { getCurrentUser, MOCK_STORES } from '@/lib/firebase/firestore';
+import { getCurrentUser, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { FileClock, Download } from 'lucide-react';
 import Link from 'next/link';
 import { BillingHistoryClient } from './client';
@@ -56,3 +56,5 @@ export default async function BillingHistoryPage() {
         <BillingHistoryClient initialOrders={storeOrders} customers={customers} store={store} />
     );
 }
+
+

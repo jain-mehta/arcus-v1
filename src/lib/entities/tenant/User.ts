@@ -15,3 +15,4 @@ export class User {
   @Column({ type: 'jsonb', nullable: true })
   metadata!: any | null;
 }
+

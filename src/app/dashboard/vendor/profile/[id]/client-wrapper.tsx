@@ -17,7 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import type { Vendor, User } from '@/lib/firebase/types';
+import type { Vendor, User } from '@/lib/mock-data/types';
 import { Loader2, Edit } from 'lucide-react';
 import { useTransition } from 'react';
 import { deactivateVendor, deleteVendor } from './actions';

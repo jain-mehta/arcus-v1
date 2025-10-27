@@ -1,10 +1,10 @@
 
 'use server';
 
-import { MOCK_USERS, MOCK_OPPORTUNITIES } from '@/lib/firebase/firestore';
-import type { User, Opportunity } from '@/lib/firebase/types';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
+import { MOCK_USERS, MOCK_OPPORTUNITIES } from '@/lib/mock-data/firestore';
+import type { User, Opportunity } from '@/lib/mock-data/types';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
 
 interface LeaderboardEntry {
     user: User;
@@ -41,3 +41,5 @@ export async function getLeaderboardData(): Promise<LeaderboardEntry[]> {
 
     return leaderboardData;
 }
+
+

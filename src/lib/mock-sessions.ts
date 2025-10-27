@@ -6,7 +6,6 @@
  */
 
 import { cookies } from 'next/headers';
-import { getFirebaseAdmin } from './firebase/firebase-admin';
 import type { UserClaims } from './rbac';
 
 export interface Session {
@@ -140,3 +139,4 @@ export function cleanupExpiredSessions(): number {
 if (typeof setInterval !== 'undefined') {
   setInterval(cleanupExpiredSessions, 60 * 60 * 1000);
 }
+

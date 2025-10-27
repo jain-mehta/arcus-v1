@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users as UsersIcon, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
-import type { User, Role, Permission, Store as TStore } from '@/lib/firebase/types';
+import type { User, Role, Permission, Store as TStore } from '@/lib/mock-data/types';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
@@ -178,3 +178,5 @@ function CreateUserDialog({ allRoles, allStores, allPermissions, onUserCreated }
 
 // preserve default export for other imports
 export default UsersClient;
+
+

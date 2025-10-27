@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select';
 import { PlusCircle, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { PurchaseOrder, Vendor } from '@/lib/firebase/types';
+import type { PurchaseOrder, Vendor } from '@/lib/mock-data/types';
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -136,7 +136,7 @@ export function PurchaseOrderClient({ initialPurchaseOrders, vendors }: Purchase
                             <TableHead>PO Number</TableHead>
                             <TableHead>Vendor</TableHead>
                             <TableHead>Order Date</TableHead>
-                            <TableHead>Total Amount (₹)</TableHead>
+                            <TableHead>Total Amount (?)</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -178,3 +178,5 @@ export function PurchaseOrderClient({ initialPurchaseOrders, vendors }: Purchase
     </div>
   );
 }
+
+

@@ -25,7 +25,7 @@ export async function getJWKS() {
     return cachedJWKS.keys;
   }
 
-  console.log('📡 Fetching JWKS from Supabase...');
+  console.log('?? Fetching JWKS from Supabase...');
 
   try {
     const jwksUrl = process.env.SUPABASE_JWKS_URL;
@@ -48,7 +48,7 @@ export async function getJWKS() {
       expiresAt: Date.now() + JWKS_CACHE_TTL,
     };
 
-    console.log(`✅ JWKS cached (${data.keys.length} keys)`);
+    console.log(`? JWKS cached (${data.keys.length} keys)`);
     return data.keys;
   } catch (error) {
     console.error('Failed to fetch JWKS:', error);
@@ -144,7 +144,7 @@ export function decodeJWTUnsafe(token: string): any {
  */
 export function invalidateJWKSCache() {
   cachedJWKS = null;
-  console.log('🔄 JWKS cache invalidated');
+  console.log('?? JWKS cache invalidated');
 }
 
 export default {
@@ -154,3 +154,4 @@ export default {
   decodeJWTUnsafe,
   invalidateJWKSCache,
 };
+

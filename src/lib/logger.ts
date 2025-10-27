@@ -74,7 +74,7 @@ class Logger {
    * Log API request
    */
   logRequest(method: string, endpoint: string, correlationId: string, context?: LogContext) {
-    this.info(`→ ${method} ${endpoint}`, {
+    this.info(`? ${method} ${endpoint}`, {
       ...context,
       correlationId,
       method,
@@ -89,7 +89,7 @@ class Logger {
     const level = statusCode >= 400 ? 'warn' : 'info';
     const logFn = level === 'warn' ? this.warn.bind(this) : this.info.bind(this);
 
-    logFn(`← ${method} ${endpoint} ${statusCode} (+${duration}ms)`, {
+    logFn(`? ${method} ${endpoint} ${statusCode} (+${duration}ms)`, {
       ...context,
       correlationId,
       method,
@@ -115,7 +115,7 @@ class Logger {
   logPermission(userId: string, resource: string, action: string, granted: boolean, context?: LogContext) {
     const level = granted ? 'debug' : 'warn';
     const logFn = level === 'warn' ? this.warn.bind(this) : this.debug.bind(this);
-    logFn(`Permission ${granted ? '✓' : '✗'}: ${resource}:${action}`, {
+    logFn(`Permission ${granted ? '?' : '?'}: ${resource}:${action}`, {
       ...context,
       userId,
     });
@@ -123,3 +123,4 @@ class Logger {
 }
 
 export const logger = new Logger();
+

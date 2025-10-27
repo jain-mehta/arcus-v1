@@ -1,10 +1,10 @@
 
 'use server';
 
-import { MOCK_STORES, MOCK_USERS, MOCK_ORDERS, getCurrentUser } from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
+import { MOCK_STORES, MOCK_USERS, MOCK_ORDERS, getCurrentUser } from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
 import { getProducts as getProductsFromDb } from '../../inventory/data';
-import type { Store, User, Product } from '@/lib/firebase/types';
+import type { Store, User, Product } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 
 export async function getStores(): Promise<Store[]> {
@@ -107,3 +107,4 @@ export async function getStoreDetails(storeId: string): Promise<{ store: Store |
 }
 
     
+

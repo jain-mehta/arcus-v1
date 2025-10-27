@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from '@/components/ui/separator';
-import { getPurchaseOrder, getVendor } from '@/lib/firebase/firestore';
+import { getPurchaseOrder, getVendor } from '@/lib/mock-data/firestore';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Printer, Download, MessageCircle, Check, X } from 'lucide-react';

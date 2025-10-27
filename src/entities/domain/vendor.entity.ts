@@ -91,3 +91,4 @@ export class Vendor {
   @UpdateDateColumn()
   updated_at!: Date;
 }
+

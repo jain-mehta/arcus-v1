@@ -10,3 +10,4 @@ export let MOCK_ANNOUNCEMENTS: any[] = [];
 export let MOCK_POLICY_DOCS: any[] = [];
 
 export let MOCK_COMPLIANCE_DOCS: any[] = [];
+

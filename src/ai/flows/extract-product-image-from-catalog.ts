@@ -77,3 +77,4 @@ export async function extractProductImageFromCatalog(
   if (!output) throw new Error('Image extraction failed or no structured data was returned.');
   return output;
 }
+

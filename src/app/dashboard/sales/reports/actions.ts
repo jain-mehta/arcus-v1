@@ -8,8 +8,8 @@ import {
   getOpportunitiesFromDb,
   getSalesSnapshots,
   MOCK_OPPORTUNITIES,
-} from '@/lib/firebase/firestore';
-import type { Opportunity, SalesSnapshot } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import type { Opportunity, SalesSnapshot } from '@/lib/mock-data/types';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
@@ -68,7 +68,7 @@ export async function getReportData() {
   const kpiData = [
     {
       title: 'Pipeline Value',
-      value: `₹${pipelineValue.toLocaleString('en-IN')}`,
+      value: `?${pipelineValue.toLocaleString('en-IN')}`,
       icon: 'HandCoins',
     },
     {
@@ -78,7 +78,7 @@ export async function getReportData() {
     },
     {
       title: 'Average Deal Size',
-      value: `₹${avgDealSize.toLocaleString('en-IN', {
+      value: `?${avgDealSize.toLocaleString('en-IN', {
         maximumFractionDigits: 0,
       })}`,
       icon: 'Target',
@@ -230,3 +230,5 @@ export async function generateMonthlySnapshot(): Promise<{
 
   return { success: true, newSnapshot };
 }
+
+

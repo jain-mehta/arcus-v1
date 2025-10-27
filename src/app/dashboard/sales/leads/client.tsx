@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addLead, convertLeadToCustomer, updateLead, deleteLead } from "../actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from 'next/link';
-import type { Lead, User } from '@/lib/firebase/types';
+import type { Lead, User } from '@/lib/mock-data/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -529,7 +529,7 @@ function ConvertLeadDialog({ lead, onLeadConverted }: { lead: Lead; onLeadConver
                                     name="opportunityValue"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Initial Opportunity Value (₹)</FormLabel>
+                                            <FormLabel>Initial Opportunity Value (?)</FormLabel>
                                             <FormControl>
                                                 <Input type="number" placeholder="e.g., 50000" {...field} />
                                             </FormControl>
@@ -653,3 +653,5 @@ function EditLeadDialog({ lead, onLeadUpdated }: { lead: Lead; onLeadUpdated: (l
 
 
     
+
+

@@ -1,41 +1,45 @@
 /**
  * Get Current User API Route
  * 
- * Returns the current authenticated user's data from Firestore.
+ * Returns the current authenticated user's data from Supabase.
  */
 
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromSession } from '@/lib/session';
-import { getFirebaseAdmin } from '@/lib/firebase/firebase-admin';
+import { supabaseClient } from '@/lib/supabase/client';
 
 export async function GET() {
   try {
-    const decodedClaims = await getCurrentUserFromSession();
-
-    if (!decodedClaims) {
+    const session = await supabaseClient.auth.getSession();
+    
+    if (!session.data.session?.user) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    // Fetch user data from Firestore
-    const { db } = getFirebaseAdmin();
-    const userDoc = await db.collection('users').doc(decodedClaims.uid).get();
+    const user = session.data.session.user;
 
-    if (!userDoc.exists) {
+    // Fetch user profile from Supabase
+    const { data: userProfile, error } = await supabaseClient
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const userData = {
-      id: userDoc.id,
-      ...userDoc.data(),
-    };
-
-    return NextResponse.json(userData);
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      ...userProfile,
+    });
   } catch (error: any) {
     console.error('Get current user error:', error);
     return NextResponse.json(
@@ -44,3 +48,4 @@ export async function GET() {
     );
   }
 }
+

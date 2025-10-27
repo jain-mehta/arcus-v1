@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, PlusCircle } from 'lucide-react';
-import type { Opportunity, Customer } from '@/lib/firebase/types';
+import type { Opportunity, Customer } from '@/lib/mock-data/types';
 
 export const opportunitySchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters."),
@@ -121,7 +121,7 @@ export function OpportunityFormDialog({
                             )}
                         />
                          <FormField control={form.control} name="value" render={({ field }) => (
-                            <FormItem><FormLabel>Deal Value (₹)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Deal Value (?)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem>
                         )} />
                          <div className="grid grid-cols-2 gap-4">
                              <FormField
@@ -160,3 +160,5 @@ export function OpportunityFormDialog({
         </Dialog>
     )
 }
+
+

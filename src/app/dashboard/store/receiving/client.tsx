@@ -10,7 +10,7 @@ import { Loader2, Box } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { receiveShipment, getStoreShipments } from './actions';
 import { useRouter } from 'next/navigation';
-import type { Store } from '@/lib/firebase/types';
+import type { Store } from '@/lib/mock-data/types';
 import { Label } from '@/components/ui/label';
 
 interface Shipment {
@@ -165,3 +165,5 @@ export function ProductReceivingClient({ initialShipments, isAdmin, allStores, u
         </div>
     );
 }
+
+

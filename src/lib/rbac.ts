@@ -2,7 +2,7 @@
  * Role-Based Access Control (RBAC) System
  * 
  * Provides centralized permission checking for the entire application.
- * Supports hierarchical permissions with module → submodule granularity.
+ * Supports hierarchical permissions with module ? submodule granularity.
  * 
  * Permission Structure:
  * {
@@ -12,8 +12,7 @@
  * }
  */
 
-import { getFirebaseAdmin } from './firebase/firebase-admin';
-import type { User } from './firebase/types';
+import type { User } from './mock-data/types';
 
 export interface PermissionMap {
   [module: string]: {
@@ -72,29 +71,13 @@ export async function checkPermission(
   }
 
   // If permissions are in custom claims (for performance)
-  if (userClaims.permissions) {
-    return checkPermissionInMap(userClaims.permissions, moduleName, submoduleName);
+  const claimsPerms = (userClaims as any).permissions;
+  if (claimsPerms) {
+    return checkPermissionInMap(claimsPerms, moduleName, submoduleName);
   }
 
-  // Fallback: fetch permissions from Firestore
-  if (userClaims.roleId && userClaims.orgId) {
-    const { db } = getFirebaseAdmin();
-    const roleDoc = await db.collection('roles').doc(userClaims.roleId).get();
-    
-    if (!roleDoc.exists) {
-      return false;
-    }
-    
-    const roleData = roleDoc.data();
-    const permissions = roleData?.permissions as PermissionMap | undefined;
-    
-    if (!permissions) {
-      return false;
-    }
-    
-    return checkPermissionInMap(permissions, moduleName, submoduleName);
-  }
-
+  // Fallback: TODO fetch permissions from Supabase
+  // For now, return false if no permissions found
   return false;
 }
 
@@ -164,27 +147,8 @@ export async function canViewUserData(
     return true;
   }
 
-  // Check if viewer is target's manager
-  const { db } = getFirebaseAdmin();
-  const targetUserDoc = await db.collection('users').doc(targetUserId).get();
-  
-  if (!targetUserDoc.exists) {
-    return false;
-  }
-  
-  const targetUser = targetUserDoc.data() as User;
-  
-  // Direct manager check
-  if (targetUser.reportsTo === viewerClaims.uid) {
-    return true;
-  }
-
-  // Check if special permission to view all users in org
-  const canViewAll = await checkPermission(viewerClaims, 'users', 'viewAll');
-  if (canViewAll && targetUser.orgId === viewerClaims.orgId) {
-    return true;
-  }
-
+  // TODO: Check if viewer is target's manager in Supabase
+  // For now, allow viewing own data only
   return false;
 }
 
@@ -195,17 +159,8 @@ export async function canViewUserData(
  * @returns Array of user IDs
  */
 export async function getDirectReports(managerId: string, orgId?: string): Promise<string[]> {
-  const { db } = getFirebaseAdmin();
-  
-  let query = db.collection('users').where('reportsTo', '==', managerId);
-  
-  if (orgId) {
-    query = query.where('orgId', '==', orgId);
-  }
-  
-  const subordinatesSnapshot = await query.get();
-  
-  return subordinatesSnapshot.docs.map(doc => doc.id);
+  // TODO: Implement Supabase query for direct reports
+  return [];
 }
 
 /**
@@ -215,48 +170,32 @@ export async function getDirectReports(managerId: string, orgId?: string): Promi
  * @returns Array of all subordinate user IDs (direct and indirect)
  */
 export async function getSubordinates(managerId: string, orgId: string): Promise<string[]> {
-  const directReports = await getDirectReports(managerId, orgId);
-  const allSubordinates = new Set(directReports);
-  
-  // Recursively get subordinates of subordinates
-  for (const reportId of directReports) {
-    const subReports = await getSubordinates(reportId, orgId);
-    subReports.forEach(id => allSubordinates.add(id));
-  }
-  
-  return Array.from(allSubordinates);
+  // TODO: Implement Supabase query for all subordinates
+  return [];
 }
 
 /**
- * Get role permissions from Firestore
+ * Get role permissions
  * @param roleId - Role ID
  * @returns Permission map or null if not found
  */
 export async function getRolePermissions(roleId: string): Promise<PermissionMap | null> {
-  const { db } = getFirebaseAdmin();
-  const roleDoc = await db.collection('roles').doc(roleId).get();
-  
-  if (!roleDoc.exists) {
-    // Fallback: if role not found in Firestore (e.g., during initial setup),
-    // provide minimal admin permissions for 'admin' role
-    if (roleId === 'admin') {
-      console.warn('[RBAC] Admin role not found in Firestore, using fallback permissions');
-      return {
-        dashboard: { view: true },
-        store: { bills: true, invoices: true, viewPastBills: true },
-        sales: { quotations: true, leads: true, viewAll: true },
-        inventory: { viewStock: true, editStock: true },
-        hrms: { payroll: true, attendance: true, settlement: true },
-        settings: { manageRoles: true, manageUsers: true },
-        users: { viewAll: true, create: true, edit: true, delete: true },
-        vendor: { viewAll: true, create: true, edit: true, delete: true },
-      };
-    }
-    return null;
+  // TODO: Implement Supabase query for role permissions
+  // For now, provide minimal admin permissions for 'admin' role
+  if (roleId === 'admin') {
+    console.warn('[RBAC] Using fallback admin permissions');
+    return {
+      dashboard: { view: true },
+      store: { bills: true, invoices: true, viewPastBills: true },
+      sales: { quotations: true, leads: true, viewAll: true },
+      inventory: { viewStock: true, editStock: true },
+      hrms: { payroll: true, attendance: true, settlement: true },
+      settings: { manageRoles: true, manageUsers: true },
+      users: { viewAll: true, create: true, edit: true, delete: true },
+      vendor: { viewAll: true, create: true, edit: true, delete: true },
+    };
   }
-  
-  const roleData = roleDoc.data();
-  return (roleData?.permissions as PermissionMap) || null;
+  return null;
 }
 
 /**
@@ -273,3 +212,4 @@ export async function hasPermission(
 ): Promise<boolean> {
   return checkPermission(userClaims, moduleName, submoduleName);
 }
+

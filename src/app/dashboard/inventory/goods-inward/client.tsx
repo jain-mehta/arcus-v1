@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck, Loader2 } from 'lucide-react';
-import type { Product } from '@/lib/firebase/types';
+import type { Product } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { addStock } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -124,3 +124,5 @@ export function GoodsInwardClient({ products: initialProducts }: GoodsInwardClie
         </div>
     );
 }
+
+

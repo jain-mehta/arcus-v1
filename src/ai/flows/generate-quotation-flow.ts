@@ -118,3 +118,4 @@ export async function generateQuotation(
 ): Promise<GenerateQuotationOutput> {
   return generateQuotationFlowImpl(input);
 }
+

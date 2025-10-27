@@ -2,8 +2,8 @@
 
 'use server';
 
-import type { SalesTarget, SalesTargetWithProgress } from '@/lib/firebase/types';
-import { MOCK_SALES_TARGETS, MOCK_OPPORTUNITIES } from '@/lib/firebase/firestore';
+import type { SalesTarget, SalesTargetWithProgress } from '@/lib/mock-data/types';
+import { MOCK_SALES_TARGETS, MOCK_OPPORTUNITIES } from '@/lib/mock-data/firestore';
 
 export async function getSalesTargetsWithProgress(): Promise<SalesTargetWithProgress[]> {
   // In a real app, 'currentValue' would be a dynamic query.
@@ -69,3 +69,5 @@ export async function archiveOldOpportunities(): Promise<{
     return { success: true, count: 0, message: 'No old opportunities to archive.' };
   }
 }
+
+

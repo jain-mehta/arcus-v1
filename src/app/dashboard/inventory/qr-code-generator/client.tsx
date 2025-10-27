@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { Product } from '@/lib/firebase/types';
+import type { Product } from '@/lib/mock-data/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Printer, QrCode, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -205,3 +205,5 @@ export function QrCodeGeneratorClient({ products: initialProducts }: QrCodeGener
         </div>
     );
 }
+
+

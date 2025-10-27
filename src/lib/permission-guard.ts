@@ -41,3 +41,4 @@ export async function hasPermission(
 
   return checkPermission(sessionClaims, moduleName, submoduleName);
 }
+

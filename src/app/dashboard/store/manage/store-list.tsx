@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Loader2, View } from "lucide-react";
-import type { Store, User } from "@/lib/firebase/types";
+import type { Store, User } from "@/lib/mock-data/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { deleteStore } from "./actions";
@@ -103,7 +103,7 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
                             <TableHead>Manager</TableHead>
                             <TableHead>Region</TableHead>
                             <TableHead>Location</TableHead>
-                            <TableHead className="text-right">Cash In Hand (₹)</TableHead>
+                            <TableHead className="text-right">Cash In Hand (?)</TableHead>
                             <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -168,3 +168,5 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
         </TooltipProvider>
     )
 }
+
+

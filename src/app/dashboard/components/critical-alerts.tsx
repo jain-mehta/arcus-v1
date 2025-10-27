@@ -45,3 +45,4 @@ export function CriticalAlerts({ alerts }: CriticalAlertsProps) {
     </div>
   );
 }
+

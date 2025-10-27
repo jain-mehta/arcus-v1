@@ -51,3 +51,4 @@ export function DashboardClient({ data }: DashboardClientProps) {
     </div>
   );
 }
+

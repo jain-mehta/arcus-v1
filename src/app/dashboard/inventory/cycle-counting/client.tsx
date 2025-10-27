@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import type { Product } from "@/lib/firebase/types";
+import type { Product } from "@/lib/mock-data/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import React, { useState, useMemo } from "react";
@@ -386,3 +386,5 @@ function StartNewCountDialog({ onCountStarted }: { onCountStarted: (count: any) 
 }
 
     
+
+

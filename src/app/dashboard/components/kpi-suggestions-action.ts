@@ -8,13 +8,13 @@ import type {
 import {
   MOCK_ORGANIZATION_ID,
   getCurrentUser,
-} from '@/lib/firebase/firestore';
+} from '@/lib/mock-data/firestore';
 import {
   getUser,
   getUserPermissions,
   getSubordinates,
-} from '@/lib/firebase/rbac';
-import type { UserContext } from '@/lib/firebase/types';
+} from '@/lib/mock-data/rbac';
+import type { UserContext } from '@/lib/mock-data/types';
 
 // MOCK: In a real app, this would get the logged-in user's ID from the session.
 async function getCurrentUserId(): Promise<string> {
@@ -55,3 +55,5 @@ export async function suggestKpis(
   const { suggestKpisBasedOnPerformance } = await import('@/ai/flows/suggest-kpis-based-on-performance');
   return suggestKpisBasedOnPerformance(input);
 }
+
+

@@ -58,3 +58,4 @@ export class Session {
   @UpdateDateColumn()
   updated_at!: Date;
 }
+

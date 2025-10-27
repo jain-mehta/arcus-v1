@@ -172,7 +172,7 @@ export async function schemaSync(tenantId: string, schema: string): Promise<bool
       console.warn('Failed to log schema sync:', logError);
     }
 
-    console.log(`✅ Synced schema for tenant ${tenantId}`);
+    console.log(`? Synced schema for tenant ${tenantId}`);
     return true;
   } catch (err: any) {
     const durationMs = Date.now() - startTime;
@@ -262,3 +262,4 @@ export async function healthCheck(): Promise<boolean> {
     return false;
   }
 }
+

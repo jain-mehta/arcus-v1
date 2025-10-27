@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Loader2 } from "lucide-react";
-import type { VolumeDiscount } from '@/lib/firebase/types';
+import type { VolumeDiscount } from '@/lib/mock-data/types';
 
 const formSchema = z.object({
     minQuantity: z.coerce.number().int().min(1, "Minimum quantity must be at least 1."),
@@ -98,3 +98,5 @@ export function AddDiscountDialog({ onAdd, disabled }: AddDiscountDialogProps) {
 }
 
     
+
+

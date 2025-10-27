@@ -27,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Edit, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Store, User } from '@/lib/firebase/types';
+import type { Store, User } from '@/lib/mock-data/types';
 import { addStore, updateStore } from './actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
@@ -288,7 +288,7 @@ export function StoreDialog({ mode, store, storeManagers }: StoreDialogProps) {
                       name="cashAlertThreshold"
                       render={({ field }) => (
                           <FormItem>
-                          <FormLabel>Cash Alert Threshold (₹)</FormLabel>
+                          <FormLabel>Cash Alert Threshold (?)</FormLabel>
                           <FormControl>
                               <Input type="number" placeholder="e.g., 75000" {...field} />
                           </FormControl>
@@ -313,3 +313,5 @@ export function StoreDialog({ mode, store, storeManagers }: StoreDialogProps) {
     </Dialog>
   );
 }
+
+

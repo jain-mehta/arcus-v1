@@ -167,3 +167,4 @@ export function filterNavItems<T extends { permission?: string }>(
     return hasOldPermission(permissions, item.permission);
   });
 }
+

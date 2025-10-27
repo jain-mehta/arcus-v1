@@ -1,9 +1,9 @@
 
 'use server';
 
-import { MOCK_ORDERS, MOCK_PRODUCTS, getCurrentUser } from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
-import type { Order } from '@/lib/firebase/types';
+import { MOCK_ORDERS, MOCK_PRODUCTS, getCurrentUser } from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
+import type { Order } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 
 export async function findOrderForReturn(orderNumber: string, storeId: string): Promise<Order | null> {
@@ -65,3 +65,5 @@ export async function processReturn(
         return { success: false, message: error.message };
     }
 }
+
+

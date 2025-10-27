@@ -14,10 +14,10 @@ import {
   dispatchStock as dispatchStockInDb,
   transferStock as transferStockInDb,
   getCurrentUser
-} from '@/lib/firebase/firestore';
-import { assertUserPermission } from '@/lib/firebase/rbac';
-import { getUser, getSubordinates, getUserPermissions } from '@/lib/firebase/rbac';
-import type { Product, UserContext } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
+import { getUser, getSubordinates, getUserPermissions } from '@/lib/mock-data/rbac';
+import type { Product, UserContext } from '@/lib/mock-data/types';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
@@ -280,3 +280,5 @@ export async function addMultipleProducts(products: Omit<Product, 'id' | 'orgId'
     
     return { success: true, count: addedProducts.length };
 }
+
+

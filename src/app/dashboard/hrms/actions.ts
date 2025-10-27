@@ -3,10 +3,10 @@
 
 'use server';
 
-import { MOCK_USERS, MOCK_LEAVE_REQUESTS, MOCK_ORGANIZATION_ID, MOCK_LEAVE_POLICIES, MOCK_JOB_OPENINGS, MOCK_APPLICANTS, MOCK_COMPLIANCE_DOCS, getCurrentUser as getCurrentUserFromDb, MOCK_SHIFT_LOGS, MOCK_STORES, MOCK_ROLES, getStaffMember as getStaffMemberFromDb } from '@/lib/firebase/firestore';
-import type { Store, User, LeaveRequest, LeavePolicy, JobOpening, Applicant, Shift, Role } from '@/lib/firebase/types';
+import { MOCK_USERS, MOCK_LEAVE_REQUESTS, MOCK_ORGANIZATION_ID, MOCK_LEAVE_POLICIES, MOCK_JOB_OPENINGS, MOCK_APPLICANTS, MOCK_COMPLIANCE_DOCS, getCurrentUser as getCurrentUserFromDb, MOCK_SHIFT_LOGS, MOCK_STORES, MOCK_ROLES, getStaffMember as getStaffMemberFromDb } from '@/lib/mock-data/firestore';
+import type { Store, User, LeaveRequest, LeavePolicy, JobOpening, Applicant, Shift, Role } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
-import { getUserPermissions, assertUserPermission } from '@/lib/firebase/rbac';
+import { getUserPermissions, assertUserPermission } from '@/lib/mock-data/rbac';
 import { startOfToday, differenceInDays } from 'date-fns';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -385,3 +385,5 @@ export async function getAttendanceData() {
 
     return { shifts: shifts, attendance: attendanceStatus };
 }
+
+

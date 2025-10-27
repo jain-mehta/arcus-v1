@@ -1,7 +1,7 @@
 
 
 import { notFound } from 'next/navigation';
-import { getPerformanceCycle, getEmployeeReviewsForCycle } from '@/lib/firebase/firestore';
+import { getPerformanceCycle, getEmployeeReviewsForCycle } from '@/lib/mock-data/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';

@@ -2,8 +2,8 @@
 
 'use server';
 
-import { MOCK_ORDERS, MOCK_PRODUCTS, MOCK_STORES } from '@/lib/firebase/firestore';
-import type { Order, Product, Store } from '@/lib/firebase/types';
+import { MOCK_ORDERS, MOCK_PRODUCTS, MOCK_STORES } from '@/lib/mock-data/firestore';
+import type { Order, Product, Store } from '@/lib/mock-data/types';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
@@ -100,3 +100,5 @@ export async function getStoreReportData(storeIds?: string[], dateRange?: { from
     selectedStores: storesToProcess, // Return the stores being displayed
   };
 }
+
+

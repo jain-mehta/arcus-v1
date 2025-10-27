@@ -19,7 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import type { Customer, Quotation } from '@/lib/firebase/types';
+import type { Customer, Quotation } from '@/lib/mock-data/types';
   
 export function QuotationDetailView({ 
     quotation, 

@@ -16,3 +16,4 @@ export class UserMapping {
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
   created_at!: Date;
 }
+

@@ -1,8 +1,8 @@
 
 
 import { getStaff, getAllStores, getAllUsers } from '../actions';
-import { getCurrentUser } from '@/lib/firebase/firestore';
-import { getUserPermissions } from '@/lib/firebase/rbac';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
+import { getUserPermissions } from '@/lib/mock-data/rbac';
 import { EmployeesClient } from './client';
 import { getAllRoles } from '../../users/roles/actions';
 
@@ -35,3 +35,5 @@ export default async function HrmsEmployeesPage() {
         />
     );
 }
+
+

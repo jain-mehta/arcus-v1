@@ -4,7 +4,7 @@
 
 import { DollarSign, ShoppingCart, Users, Wallet } from 'lucide-react';
 import { getOrders, getSalesCustomers } from '../actions';
-import { MOCK_ORDERS } from '@/lib/firebase/firestore';
+import { MOCK_ORDERS } from '@/lib/mock-data/firestore';
 import { getSessionClaims } from '@/lib/session';
 import { assertPermission } from '@/lib/rbac';
 
@@ -34,7 +34,7 @@ export async function getSalesDashboardData() {
   const kpis = [
     {
       title: 'Total Revenue',
-      value: `₹${totalRevenue.toLocaleString('en-IN')}`,
+      value: `?${totalRevenue.toLocaleString('en-IN')}`,
       icon: DollarSign,
       change: 'from all orders',
     },
@@ -46,7 +46,7 @@ export async function getSalesDashboardData() {
     },
     {
       title: 'Average Order Value',
-      value: `₹${averageOrderValue.toLocaleString('en-IN', {
+      value: `?${averageOrderValue.toLocaleString('en-IN', {
         maximumFractionDigits: 2,
       })}`,
       icon: Wallet,
@@ -63,7 +63,7 @@ export async function getSalesDashboardData() {
   const recentSales = orders.slice(0, 5).map((order) => ({
     name: customerMap.get(order.customerId) || 'Unknown Customer',
     email: `Order: ${order.orderNumber}`,
-    amount: `₹${order.totalAmount.toLocaleString('en-IN')}`,
+    amount: `?${order.totalAmount.toLocaleString('en-IN')}`,
   }));
 
   const salesChartData = MOCK_ORDERS.reduce((acc, order) => {
@@ -86,3 +86,5 @@ export async function getSalesDashboardData() {
     salesChartData,
   };
 }
+
+

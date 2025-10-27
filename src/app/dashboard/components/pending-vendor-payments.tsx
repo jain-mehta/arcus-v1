@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { PurchaseOrder } from '@/lib/firebase/types';
+import type { PurchaseOrder } from '@/lib/mock-data/types';
 
 interface PendingVendorPaymentsProps {
   payments: PurchaseOrder[];
@@ -31,7 +31,7 @@ export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) 
         <CardHeader>
           <CardTitle className="text-base flex justify-between items-center">
             <span>Total Outstanding Amount</span>
-            <span className="text-2xl font-bold">₹{totalOutstanding.toLocaleString('en-IN')}</span>
+            <span className="text-2xl font-bold">?{totalOutstanding.toLocaleString('en-IN')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -41,7 +41,7 @@ export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) 
                 <TableHead>PO Number</TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead>Due Date</TableHead>
-                <TableHead className="text-right">Amount Due (₹)</TableHead>
+                <TableHead className="text-right">Amount Due (?)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -70,3 +70,5 @@ export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) 
     </div>
   );
 }
+
+

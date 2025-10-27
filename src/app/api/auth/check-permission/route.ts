@@ -22,7 +22,7 @@ import { evaluatePolicy } from '@/lib/policyAdapter';
 
 export async function POST(req: NextRequest) {
   try {
-    // Get user from Firebase session
+    // Get user from Supabase session
     const decodedClaims = await getCurrentUserFromSession();
 
     if (!decodedClaims) {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       action,
       resource: resource_id ? `${resource}:${resource_id}` : resource,
       context: context || {},
-      tenant_id: decodedClaims.tenant_id,
+      tenant_id: decodedClaims.uid, // Use uid as tenant_id for now
     });
 
     return NextResponse.json({
@@ -72,3 +72,4 @@ export async function POST(req: NextRequest) {
 }
 
 export const runtime = 'nodejs';
+

@@ -27,7 +27,7 @@ export async function getSupabaseAdmin() {
   try {
     const { createClient } = await import('@supabase/supabase-js');
 
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
@@ -61,12 +61,12 @@ export async function createTenantDatabase(
   const startTime = Date.now();
   const databaseName = `tenant_${options.tenantId.replace(/-/g, '_')}`;
 
-  console.log(`\n📦 Creating tenant database: ${databaseName}`);
+  console.log(`\n?? Creating tenant database: ${databaseName}`);
 
   try {
     const databaseUrl = generateTenantDatabaseUrl(databaseName, options.tenantId);
 
-    console.log(`✅ Tenant database created: ${databaseName}`);
+    console.log(`? Tenant database created: ${databaseName}`);
     console.log(`   Region: ${options.region || 'us-east-1'}`);
     console.log(`   Duration: ${Date.now() - startTime}ms`);
 
@@ -77,7 +77,7 @@ export async function createTenantDatabase(
       createdAt: new Date(),
     };
   } catch (error) {
-    console.error(`❌ Failed to create tenant database:`, error);
+    console.error(`? Failed to create tenant database:`, error);
     throw error;
   }
 }
@@ -110,7 +110,7 @@ export function generateTenantDatabaseUrl(databaseName: string, tenantId: string
  * List all tenant databases
  */
 export async function listTenantDatabases(): Promise<TenantDatabase[]> {
-  console.log('📋 Listing tenant databases...');
+  console.log('?? Listing tenant databases...');
 
   try {
     // This would query the control-plane tenant_metadata table
@@ -127,7 +127,7 @@ export async function listTenantDatabases(): Promise<TenantDatabase[]> {
  * WARNING: This is destructive and should require confirmation
  */
 export async function deleteTenantDatabase(tenantId: string): Promise<boolean> {
-  console.log(`\n🗑️  Deleting tenant database for: ${tenantId}`);
+  console.log(`\n???  Deleting tenant database for: ${tenantId}`);
 
   try {
     const admin = getSupabaseAdmin();
@@ -135,10 +135,10 @@ export async function deleteTenantDatabase(tenantId: string): Promise<boolean> {
     // Implementation would delete the tenant database
     // For now, return true as placeholder
 
-    console.log(`✅ Tenant database deleted: ${tenantId}`);
+    console.log(`? Tenant database deleted: ${tenantId}`);
     return true;
   } catch (error) {
-    console.error(`❌ Failed to delete tenant database:`, error);
+    console.error(`? Failed to delete tenant database:`, error);
     throw error;
   }
 }
@@ -158,7 +158,7 @@ export async function healthCheck(): Promise<boolean> {
       return false;
     }
 
-    console.log('✅ Supabase Admin API is healthy');
+    console.log('? Supabase Admin API is healthy');
     return true;
   } catch (error) {
     console.error('Supabase health check error:', error);
@@ -173,3 +173,4 @@ export default {
   listTenantDatabases,
   healthCheck,
 };
+

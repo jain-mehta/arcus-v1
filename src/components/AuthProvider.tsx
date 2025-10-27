@@ -1,125 +1,183 @@
 /**
- * Authentication Provider
+ * Authentication Provider - Supabase Edition
  * 
  * Wraps the entire application and provides authentication state via context.
- * Handles Firebase Auth state changes and session cookie synchronization.
+ * Handles Supabase Auth state changes and JWT cookie management.
+ * 
+ * Uses Supabase for Auth with Supabase Auth for email/password authentication.
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  User as FirebaseUser 
-} from 'firebase/auth';
-import { auth } from '@/lib/firebaseClient';
-import type { User } from '@/lib/firebase/types';
-import type { PermissionMap } from '@/lib/rbac';
-import { AuthContext, type AuthContextValue } from '@/lib/auth-context';
+import { supabaseClient } from '@/lib/supabase/client';
+import { onAuthStateChange } from '@/lib/supabase/auth';
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { AuthContext, type AuthContextValue, type User } from '@/lib/auth-context';
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [permissions, setPermissions] = useState<PermissionMap | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Listen to Firebase Auth state changes
+  // Listen to Supabase Auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
+    let unsubscribe: (() => void) | undefined;
 
-      if (fbUser) {
-        // User is signed in - create session cookie
-        try {
-          const idToken = await fbUser.getIdToken();
-          
-          // Exchange ID token for session cookie
-          const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idToken }),
+    const setupAuthListener = async () => {
+      try {
+        // Get initial session
+        const {
+          data: { session: initialSession },
+        } = await supabaseClient.auth.getSession();
+
+        if (initialSession?.user) {
+          setSupabaseUser(initialSession.user);
+          setSession(initialSession);
+          setUser({
+            id: initialSession.user.id,
+            email: initialSession.user.email || '',
+            displayName: initialSession.user.user_metadata?.full_name,
           });
-
-          if (!response.ok) {
-            console.error('Failed to create session cookie');
-          }
-
-          // Fetch full user data from Firestore
-          const userResponse = await fetch('/api/auth/me');
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            setUser(userData);
-            
-            // Fetch permissions
-            const permResponse = await fetch('/api/auth/permissions');
-            if (permResponse.ok) {
-              const permData = await permResponse.json();
-              setPermissions(permData.permissions);
-            }
-          }
-        } catch (error) {
-          console.error('Error setting up session:', error);
         }
-      } else {
-        // User is signed out
-        setUser(null);
-        setPermissions(null);
+
+        // Subscribe to auth state changes
+        unsubscribe = onAuthStateChange((event, newSession) => {
+          console.log('[AuthProvider] Auth state changed:', event);
+
+          if (newSession) {
+            setSession(newSession);
+            setSupabaseUser(newSession.user);
+            setUser({
+              id: newSession.user.id,
+              email: newSession.user.email || '',
+              displayName: newSession.user.user_metadata?.full_name,
+            });
+            setError(null);
+          } else {
+            setSession(null);
+            setSupabaseUser(null);
+            setUser(null);
+            setError(null);
+          }
+        });
+      } catch (err) {
+        console.error('[AuthProvider] Setup error:', err);
+        setError(err instanceof Error ? err.message : 'Setup failed');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setLoading(false);
-    });
+    setupAuthListener();
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Session creation handled by onAuthStateChanged listener
-    } catch (error: any) {
-      console.error('Sign in error:', error);
-      throw new Error(error.message || 'Failed to sign in');
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Sign in failed');
+      }
+
+      // Auth state will be updated by listener
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Sign in failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata?: Record<string, any>
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, ...metadata }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Sign up failed');
+      }
+
+      // Auth state will be updated by listener
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Sign up failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
-      // Clear session cookie
-      await fetch('/api/auth/logout', { method: 'POST' });
-      
-      // Sign out from Firebase
-      await firebaseSignOut(auth);
-      
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Sign out failed');
+      }
+
       // Clear local state
+      setSession(null);
+      setSupabaseUser(null);
       setUser(null);
-      setFirebaseUser(null);
-      
-      // Redirect to login
-      window.location.href = '/login';
-    } catch (error: any) {
-      console.error('Sign out error:', error);
-      throw new Error(error.message || 'Failed to sign out');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Sign out failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const value: AuthContextValue = {
-    firebaseUser,
+  const contextValue: AuthContextValue = {
     user,
-    permissions,
     loading,
+    error,
     signIn,
+    signUp,
     signOut,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
+
+export default AuthProvider;
+

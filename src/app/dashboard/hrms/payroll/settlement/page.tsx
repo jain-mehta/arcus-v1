@@ -7,3 +7,4 @@ export default async function FullFinalSettlementPage() {
     
     return <SettlementClient stores={stores} staffList={staffList} />;
 }
+

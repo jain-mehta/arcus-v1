@@ -102,3 +102,4 @@ export class Employee {
   @Column({ type: 'timestamp', nullable: true })
   disabled_at?: Date;
 }
+

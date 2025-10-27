@@ -31,7 +31,7 @@ export default async function LeaderboardPage() {
               <TableRow>
                 <TableHead className="w-[80px]">Rank</TableHead>
                 <TableHead>Sales Representative</TableHead>
-                <TableHead className="text-right">Revenue Generated (₹)</TableHead>
+                <TableHead className="text-right">Revenue Generated (?)</TableHead>
                 <TableHead className="text-right">Deals Closed</TableHead>
               </TableRow>
             </TableHeader>
@@ -74,3 +74,4 @@ export default async function LeaderboardPage() {
     </div>
   );
 }
+

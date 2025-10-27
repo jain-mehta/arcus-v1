@@ -2,8 +2,8 @@
 
 import { getLeaveRequests, getLeavePolicies, getStaff } from '../actions';
 import { LeavesClient } from './client';
-import { getCurrentUser } from '@/lib/firebase/firestore';
-import { getUserPermissions } from '@/lib/firebase/rbac';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
+import { getUserPermissions } from '@/lib/mock-data/rbac';
 
 export default async function HrmsLeavesPage() {
     const user = await getCurrentUser();
@@ -35,3 +35,5 @@ export default async function HrmsLeavesPage() {
         />
     );
 }
+
+

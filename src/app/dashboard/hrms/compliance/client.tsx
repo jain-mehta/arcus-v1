@@ -325,3 +325,4 @@ function UploadDocumentDialog({ onDocumentUploaded }: { onDocumentUploaded: (doc
         </Dialog>
     );
 }
+

@@ -18,3 +18,4 @@ export function decodeJwtWithoutVerification(token: string) {
     return null;
   }
 }
+

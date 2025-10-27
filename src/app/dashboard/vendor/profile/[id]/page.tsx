@@ -8,9 +8,9 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { FileText, MessageSquare, Star, ArrowLeft } from 'lucide-react';
-import { getPurchaseOrders, getVendorDocuments, getCommunicationLogsByVendorId } from '@/lib/firebase/firestore';
+import { getPurchaseOrders, getVendorDocuments, getCommunicationLogsByVendorId } from '@/lib/mock-data/firestore';
 import { ClientWrapper } from './client-wrapper';
-import type { CommunicationLog, Vendor, VendorDocument, User } from '@/lib/firebase/types';
+import type { CommunicationLog, Vendor, VendorDocument, User } from '@/lib/mock-data/types';
 import { Button } from '@/components/ui/button';
 import { getVendor, getStoreManagers } from './actions';
 import { notFound } from 'next/navigation';

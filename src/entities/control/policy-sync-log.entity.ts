@@ -50,3 +50,4 @@ export class PolicySyncLog {
   @Column({ type: 'timestamp', nullable: true })
   completed_at?: Date;
 }
+

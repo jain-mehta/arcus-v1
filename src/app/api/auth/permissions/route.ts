@@ -20,8 +20,9 @@ export async function GET() {
     }
 
     // If permissions already in claims, return them
-    if (sessionClaims.permissions) {
-      return NextResponse.json({ permissions: sessionClaims.permissions });
+    const permissions = (sessionClaims as any).permissions;
+    if (permissions) {
+      return NextResponse.json({ permissions });
     }
 
     // Fetch from role document
@@ -32,16 +33,16 @@ export async function GET() {
       );
     }
 
-    const permissions = await getRolePermissions(sessionClaims.roleId);
+    const rolePermissions = await getRolePermissions(sessionClaims.roleId);
 
-    if (!permissions) {
+    if (!rolePermissions) {
       return NextResponse.json(
         { error: 'Role not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ permissions });
+    return NextResponse.json({ permissions: rolePermissions });
   } catch (error: any) {
     console.error('Get permissions error:', error);
     return NextResponse.json(
@@ -50,3 +51,4 @@ export async function GET() {
     );
   }
 }
+

@@ -3,7 +3,7 @@
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getNavConfig, getCurrentUser } from '@/lib/firebase/firestore';
+import { getNavConfig, getCurrentUser } from '@/lib/mock-data/firestore';
 import { getSessionClaims } from '@/lib/session';
 import { getRolePermissions } from '@/lib/rbac';
 import type { PermissionMap } from '@/lib/rbac';
@@ -56,7 +56,7 @@ export async function getLayoutData() {
  * Fetches all necessary data for the main dashboard page.
  */
 export async function getDashboardData() {
-  const { getVendors, getPurchaseOrders } = await import('@/lib/firebase/firestore');
+  const { getVendors, getPurchaseOrders } = await import('@/lib/mock-data/firestore');
   const { assertPermission } = await import('@/lib/rbac');
   const sessionClaims = await getSessionClaims();
   
@@ -106,7 +106,7 @@ export async function getDashboardData() {
   // Critical Alerts Mock Data
   const criticalAlerts = [
     { message: "Inventory for 'Brass Fittings' is critically low at the main factory.", time: "2 hours ago" },
-    { message: "Payment of ₹5,40,000 to 'Shree Ram Metals' is overdue by 3 days.", time: "1 day ago" },
+    { message: "Payment of ?5,40,000 to 'Shree Ram Metals' is overdue by 3 days.", time: "1 day ago" },
   ];
 
   return {
@@ -116,3 +116,5 @@ export async function getDashboardData() {
     criticalAlerts,
   };
 }
+
+

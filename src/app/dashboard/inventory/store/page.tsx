@@ -3,10 +3,10 @@
 import { Package } from "lucide-react";
 import { ProductTable } from "@/components/feature/product-table";
 import { getProducts } from '../../inventory/data';
-import { getCurrentUser } from '@/lib/firebase/firestore';
-import { getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
-import type { UserContext } from '@/lib/firebase/types';
-import { MOCK_ORGANIZATION_ID, MOCK_STORES } from '@/lib/firebase/firestore';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
+import { getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
+import type { UserContext } from '@/lib/mock-data/types';
+import { MOCK_ORGANIZATION_ID, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { addProduct, updateProduct, deleteProduct, simulateSale } from "../../inventory/actions";
 
 export default async function StoreInventoryPage() {
@@ -56,3 +56,5 @@ export default async function StoreInventoryPage() {
 }
 
     
+
+

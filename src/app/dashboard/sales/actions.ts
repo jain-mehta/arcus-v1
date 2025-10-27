@@ -28,11 +28,11 @@ import {
   addCommunicationLogInDb,
   addVisitInDb,
   getCurrentUser as getCurrentUserFromDb,
-} from '@/lib/firebase/firestore';
-import { getUser, getSubordinates, getUserPermissions, assertUserPermission } from '@/lib/firebase/rbac';
+} from '@/lib/mock-data/firestore';
+import { getUser, getSubordinates, getUserPermissions, assertUserPermission } from '@/lib/mock-data/rbac';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
-import type { Lead, Opportunity, User, UserContext, Customer, CommunicationLog, Order, Quotation, Visit } from '@/lib/firebase/types';
+import type { Lead, Opportunity, User, UserContext, Customer, CommunicationLog, Order, Quotation, Visit } from '@/lib/mock-data/types';
 
 /**
  * A helper function to build the full user context required for data access calls.
@@ -432,4 +432,6 @@ export async function getDealersForUser(): Promise<{id: string, name: string}[]>
     // For simplicity, dealers are just leads/companies for now.
     return leads.map(lead => ({ id: lead.id, name: lead.company }));
 }
+
+
 

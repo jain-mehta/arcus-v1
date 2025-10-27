@@ -4,9 +4,9 @@ import type { ExtractProductImageFromCatalogInput, ExtractProductImageFromCatalo
 import type { SuggestProductsFromCatalogTextOnlyInput, SuggestProductsFromCatalogTextOnlyOutput } from '@/ai/flows/suggest-products-from-catalog-text-only';
 import {
   MOCK_ORGANIZATION_ID,
-} from '@/lib/firebase/firestore';
-import { getUser, getSubordinates, getUserPermissions } from '@/lib/firebase/rbac';
-import type { UserContext } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import { getUser, getSubordinates, getUserPermissions } from '@/lib/mock-data/rbac';
+import type { UserContext } from '@/lib/mock-data/types';
 
 async function buildUserContext(userId: string): Promise<UserContext> {
     const [user, permissions, subordinates] = await Promise.all([
@@ -55,3 +55,5 @@ export async function extractProductImage(
   const { extractProductImageFromCatalog } = await import('@/ai/flows/extract-product-image-from-catalog');
   return extractProductImageFromCatalog(input);
 }
+
+

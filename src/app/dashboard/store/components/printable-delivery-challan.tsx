@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/firebase/types';
+import type { Order, Customer, Store } from '@/lib/mock-data/types';
 
 interface PrintableDeliveryChallanProps {
     order: Order;
@@ -78,3 +78,5 @@ export const PrintableDeliveryChallan = React.forwardRef<HTMLDivElement, Printab
     );
 });
 PrintableDeliveryChallan.displayName = 'PrintableDeliveryChallan';
+
+

@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getVendorDocuments as getVendorDocumentsFromDb, MOCK_VENDOR_DOCUMENTS, MOCK_VENDORS } from '@/lib/firebase/firestore';
+import { getVendorDocuments as getVendorDocumentsFromDb, MOCK_VENDOR_DOCUMENTS, MOCK_VENDORS } from '@/lib/mock-data/firestore';
 import { revalidatePath } from 'next/cache';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -65,3 +65,5 @@ export async function deleteVendorDocument(docId: string, filePath: string) {
   revalidatePath('/dashboard/vendor/profile/*');
   return { success: true };
 }
+
+

@@ -10,3 +10,4 @@ export async function QuotationsLoader() {
     
     return <QuotationsClient initialQuotations={quotations} allCustomers={customerList} />;
 }
+

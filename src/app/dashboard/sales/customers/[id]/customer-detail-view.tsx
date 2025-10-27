@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Handshake, FileText, ShoppingCart, MessageSquare, ArrowLeft } from 'lucide-react';
-import type { Customer, Opportunity, Quotation, Order, CommunicationLog } from "@/lib/firebase/types";
+import type { Customer, Opportunity, Quotation, Order, CommunicationLog } from "@/lib/mock-data/types";
 import { useRouter } from "next/navigation";
 
 interface CustomerDetailViewProps {

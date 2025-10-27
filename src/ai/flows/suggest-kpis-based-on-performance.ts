@@ -20,7 +20,7 @@ export type SuggestKpisBasedOnPerformanceInput = z.infer<typeof SuggestKpisBased
 
 const KpiSuggestionSchema = z.object({
     kpiName: z.string().describe("The specific, measurable name of the suggested KPI. E.g., 'Average Deal Size'."),
-    target: z.string().describe("A realistic, quantifiable target for the KPI. E.g., 'Increase to ₹30,000' or 'Reduce to 24 hours'."),
+    target: z.string().describe("A realistic, quantifiable target for the KPI. E.g., 'Increase to ?30,000' or 'Reduce to 24 hours'."),
     description: z.string().describe("A brief, one-sentence description of what this KPI measures."),
     rationale: z.string().describe("A detailed, data-driven explanation for why this KPI is being suggested, referencing the input data provided."),
 });
@@ -72,3 +72,4 @@ export async function suggestKpisBasedOnPerformance(
   const resultAny = await withTimeout(prompt(input), 10000) as any;
   return resultAny.output || [];
 }
+

@@ -7,3 +7,4 @@ export async function LeadsLoader({ searchParams }: { searchParams: { [key: stri
   
     return <LeadsClient initialLeads={leads} users={users} />;
 }
+

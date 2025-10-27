@@ -1,6 +1,6 @@
 
 import { notFound } from 'next/navigation';
-import { getQuotation, getCustomer } from '@/lib/firebase/firestore';
+import { getQuotation, getCustomer } from '@/lib/mock-data/firestore';
 import { QuotationDetailClient } from './client';
 import { QuotationDetailView } from './view';
 import { createOrderFromQuote } from '../../actions';

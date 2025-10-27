@@ -2,10 +2,10 @@
 
 import { GoodsOutwardClient } from './client';
 import { getProducts } from '../data';
-import { getUser, getSubordinates, getUserPermissions } from '@/lib/firebase/rbac';
+import { getUser, getSubordinates, getUserPermissions } from '@/lib/mock-data/rbac';
 import { getCurrentUser } from '@/app/dashboard/sales/actions';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
-import type { UserContext, Product } from '@/lib/firebase/types';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
+import type { UserContext, Product } from '@/lib/mock-data/types';
 
 export default async function GoodsOutwardPage() {
     const user = await getCurrentUser();
@@ -25,3 +25,5 @@ export default async function GoodsOutwardPage() {
 }
 
     
+
+

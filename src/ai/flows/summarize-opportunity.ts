@@ -62,3 +62,4 @@ export async function summarizeOpportunity(
   const resultAny = await withTimeout(prompt(input), 8000) as any;
   return resultAny.output!;
 }
+

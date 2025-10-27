@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getFirebaseAdmin } from '../../../../lib/firebase/firebase-admin';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 
 // POST /api/admin/set-claims
 export async function POST(req: Request) {
@@ -21,17 +21,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
 
-  const { uid, orgId, roles } = body || {};
-  if (!uid || !orgId) {
-    return NextResponse.json({ error: 'missing uid or orgId' }, { status: 400 });
+  const { userId, roles } = body || {};
+  if (!userId) {
+    return NextResponse.json({ error: 'missing userId' }, { status: 400 });
   }
 
   try {
-    const admin = getFirebaseAdmin();
+    const supabaseAdmin = getSupabaseServerClient();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Admin client not available' }, { status: 500 });
+    }
+
     const roleArray = Array.isArray(roles) ? roles : (typeof roles === 'string' ? roles.split(',').map((s:string)=>s.trim()).filter(Boolean) : []);
-    await admin.auth.setCustomUserClaims(uid, { orgId, roleIds: roleArray });
-    return NextResponse.json({ ok: true, uid, orgId, roleIds: roleArray });
+    
+    // Update user role in database
+    const { error } = await supabaseAdmin
+      .from('users')
+      .update({ role_ids: roleArray })
+      .eq('id', userId);
+
+    if (error) {
+      return NextResponse.json({ error: 'failed', detail: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, userId, roleIds: roleArray });
   } catch (err: any) {
     return NextResponse.json({ error: 'failed', detail: String(err) }, { status: 500 });
   }
 }
+

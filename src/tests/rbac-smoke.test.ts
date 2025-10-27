@@ -1,4 +1,4 @@
-import { getUserPermissions, userHasPermission } from '@/lib/firebase/rbac';
+import { getUserPermissions, userHasPermission } from '@/lib/mock-data/rbac';
 
 async function smoke() {
   const perms = await getUserPermissions('user-admin');
@@ -11,3 +11,5 @@ smoke().catch(err => {
   console.error('RBAC smoke failed', err);
   process.exit(1);
 });
+
+

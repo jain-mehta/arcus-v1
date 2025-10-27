@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FolderKanban, PlusCircle, Edit, UserPlus, GripVertical, View } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { JobOpening, Applicant, ApplicantStage } from '@/lib/firebase/types';
+import type { JobOpening, Applicant, ApplicantStage } from '@/lib/mock-data/types';
 import { JobDialog, type JobOpeningFormValues, JobDetailDialog } from './job-dialog';
 import { useState, useEffect, useTransition, useCallback } from 'react';
 import { createJobOpening, getJobOpenings, updateJobOpening, getApplicants, addApplicant, updateApplicantStage } from '../actions';
@@ -404,3 +404,5 @@ function AddApplicantDialog({ job, onApplicantAdded, triggerButton }: { job?: Jo
         </Dialog>
     )
 }
+
+

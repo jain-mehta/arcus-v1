@@ -21,3 +21,4 @@ export class Session {
   @Column({ type: 'jsonb', nullable: true })
   device_info!: any;
 }
+

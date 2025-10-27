@@ -107,3 +107,4 @@ export class PurchaseOrder {
   @Column({ type: 'timestamp', nullable: true })
   approved_at?: Date;
 }
+

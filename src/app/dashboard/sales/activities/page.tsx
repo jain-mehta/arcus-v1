@@ -1,11 +1,11 @@
 
 
-import { getCommunicationLogs } from "@/lib/firebase/firestore";
+import { getCommunicationLogs } from "@/lib/mock-data/firestore";
 import { SalesActivitiesClient } from "./client";
 import { getCurrentUser } from "../actions";
-import { getUserPermissions, getSubordinates } from "@/lib/firebase/rbac";
-import type { UserContext, CommunicationLog } from "@/lib/firebase/types";
-import { MOCK_ORGANIZATION_ID } from "@/lib/firebase/firestore";
+import { getUserPermissions, getSubordinates } from "@/lib/mock-data/rbac";
+import type { UserContext, CommunicationLog } from "@/lib/mock-data/types";
+import { MOCK_ORGANIZATION_ID } from "@/lib/mock-data/firestore";
 
 export default async function SalesActivitiesPage() {
     // Build user context to pass to data fetching
@@ -30,3 +30,5 @@ export default async function SalesActivitiesPage() {
 
     return <SalesActivitiesClient initialActivities={activities} />;
 }
+
+

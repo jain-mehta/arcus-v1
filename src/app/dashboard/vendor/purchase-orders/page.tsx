@@ -1,5 +1,5 @@
 
-import { getPurchaseOrders, getVendors } from '@/lib/firebase/firestore';
+import { getPurchaseOrders, getVendors } from '@/lib/mock-data/firestore';
 import { PurchaseOrderClient } from './client';
 
 
@@ -13,3 +13,5 @@ export default async function PurchaseOrderPage() {
        <PurchaseOrderClient initialPurchaseOrders={purchaseOrders} vendors={vendorList} />
     );
 }
+
+

@@ -9,3 +9,4 @@ export default async function QuotationsListPage() {
     
     return <QuotationsClient initialQuotations={quotations} allCustomers={customerList} />;
 }
+

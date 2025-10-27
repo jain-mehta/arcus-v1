@@ -17,9 +17,9 @@ import {
 } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { FileText, MessageSquare, Star, ArrowLeft, DollarSign, Package, TrendingUp } from 'lucide-react';
-import { getPurchaseOrders, getVendorDocuments, getCommunicationLogs, MOCK_USERS } from '@/lib/firebase/firestore';
+import { getPurchaseOrders, getVendorDocuments, getCommunicationLogs, MOCK_USERS } from '@/lib/mock-data/firestore';
 import { ClientWrapper } from './client-wrapper';
-import type { CommunicationLog, Vendor, VendorDocument, Order, User } from '@/lib/firebase/types';
+import type { CommunicationLog, Vendor, VendorDocument, Order, User } from '@/lib/mock-data/types';
 import { Button } from '@/components/ui/button';
 import { getStoreDetails, getStoreManagers } from './actions';
 import { Badge } from '@/components/ui/badge';

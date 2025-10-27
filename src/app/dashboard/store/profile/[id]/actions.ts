@@ -7,8 +7,8 @@ import {
   MOCK_ORDERS,
   getCurrentUser,
   getProducts as getProductsFromDb,
-} from '@/lib/firebase/firestore';
-import type { Store, User, Product, Order } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import type { Store, User, Product, Order } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { assertPermission } from '@/lib/rbac';

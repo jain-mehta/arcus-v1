@@ -57,3 +57,4 @@ export class TenantMetadata {
   @Column({ type: 'timestamp', nullable: true })
   last_accessed_at?: Date;
 }
+

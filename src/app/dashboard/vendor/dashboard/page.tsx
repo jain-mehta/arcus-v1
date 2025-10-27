@@ -67,8 +67,8 @@ function KpiCards({ kpis }: { kpis: { activeVendors: number, outstandingBalance:
 
   const kpiData = [
     { title: "Total Active Vendors", value: activeVendors.toString(), icon: Users, change: "in your system" },
-    { title: "Total Spend (YTD)", value: `₹${(ytdSpend / 10000000).toFixed(2)} Cr`, icon: CircleDollarSign, change: "for the current year" },
-    { title: "Outstanding Balance", value: `₹${(outstandingBalance / 100000).toFixed(2)} Lac`, icon: Activity, change: "across all vendors" },
+    { title: "Total Spend (YTD)", value: `?${(ytdSpend / 10000000).toFixed(2)} Cr`, icon: CircleDollarSign, change: "for the current year" },
+    { title: "Outstanding Balance", value: `?${(outstandingBalance / 100000).toFixed(2)} Lac`, icon: Activity, change: "across all vendors" },
   ];
 
   return (
@@ -159,7 +159,7 @@ function UpcomingPaymentsCard({ upcomingPayments }: { upcomingPayments: any[] })
                         <div className="font-medium">{payment.vendorName}</div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">{payment.poNumber}</TableCell>
-                        <TableCell className="text-right">₹{payment.totalAmount.toLocaleString('en-IN')}</TableCell>
+                        <TableCell className="text-right">?{payment.totalAmount.toLocaleString('en-IN')}</TableCell>
                         <TableCell className="text-right">{new Date(payment.deliveryDate).toLocaleDateString()}</TableCell>
                     </TableRow>
                 )) : (
@@ -175,3 +175,4 @@ function UpcomingPaymentsCard({ upcomingPayments }: { upcomingPayments: any[] })
     </Card>
   );
 }
+

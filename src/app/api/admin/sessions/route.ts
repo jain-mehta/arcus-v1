@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionsForUser, revokeSession } from "@/lib/mock-sessions";
-import { getCurrentUser } from "@/lib/firebase/firestore";
+import { getCurrentUser } from "@/lib/mock-data/firestore";
 
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
@@ -35,3 +35,5 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
+
+

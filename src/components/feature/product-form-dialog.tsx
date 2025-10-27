@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
-import type { Product } from '@/lib/firebase/types';
+import type { Product } from '@/lib/mock-data/types';
 import Image from 'next/image';
 
 const imageFileSchema = z.object({
@@ -297,7 +297,7 @@ export function ProductFormDialog({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price (₹)</FormLabel>
+                    <FormLabel>Price (?)</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="e.g., 1500" {...field} />
                     </FormControl>
@@ -366,3 +366,5 @@ export function ProductFormDialog({
     </Dialog>
   );
 }
+
+

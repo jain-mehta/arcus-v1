@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import type { User, SalaryStructure, Payslip, Store } from '@/lib/firebase/types';
+import type { User, SalaryStructure, Payslip, Store } from '@/lib/mock-data/types';
 import { runPayroll, getPageData } from './actions';
 import { Loader2, FileText, Printer } from 'lucide-react';
 import { PrintablePayslip } from '../printable-payslip';
@@ -208,3 +208,5 @@ export default function GeneratePayslipPage() {
         </div>
     )
 }
+
+

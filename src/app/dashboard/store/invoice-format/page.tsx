@@ -19,7 +19,7 @@ import { PrintableInvoice } from "../components/printable-invoice";
 import { PrintableThermalReceipt } from '../components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '../components/printable-packing-slip';
 import { PrintableDeliveryChallan } from '../components/printable-delivery-challan';
-import type { Order, Store, InvoiceTemplate } from '@/lib/firebase/types';
+import type { Order, Store, InvoiceTemplate } from '@/lib/mock-data/types';
 import { getStores, updateStore } from "../manage/actions";
 import { Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -361,3 +361,5 @@ export default function InvoiceFormatEditorPage() {
         </Suspense>
     )
 }
+
+

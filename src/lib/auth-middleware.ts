@@ -28,7 +28,7 @@ export interface AuthUser {
 }
 
 /**
- * Authenticate request and get user from Firebase session
+ * Authenticate request and get user from Supabase session
  */
 export async function checkAuth(req: NextRequest): Promise<AuthUser | null> {
   try {
@@ -41,8 +41,8 @@ export async function checkAuth(req: NextRequest): Promise<AuthUser | null> {
     return {
       uid: decodedClaims.uid,
       email: decodedClaims.email,
-      tenant_id: decodedClaims.tenant_id,
-      role: decodedClaims.role,
+      tenant_id: decodedClaims.uid, // Use uid as tenant_id
+      role: (decodedClaims as any).role,
     };
   } catch (error) {
     console.error('Auth check failed:', error);
@@ -153,3 +153,4 @@ export default {
   requireAuth,
   requirePermission,
 };
+

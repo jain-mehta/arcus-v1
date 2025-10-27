@@ -2,9 +2,9 @@
 
 'use server';
 
-import { getProducts as getProductsFromDb, getCurrentUser } from '@/lib/firebase/firestore';
-import type { Product, UserContext, User } from '@/lib/firebase/types';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
+import { getProducts as getProductsFromDb, getCurrentUser } from '@/lib/mock-data/firestore';
+import type { Product, UserContext, User } from '@/lib/mock-data/types';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
 
 async function getCurrentUserId(): Promise<string | null> {
     const user = await getCurrentUser();
@@ -100,4 +100,6 @@ export async function getInventoryDashboardData() {
         recentStockAlerts,
     };
 }
+
+
 

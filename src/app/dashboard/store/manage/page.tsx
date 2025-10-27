@@ -4,8 +4,8 @@ import { PlusCircle } from "lucide-react";
 import { getStores, getStoreManagers } from "./actions";
 import { StoreList } from "./store-list";
 import { StoreDialog } from "./store-dialog";
-import { getCurrentUser } from "@/lib/firebase/firestore";
-import { getUserPermissions } from "@/lib/firebase/rbac";
+import { getCurrentUser } from "@/lib/mock-data/firestore";
+import { getUserPermissions } from "@/lib/mock-data/rbac";
 import { redirect } from "next/navigation";
 
 
@@ -39,3 +39,4 @@ export default async function ManageStoresPage() {
         </div>
     )
 }
+

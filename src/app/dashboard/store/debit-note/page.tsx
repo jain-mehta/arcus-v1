@@ -33,7 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeftRight, Loader2, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { Store, Customer } from '@/lib/firebase/types';
+import type { Store, Customer } from '@/lib/mock-data/types';
 import { useReactToPrint } from 'react-to-print';
 import { PrintableDebitNote } from '../components/printable-debit-note';
 import { getSalesCustomers } from '../../sales/actions';
@@ -183,7 +183,7 @@ export default function DebitNotePage() {
                                             name={`items.${index}.amount`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                     <FormLabel className={cn(index !== 0 && "sr-only")}>Amount (₹)</FormLabel>
+                                                     <FormLabel className={cn(index !== 0 && "sr-only")}>Amount (?)</FormLabel>
                                                     <FormControl><Input type="number" className="w-28" {...field} /></FormControl>
                                                      <FormMessage />
                                                 </FormItem>
@@ -226,3 +226,5 @@ export default function DebitNotePage() {
     </div>
   );
 }
+
+

@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageSquare, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { addCommunicationLog } from './actions';
-import type { CommunicationLog } from '@/lib/firebase/types';
+import type { CommunicationLog } from '@/lib/mock-data/types';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({

@@ -8,7 +8,7 @@ import type { ChartConfig } from '@/components/ui/chart';
 
 const chartConfig = {
   revenue: {
-    label: 'Revenue (₹)',
+    label: 'Revenue (?)',
     color: 'hsl(var(--primary))',
   },
 } satisfies ChartConfig;
@@ -46,3 +46,4 @@ export function KpiCharts({ data }: { data: { name: string; revenue: number }[] 
     </Card>
   );
 }
+

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getStaffMember, getShiftLogsForStaff, MOCK_STORES } from '@/lib/firebase/firestore';
+import { getStaffMember, getShiftLogsForStaff, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { ArrowLeft, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';

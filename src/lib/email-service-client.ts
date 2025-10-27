@@ -37,7 +37,7 @@ class EmailServiceClient {
     this.enabled = !!this.apiKey;
 
     if (!this.enabled && this.provider !== 'mock') {
-      console.warn(`⚠️  Email provider (${this.provider}) not configured - using mock`);
+      console.warn(`??  Email provider (${this.provider}) not configured - using mock`);
       this.provider = 'mock';
     }
   }
@@ -48,7 +48,7 @@ class EmailServiceClient {
   async send(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
     const recipients = Array.isArray(options.to) ? options.to : [options.to];
 
-    console.log(`📧 Sending email to: ${recipients.join(', ')}`);
+    console.log(`?? Sending email to: ${recipients.join(', ')}`);
     console.log(`   Subject: ${options.subject}`);
 
     if (this.provider === 'mock') {
@@ -86,7 +86,7 @@ class EmailServiceClient {
     // const mg = mailgun(Mailgun({ username: 'api', key: this.apiKey }));
     // const result = await mg.messages.create(this.domain, {...});
 
-    console.log('📬 [Mailgun] Email queued');
+    console.log('?? [Mailgun] Email queued');
     return { success: true, messageId: `mailgun-${Date.now()}` };
   }
 
@@ -99,7 +99,7 @@ class EmailServiceClient {
     // sgMail.setApiKey(this.apiKey);
     // const result = await sgMail.send({...});
 
-    console.log('📬 [SendGrid] Email queued');
+    console.log('?? [SendGrid] Email queued');
     return { success: true, messageId: `sendgrid-${Date.now()}` };
   }
 
@@ -121,7 +121,7 @@ class EmailServiceClient {
           <ul>
             <li><strong>PO #:</strong> ${data.poNumber}</li>
             <li><strong>Vendor:</strong> ${data.vendorName}</li>
-            <li><strong>Amount:</strong> ₹${data.amount}</li>
+            <li><strong>Amount:</strong> ?${data.amount}</li>
             <li><strong>Expected Delivery:</strong> ${data.expectedDelivery}</li>
           </ul>
           <p><a href="${data.actionUrl}">View Purchase Order</a></p>
@@ -150,7 +150,7 @@ class EmailServiceClient {
           <ul>
             <li><strong>SO #:</strong> ${data.soNumber}</li>
             <li><strong>Customer:</strong> ${data.customerName}</li>
-            <li><strong>Amount:</strong> ₹${data.amount}</li>
+            <li><strong>Amount:</strong> ?${data.amount}</li>
             <li><strong>Promised Delivery:</strong> ${data.promisedDelivery}</li>
           </ul>
           <p><a href="${data.actionUrl}">View Sales Order</a></p>
@@ -236,3 +236,4 @@ class EmailServiceClient {
 }
 
 export const emailServiceClient = new EmailServiceClient();
+

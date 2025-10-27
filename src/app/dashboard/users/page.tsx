@@ -12,3 +12,4 @@ export default async function UsersPage() {
 
   return <ImprovedUsersClient initialUsers={users} allRoles={roles} allPermissions={permissions} allStores={stores} />;
 }
+

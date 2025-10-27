@@ -14,3 +14,4 @@ export default async function VisitLoggingPage() {
         <VisitLoggingClient dealers={dealers} initialVisits={visits} />
     )
 }
+

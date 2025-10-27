@@ -1,14 +1,14 @@
 
 "use server";
 import { z } from 'zod';
-import { MOCK_PAYROLL_FORMATS, MOCK_STORES, getCurrentUser as getCurrentUserFromDb } from '@/lib/firebase/firestore';
+import { MOCK_PAYROLL_FORMATS, MOCK_STORES, getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
 import { revalidatePath } from 'next/cache';
-import { assertUserPermission } from '@/lib/firebase/rbac';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
 
 // Define the schema for the AI's expected output
 const PayslipFieldSchema = z.object({
   label: z.string().describe("The label for the payslip field (e.g., 'Basic Salary', 'Employee ID')."),
-  exampleValue: z.string().describe("An example value for this field (e.g., '₹30,000', 'EMP001').")
+  exampleValue: z.string().describe("An example value for this field (e.g., '?30,000', 'EMP001').")
 });
 
 const PayslipSectionSchema = z.object({
@@ -150,3 +150,5 @@ export async function setDefaultFormatForStore(storeId: string, formatId: string
     }
     return { success: false };
 }
+
+

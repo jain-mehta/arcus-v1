@@ -1,7 +1,7 @@
 
 'use server';
 
-import { MOCK_COMPLIANCE_DOCS } from "@/lib/firebase/firestore";
+import { MOCK_COMPLIANCE_DOCS } from "@/lib/mock-data/firestore";
 import { revalidatePath } from "next/cache";
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -54,3 +54,5 @@ export async function deleteComplianceDocument(
     }
     return { success: false, message: 'Document not found.' };
 }
+
+

@@ -1,9 +1,9 @@
 
 'use server';
 
-import { MOCK_PRODUCTS, MOCK_SHIPMENTS, getCurrentUser } from '@/lib/firebase/firestore';
-import type { UserContext } from '@/lib/firebase/types';
-import { assertUserPermission } from '@/lib/firebase/rbac';
+import { MOCK_PRODUCTS, MOCK_SHIPMENTS, getCurrentUser } from '@/lib/mock-data/firestore';
+import type { UserContext } from '@/lib/mock-data/types';
+import { assertUserPermission } from '@/lib/mock-data/rbac';
 import { revalidatePath } from 'next/cache';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -77,3 +77,5 @@ export async function receiveShipment(shipmentId: string, receivedItems: { produ
         return { success: false, message: error.message };
     }
 }
+
+

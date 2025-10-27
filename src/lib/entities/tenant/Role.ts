@@ -12,3 +12,4 @@ export class Role {
   @Column({ type: 'jsonb' })
   permissions!: any;
 }
+

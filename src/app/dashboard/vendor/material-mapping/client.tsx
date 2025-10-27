@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { updateMaterialMappings, deleteMaterialMapping, addMaterialMapping, addVolumeDiscount, updateVolumeDiscounts, deleteVolumeDiscount, getMaterialMappings, getVolumeDiscounts } from './actions';
-import type { Vendor, MaterialMapping, VolumeDiscount } from '@/lib/firebase/types';
+import type { Vendor, MaterialMapping, VolumeDiscount } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AddDiscountDialog } from './components/add-discount-dialog';
@@ -260,7 +260,7 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
                                 <TableHead>Material</TableHead>
                                 <TableHead>SKU</TableHead>
                                 <TableHead>Unit</TableHead>
-                                <TableHead>Unit Price (₹)</TableHead>
+                                <TableHead>Unit Price (?)</TableHead>
                                 <TableHead>Reorder Level</TableHead>
                                 <TableHead>Safety Stock</TableHead>
                                 <TableHead>Active</TableHead>
@@ -385,3 +385,5 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
         </div>
     );
 }
+
+

@@ -10,7 +10,7 @@ import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianG
 import { Star, Save, Loader2 } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import type { Vendor, VendorRatingCriteria, VendorRatingHistory } from '@/lib/firebase/types';
+import type { Vendor, VendorRatingCriteria, VendorRatingHistory } from '@/lib/mock-data/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { calculateAndUpdateVendorScores, getVendorRatingCriteria, getVendorRatingHistory, getVendors } from './actions';
@@ -266,3 +266,5 @@ export function RatingClient({ vendors: initialVendors, initialCriteria, initial
         </div>
     );
 }
+
+

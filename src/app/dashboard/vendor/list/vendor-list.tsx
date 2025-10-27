@@ -43,7 +43,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { approveVendor, rejectVendor, deleteVendor, getVendors } from './actions';
-import type { Vendor } from '@/lib/firebase/types';
+import type { Vendor } from '@/lib/mock-data/types';
 import { useRouter } from 'next/navigation';
 
 interface VendorListProps {
@@ -259,3 +259,5 @@ export function VendorList({ initialVendors }: VendorListProps) {
     </>
   );
 }
+
+

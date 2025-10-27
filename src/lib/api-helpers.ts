@@ -103,7 +103,7 @@ export async function checkPermission(
 ): Promise<boolean> {
   // TODO: Integrate with Permify
   // For now, allow all authenticated users
-  console.log(`Checking permission: ${userId}@${tenantId} → ${resource}:${action}`);
+  console.log(`Checking permission: ${userId}@${tenantId} ? ${resource}:${action}`);
   return true;
 }
 
@@ -311,3 +311,4 @@ export default {
   validateRequired,
   healthCheckHandler,
 };
+

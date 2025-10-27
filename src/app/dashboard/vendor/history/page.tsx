@@ -1,6 +1,6 @@
 
 
-import { getVendors } from '@/lib/firebase/firestore';
+import { getVendors } from '@/lib/mock-data/firestore';
 import { PurchaseHistoryClient } from './client';
 import { getPurchaseHistoryForVendor } from '../actions';
 
@@ -14,3 +14,5 @@ export default async function PurchaseHistoryPage() {
 }
 
     
+
+

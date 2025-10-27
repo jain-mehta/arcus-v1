@@ -6,7 +6,7 @@ import { Check, X, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { updatePurchaseOrderStatus } from "../../actions";
 import { useToast } from "@/hooks/use-toast";
-import type { PurchaseOrder } from "@/lib/firebase/types";
+import type { PurchaseOrder } from "@/lib/mock-data/types";
 
 export function ApprovalActions({ poId }: { poId: string }) {
     const [isPending, startTransition] = useTransition();

@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { History } from 'lucide-react';
-import { getAuditLogs } from '@/lib/firebase/firestore';
+import { getAuditLogs } from '@/lib/mock-data/firestore';
 import { Badge } from '@/components/ui/badge';
 
 export default async function AuditLogPage() {
@@ -83,3 +83,5 @@ export default async function AuditLogPage() {
     </div>
   );
 }
+
+

@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageSquare, Loader2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { addCommunicationLog } from '@/app/dashboard/vendor/profile/[id]/actions';
-import type { CommunicationLog, Vendor } from '@/lib/firebase/types';
+import type { CommunicationLog, Vendor } from '@/lib/mock-data/types';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
@@ -140,3 +140,5 @@ export function CommunicationLogDialog({ vendors, onLogAdded }: CommunicationLog
         </Dialog>
     );
 }
+
+

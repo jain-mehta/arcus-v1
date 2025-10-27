@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { ArrowLeftRight, Search, Loader2, Printer } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import type { Order, Store } from '@/lib/firebase/types';
+import type { Order, Store } from '@/lib/mock-data/types';
 import { findOrderForReturn, processReturn } from './actions';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useReactToPrint } from 'react-to-print';
@@ -301,3 +301,5 @@ export function ReturnsClient({ isAdmin, allStores, userStoreId }: ReturnsClient
     </div>
   );
 }
+
+

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useEffect, useState, useTransition, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileBarChart, Check, ChevronsUpDown, X, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
-import type { Store } from '@/lib/firebase/types';
+import type { Store } from '@/lib/mock-data/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -265,11 +265,11 @@ export default function StoreReportsPage() {
                             <BarChart data={reportData.salesByStoreChartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${(value / 1000).toLocaleString()}k`} />
+                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `?${(value / 1000).toLocaleString()}k`} />
                                 <Tooltip
                                     cursor={{ fill: 'hsl(var(--muted))' }}
                                     contentStyle={{ backgroundColor: 'hsl(var(--background))' }}
-                                    formatter={(value: number) => `₹${value.toLocaleString()}`}
+                                    formatter={(value: number) => `?${value.toLocaleString()}`}
                                 />
                                 <Bar dataKey="sales" fill="hsl(var(--primary))" name="Total Revenue" radius={[4, 4, 0, 0]} />
                             </BarChart>
@@ -338,3 +338,5 @@ export default function StoreReportsPage() {
         </div>
     );
 }
+
+

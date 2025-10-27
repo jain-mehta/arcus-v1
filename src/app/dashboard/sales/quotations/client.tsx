@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, PlusCircle, Check, X, Loader2, ShoppingCart, ArrowRight } from "lucide-react";
-import type { Quotation, Customer } from '@/lib/firebase/types';
+import type { Quotation, Customer } from '@/lib/mock-data/types';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { createOrderFromQuote, updateQuotationStatus } from '../actions';
@@ -153,7 +153,7 @@ export function QuotationsClient({ initialQuotations, allCustomers }: Quotations
                                     </TableCell>
                                     <TableCell>{customers[quote.customerId] || 'Unknown Customer'}</TableCell>
                                     <TableCell>{new Date(quote.quoteDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>₹{quote.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>?{quote.totalAmount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(quote.status)}>{quote.status}</Badge>
                                     </TableCell>
@@ -206,3 +206,5 @@ export function QuotationsClient({ initialQuotations, allCustomers }: Quotations
     </div>
   );
 }
+
+

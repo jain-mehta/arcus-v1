@@ -32,3 +32,4 @@ export function GoogleAnalyticsProvider() {
 
   return null; // This component doesn't render anything
 }
+

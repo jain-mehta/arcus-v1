@@ -108,3 +108,4 @@ export function HrmsDashboardClient({ dashboardData }: HrmsDashboardClientProps)
     </div>
   );
 }
+

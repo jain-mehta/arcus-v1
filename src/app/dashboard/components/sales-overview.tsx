@@ -41,7 +41,7 @@ export function SalesOverview({ data, salesTrendData, revenueFiguresData }: Sale
             <CardHeader>
             <CardTitle>Sales Trends</CardTitle>
             <div className="text-sm text-muted-foreground">
-                <span className="text-2xl font-bold text-foreground">₹{totalRevenue.toLocaleString('en-IN')}</span>
+                <span className="text-2xl font-bold text-foreground">?{totalRevenue.toLocaleString('en-IN')}</span>
                 <div className="text-xs">{monthlyChange} from last month</div>
             </div>
             </CardHeader>
@@ -103,7 +103,7 @@ export function SalesOverview({ data, salesTrendData, revenueFiguresData }: Sale
             <CardHeader>
             <CardTitle>Revenue Figures</CardTitle>
             <div className="text-sm text-muted-foreground pt-1.5">
-                <span className="text-2xl font-bold text-foreground">₹{totalRevenue.toLocaleString('en-IN')}</span>
+                <span className="text-2xl font-bold text-foreground">?{totalRevenue.toLocaleString('en-IN')}</span>
                 <div className="text-xs">Total revenue this period</div>
             </div>
             </CardHeader>
@@ -114,7 +114,7 @@ export function SalesOverview({ data, salesTrendData, revenueFiguresData }: Sale
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" tickLine={false} axisLine={false} />
                         <YAxis hide={true} />
-                        <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `₹${new Intl.NumberFormat('en-IN').format(value)}`} />
+                        <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `?${new Intl.NumberFormat('en-IN').format(value)}`} />
                         <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -127,3 +127,4 @@ export function SalesOverview({ data, salesTrendData, revenueFiguresData }: Sale
     </div>
   );
 }
+

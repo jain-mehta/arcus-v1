@@ -2,9 +2,9 @@
 'use server';
 
 import type { SummarizeOpportunityInput, SummarizeOpportunityOutput } from '@/ai/flows/summarize-opportunity';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/firebase/rbac';
-import type { UserContext } from '@/lib/firebase/types';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
+import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
+import type { UserContext } from '@/lib/mock-data/types';
 import { getOpportunities, getSalesCustomers } from '../actions';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -55,3 +55,5 @@ export async function getKanbanData() {
     ]);
     return { opportunities, customers };
 }
+
+

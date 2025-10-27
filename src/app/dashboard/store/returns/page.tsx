@@ -1,7 +1,7 @@
 
 
-import { getCurrentUser } from '@/lib/firebase/firestore';
-import { getUserPermissions } from '@/lib/firebase/rbac';
+import { getCurrentUser } from '@/lib/mock-data/firestore';
+import { getUserPermissions } from '@/lib/mock-data/rbac';
 import { getStores } from '../manage/actions';
 import { ReturnsClient } from './client';
 
@@ -28,3 +28,5 @@ export default async function ReturnsPage() {
         />
     );
 }
+
+

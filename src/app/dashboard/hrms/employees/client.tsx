@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import type { Role, Store, User } from '@/lib/firebase/types';
+import type { Role, Store, User } from '@/lib/mock-data/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -192,5 +192,7 @@ export function EmployeesClient(props: EmployeesClientProps) {
         </div>
     );
 }
+
+
 
 

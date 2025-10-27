@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button';
 import { Banknote, Download, FileText, Loader2, BookUser, PlusCircle, BookCopy, Edit, Trash2, View } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import type { Payslip, SalaryStructure, Store, User } from '@/lib/firebase/types';
+import type { Payslip, SalaryStructure, Store, User } from '@/lib/mock-data/types';
 import {
   Dialog,
   DialogContent,
@@ -186,9 +186,9 @@ export function PayrollClient({ initialUsers, initialSalaryStructures, store }: 
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Employee</TableHead>
-                                <TableHead>Gross Salary (₹)</TableHead>
-                                <TableHead>Deductions (₹)</TableHead>
-                                <TableHead>Net Salary (₹)</TableHead>
+                                <TableHead>Gross Salary (?)</TableHead>
+                                <TableHead>Deductions (?)</TableHead>
+                                <TableHead>Net Salary (?)</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -431,3 +431,5 @@ function DeleteStructureDialog({ structureId, structureName, onDelete }: { struc
         </AlertDialog>
     );
 }
+
+

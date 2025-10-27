@@ -110,3 +110,4 @@ export class SalesOrder {
   @Column({ type: 'timestamp', nullable: true })
   confirmed_at?: Date;
 }
+

@@ -13,7 +13,7 @@ export function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { signIn, firebaseUser, loading: authLoading } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,11 +21,11 @@ export function LoginClient() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!authLoading && firebaseUser) {
+    if (!authLoading && user) {
       const from = searchParams.get('from') || '/dashboard';
       router.push(from);
     }
-  }, [authLoading, firebaseUser, router, searchParams]);
+  }, [authLoading, user, router, searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -111,3 +111,4 @@ export function LoginClient() {
     </div>
   );
 }
+

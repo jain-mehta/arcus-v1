@@ -26,3 +26,4 @@ export function SalesChart({ data }: SalesChartProps) {
         </ResponsiveContainer>
     );
 }
+

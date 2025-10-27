@@ -428,7 +428,7 @@ function SuggestionItemContent({ index, catalogImageDataUri }: { index: number, 
                         <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
                             <span>SKU: {item.sku}</span>
                             <span>|</span>
-                            <span>Price: ₹{item.price}</span>
+                            <span>Price: ?{item.price}</span>
                             <Badge variant="outline">{item.series}</Badge>
                         </div>
                     </div>
@@ -509,7 +509,7 @@ function SuggestionItemContent({ index, catalogImageDataUri }: { index: number, 
                     />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={control} name={`products.${index}.price`} render={({ field }) => (<FormItem><FormLabel>Price (₹)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={control} name={`products.${index}.price`} render={({ field }) => (<FormItem><FormLabel>Price (?)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={control} name={`products.${index}.unit`} render={({ field }) => (<FormItem><FormLabel>Unit</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -538,3 +538,4 @@ function SuggestionItemContent({ index, catalogImageDataUri }: { index: number, 
     </>
   );
 }
+

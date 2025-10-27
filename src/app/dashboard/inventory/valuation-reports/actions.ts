@@ -3,10 +3,10 @@
 'use server';
 
 import { getProducts } from "../data";
-import type { Product, UserContext } from "@/lib/firebase/types";
-import { getUser, getSubordinates, getUserPermissions } from '@/lib/firebase/rbac';
+import type { Product, UserContext } from "@/lib/mock-data/types";
+import { getUser, getSubordinates, getUserPermissions } from '@/lib/mock-data/rbac';
 import { getCurrentUser } from '@/app/dashboard/sales/actions';
-import { MOCK_ORGANIZATION_ID } from '@/lib/firebase/firestore';
+import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
 
 export interface ReportData {
     generatedAt: string;
@@ -68,3 +68,5 @@ export async function generateValuationReport(filters: {
 }
 
     
+
+

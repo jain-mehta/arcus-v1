@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addOpportunity, updateOpportunity, deleteOpportunity, updateOpportunityPriority, addCommunicationLog } from '../actions';
 import { summarizeOpportunity, getKanbanData } from './actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Opportunity, Customer, User, CommunicationLog } from '@/lib/firebase/types';
+import type { Opportunity, Customer, User, CommunicationLog } from '@/lib/mock-data/types';
 import { Label } from '@/components/ui/label';
 import { OpportunityFormDialog, opportunitySchema } from './opportunity-form-dialog';
 import { cn } from '@/lib/utils';
@@ -370,7 +370,7 @@ function OpportunityCard({
                 </div>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-                <p className="text-sm font-bold">₹{opportunity.value.toLocaleString('en-IN')}</p>
+                <p className="text-sm font-bold">?{opportunity.value.toLocaleString('en-IN')}</p>
                 <p className="text-sm text-muted-foreground">{customerName}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                     <Tooltip>
@@ -592,3 +592,5 @@ function CommunicationLogDialog({ customerId, associatedWith }: { customerId: st
         </Dialog>
     )
 }
+
+

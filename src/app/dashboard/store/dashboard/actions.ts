@@ -2,9 +2,9 @@
 
 'use server';
 
-import { MOCK_ORDERS, MOCK_PRODUCTS, MOCK_STORES, getCurrentUser } from '@/lib/firebase/firestore';
-import { getUserPermissions } from '@/lib/firebase/rbac';
-import type { Product } from '@/lib/firebase/types';
+import { MOCK_ORDERS, MOCK_PRODUCTS, MOCK_STORES, getCurrentUser } from '@/lib/mock-data/firestore';
+import { getUserPermissions } from '@/lib/mock-data/rbac';
+import type { Product } from '@/lib/mock-data/types';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 import { startOfDay, subDays, startOfToday, endOfDay, isWithinInterval } from 'date-fns';
@@ -206,3 +206,5 @@ export async function getInitialStoreDashboardData() {
         return { isAdmin: false, adminDashboardData: null, managerDashboardData };
     }
 }
+
+

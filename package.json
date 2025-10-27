@@ -12,6 +12,7 @@
     "dev": "next dev",
     "start-control": "node ./scripts/start-control.js",
     "migrate-control": "node ./scripts/migrate-control.js",
+    "seed:admin": "node ./scripts/seed-admin.mjs",
     "emu": "firebase emulators:start",
     "seed": "node scripts/seedTestData.js",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
@@ -21,6 +22,9 @@
     "lint": "next lint",
     "env:check": "node ./scripts/env-check.js",
     "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "sync:policies": "node ./scripts/sync-policies.mjs",
     "seed:control-plane": "node ./scripts/seed-control-plane.mjs",
@@ -57,6 +61,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@supabase/supabase-js": "^2.76.1",
     "axios": "^1.4.0",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -83,15 +88,19 @@
     "react-hook-form": "^7.54.2",
     "react-to-print": "^2.15.1",
     "recharts": "^2.15.1",
+    "redis": "^5.9.0",
     "reflect-metadata": "^0.2.2",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "taskkill": "^5.0.0",
     "typeorm": "^0.3.27",
-    "zod": "^3.24.2"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.0",
     "@types/lru-cache": "^7.10.9",
     "@types/node": "^20",
@@ -99,9 +108,14 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^5.1.0",
+    "@vitest/coverage-v8": "4.0.4",
+    "@vitest/ui": "^4.0.3",
     "genkit-cli": "^1.14.1",
+    "happy-dom": "^20.0.8",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.3"
   }
 }

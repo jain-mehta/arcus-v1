@@ -4,8 +4,8 @@
 import {
   MOCK_MATERIAL_MAPPINGS,
   MOCK_VOLUME_DISCOUNTS,
-} from '@/lib/firebase/firestore';
-import type { MaterialMapping, VolumeDiscount } from '@/lib/firebase/types';
+} from '@/lib/mock-data/firestore';
+import type { MaterialMapping, VolumeDiscount } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -120,3 +120,5 @@ export async function deleteVolumeDiscount(discountId: string) {
   }
   return { success: false, message: 'Discount not found.' };
 }
+
+

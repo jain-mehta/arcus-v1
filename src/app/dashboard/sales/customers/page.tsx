@@ -7,3 +7,4 @@ export default async function CustomersPage() {
 
     return <CustomersClient initialCustomers={customers} />;
 }
+

@@ -27,7 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Download, Printer, View } from 'lucide-react';
 import Link from 'next/link';
-import type { Order, Customer, Store } from '@/lib/firebase/types';
+import type { Order, Customer, Store } from '@/lib/mock-data/types';
 import { PrintableInvoice } from '../../components/printable-invoice';
 import { PrintableThermalReceipt } from '../../components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '../../components/printable-packing-slip';

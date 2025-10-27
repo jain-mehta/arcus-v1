@@ -251,3 +251,4 @@ function DeleteButton({ id, name, onDelete, onDeleted, type }: { id: string, nam
         </AlertDialog>
     );
 }
+

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { DataSource, EntityTarget, Repository, ObjectLiteral, DataSourceOptions } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { Session } from '@/entities/control/session.entity';
 import { TenantMetadata } from '@/entities/control/tenant-metadata.entity';
 import { UserMapping } from '@/entities/control/user-mapping.entity';
@@ -28,9 +28,37 @@ const controlDataSourceOptions: DataSourceOptions = {
     process.env.NODE_ENV === 'production'
       ? { rejectUnauthorized: false }
       : false,
-  // Connection pool for better performance
-  poolSize: 10,
-  connectTimeoutMS: 5000,
+  
+  // ? Optimized Connection Pool Configuration
+  extra: {
+    // Maximum number of clients in the pool
+    max: parseInt(process.env.DB_POOL_MAX || '20'),
+    // Minimum number of clients in the pool
+    min: parseInt(process.env.DB_POOL_MIN || '2'),
+    // Maximum time (ms) a client can be idle before being closed
+    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000'),
+    // Maximum time (ms) to wait for connection from pool
+    connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '5000'),
+    // Close idle clients after this time (ms)
+    evictionRunIntervalMillis: 10000,
+    // Number of resources to check per eviction run
+    numTestsPerEvictionRun: 3,
+    // Minimum time a client must be idle before being eligible for eviction
+    softIdleTimeoutMillis: 15000,
+    // Enable keep-alive
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
+  },
+  
+  // ? Query Performance Options
+  cache: {
+    // Enable query result caching
+    type: 'database',
+    duration: parseInt(process.env.DB_CACHE_DURATION || '30000'), // 30 seconds default
+  },
+  
+  // ? Maximum query execution time
+  maxQueryExecutionTime: process.env.LOG_LEVEL === 'debug' ? 1000 : undefined, // Log slow queries > 1s in debug mode
 };
 
 export const controlDataSource = new DataSource(controlDataSourceOptions);
@@ -38,7 +66,7 @@ export const controlDataSource = new DataSource(controlDataSourceOptions);
 /**
  * Get repository for control-plane entities
  */
-export async function getControlRepo<T extends ObjectLiteral>(entity: EntityTarget<T>): Promise<Repository<T>> {
+export async function getControlRepo<T extends Record<string, unknown>>(entity: any): Promise<any> {
   if (!controlDataSource.isInitialized) {
     await controlDataSource.initialize();
   }
@@ -53,24 +81,24 @@ export async function initializeControlDB(): Promise<void> {
   try {
     if (!controlDataSource.isInitialized) {
       await controlDataSource.initialize();
-      console.log('✅ Control-plane DB connected');
+      console.log('? Control-plane DB connected');
 
       // Run migrations in production
       if (process.env.NODE_ENV === 'production') {
         console.log('Running migrations...');
         await controlDataSource.runMigrations();
-        console.log('✅ Migrations completed');
+        console.log('? Migrations completed');
       }
 
       // Seed test data in dev
       if (process.env.AUTO_SEED_DEV_DATA === 'true' && process.env.NODE_ENV === 'development') {
         console.log('Seeding dev data...');
         await seedControlPlaneDevData();
-        console.log('✅ Dev data seeded');
+        console.log('? Dev data seeded');
       }
     }
   } catch (error) {
-    console.error('❌ Failed to initialize control DB:', error);
+    console.error('? Failed to initialize control DB:', error);
     throw error;
   }
 }
@@ -84,7 +112,7 @@ async function seedControlPlaneDevData(): Promise<void> {
   // Check if already seeded
   const existing = await repo.count();
   if (existing > 0) {
-    console.log('✓ Dev data already exists, skipping seed');
+    console.log('? Dev data already exists, skipping seed');
     return;
   }
 
@@ -108,3 +136,4 @@ async function seedControlPlaneDevData(): Promise<void> {
 
 // Legacy export for backwards compatibility
 export const ControlDataSource = controlDataSource;
+
