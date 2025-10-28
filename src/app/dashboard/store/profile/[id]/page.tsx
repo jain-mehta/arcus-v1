@@ -52,17 +52,17 @@ export default async function StoreProfilePage({ params }: any) {
   const storeManagers = await getStoreManagers();
 
   const kpiData = [
-    { title: 'Total Sales (All Time)', value: `₹${kpis.totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
+    { title: 'Total Sales (All Time)', value: `>₹${kpis.totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
     { title: 'Total Stock Units', value: kpis.totalStockUnits.toLocaleString(), icon: Package },
-    { title: 'Total Stock Value', value: `₹${kpis.totalStockValue.toLocaleString('en-IN')}`, icon: DollarSign },
+    { title: 'Total Stock Value', value: `>₹${kpis.totalStockValue.toLocaleString('en-IN')}`, icon: DollarSign },
   ];
   
   const generalInfo = {
     'Address': `${store.address}, ${store.city}, ${store.state} - ${store.pincode}`,
     'Region': store.region,
     'Manager': manager?.name || 'Unassigned',
-    'Cash Alert Threshold': `₹${store.cashAlertThreshold.toLocaleString('en-IN')}`,
-    'Current Cash-in-Hand': `₹${store.cashInHand.toLocaleString('en-IN')}`,
+    'Cash Alert Threshold': `>₹${store.cashAlertThreshold.toLocaleString('en-IN')}`,
+    'Current Cash-in-Hand': `>₹${store.cashInHand.toLocaleString('en-IN')}`,
   };
 
   return (

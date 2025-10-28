@@ -102,8 +102,8 @@ export function QuotationDetailView({
                                 <TableHead>Product</TableHead>
                                 <TableHead>SKU</TableHead>
                                 <TableHead className="text-right">Quantity</TableHead>
-                                <TableHead className="text-right">Unit Price (₹)</TableHead>
-                                <TableHead className="text-right">Total (₹)</TableHead>
+                                <TableHead className="text-right">Unit Price (>₹)</TableHead>
+                                <TableHead className="text-right">Total (>₹)</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -123,16 +123,16 @@ export function QuotationDetailView({
                     <div className="w-full max-w-sm space-y-2">
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Subtotal</span>
-                            <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                            <span>>₹{subtotal.toLocaleString('en-IN')}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">GST (18%)</span>
-                            <span>₹{tax.toLocaleString('en-IN')}</span>
+                            <span>>₹{tax.toLocaleString('en-IN')}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-semibold text-lg">
                             <span>Total</span>
-                            <span>₹{quotation.totalAmount.toLocaleString('en-IN')}</span>
+                            <span>>₹{quotation.totalAmount.toLocaleString('en-IN')}</span>
                         </div>
                     </div>
                 </CardFooter>

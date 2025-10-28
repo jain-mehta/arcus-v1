@@ -18,6 +18,7 @@ export function LoginClient() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -30,6 +31,7 @@ export function LoginClient() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
     try {
       await signIn(email, password);
@@ -43,11 +45,13 @@ export function LoginClient() {
         description: 'Welcome back!' 
       });
     } catch (err: any) {
+      const errorMsg = err?.message || 'Invalid credentials';
       console.error('Login error:', err);
+      setError(errorMsg);
       toast({ 
         variant: 'destructive', 
         title: 'Sign in failed', 
-        description: err?.message || 'Invalid credentials' 
+        description: errorMsg 
       });
     } finally {
       setLoading(false);
@@ -76,6 +80,11 @@ export function LoginClient() {
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+                ⚠️ Error: {error}
+              </div>
+            )}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input 

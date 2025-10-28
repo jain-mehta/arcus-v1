@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 
 export function NavLinks({
   navItems,
@@ -13,6 +14,14 @@ export function NavLinks({
   mobile?: boolean;
 }) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    console.log('[NavLinks] Rendered with items:', {
+      count: navItems.length,
+      items: navItems.map(item => item.label),
+      mobile
+    });
+  }, [navItems, mobile]);
 
   // Determine the most specific matching item to avoid stale active states.
   const getIsActive = (itemHref: string) => {

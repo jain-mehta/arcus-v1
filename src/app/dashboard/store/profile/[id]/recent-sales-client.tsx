@@ -134,7 +134,7 @@ export function RecentSalesClient({ recentSales, store }: RecentSalesClientProps
                             <TableCell className="font-medium">{order.orderNumber}</TableCell>
                             <TableCell>{order.customerDetails?.name || 'Walk-in'}</TableCell>
                             <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                            <TableCell className="text-right">₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="text-right">>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
                             <TableCell>
                                 <div className="flex justify-center gap-2">
                                      <Tooltip>

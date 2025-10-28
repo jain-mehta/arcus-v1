@@ -1,64 +1,167 @@
-import { NextResponse } from 'next/server';
-import { createSessionCookie, buildSessionSetCookieHeader, setSessionCookie } from '@/lib/session';
-
 /**
- * Login API Route
- *
- * Receives an ID token from the client (after Firebase Auth sign-in),
- * creates a server-side session cookie and returns a JSON response.
- *
- * Note:
- * - This implementation sets the cookie header directly so the cookie
- *   is available to the browser on subsequent requests.
- * - In production, the cookie will include Secure; in development it will not.
+ * POST /api/auth/login
+ * 
+ * Authenticate user with email and password using Supabase Auth.
+ * Returns access and refresh tokens, stores them in httpOnly cookies.
+ * 
+ * Request body:
+ * {
+ *   "email": "user@example.com",
+ *   "password": "password123"
+ * }
+ * 
+ * Response (200):
+ * {
+ *   "success": true,
+ *   "user": { "id": "uuid", "email": "user@example.com" },
+ *   "message": "Logged in successfully"
+ * }
  */
 
-const DEFAULT_SESSION_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
+import { NextResponse, type NextRequest } from 'next/server';
+import { z } from 'zod';
+import { signIn } from '@/lib/supabase/auth';
+import { setAccessTokenCookie, setRefreshTokenCookie, buildSetCookieHeader } from '@/lib/supabase/session';
+import { rateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { getOrCreateUserProfile } from '@/lib/supabase/user-sync';
 
-export async function POST(req: Request) {
+const loginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { idToken } = body;
+    // Apply rate limiting (strict for login attempts)
+    const rateLimitResponse = await rateLimit(req, RateLimitPresets.auth);
 
-    if (!idToken) {
+    if (rateLimitResponse) {
+      console.log('[Auth] Rate limit exceeded');
+      return rateLimitResponse;
+    }
+
+    // Parse request body
+    const body = await req.json();
+    console.log('[Auth] Request body:', { email: body.email, passwordLength: body.password?.length });
+
+    // Validate input
+    const validation = loginSchema.safeParse(body);
+    if (!validation.success) {
+      console.log('[Auth] Validation failed:', validation.error.flatten().fieldErrors);
       return NextResponse.json(
-        { success: false, message: 'Missing ID token' },
+        {
+          error: 'Invalid input',
+          details: validation.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
 
-    // Create session cookie from Firebase ID token
-    const sessionCookie = await createSessionCookie(idToken);
+    const { email, password } = validation.data;
 
-    // Persist server-side cookie via Next cookies() API
-    try {
-      await setSessionCookie(sessionCookie);
-    } catch (err) {
-      // If setSessionCookie fails in your runtime, we'll still send a Set-Cookie header
-      console.warn('[Login] setSessionCookie failed, falling back to header:', err);
+    // Attempt login with Supabase
+    const { data, error } = await signIn(email, password);
+
+    if (error) {
+      // Generic error message for security
+      console.error('[Auth] Login error:', error.message);
+
+      return NextResponse.json(
+        {
+          error: 'Invalid email or password',
+        },
+        { status: 401 }
+      );
     }
 
-    // Build Set-Cookie header (for the browser) using centralized helper
-    const maxAge = Number(process.env.SESSION_COOKIE_MAX_AGE) || DEFAULT_SESSION_AGE_SECONDS;
-    const setCookieHeader = buildSessionSetCookieHeader(sessionCookie, maxAge);
+    if (!data.session) {
+      console.error('[Auth] No session returned from Supabase');
+      return NextResponse.json(
+        {
+          error: 'Login failed. Please try again.',
+        },
+        { status: 500 }
+      );
+    }
 
-    const res = NextResponse.json({ success: true, message: 'Session created successfully' }, { status: 200 });
-    res.headers.append('Set-Cookie', setCookieHeader);
+    // Extract tokens from session
+    const { access_token, refresh_token, user } = data.session;
 
-    return res;
-  } catch (error: any) {
-    console.error('[Login] Error creating session:', error);
-
-    // If you want to explicitly clear any stale session cookie on error:
-    const res = NextResponse.json(
-      { success: false, message: error?.message || 'Failed to create session' },
-      { status: 500 }
+    // **CRITICAL STEP**: Sync user profile with database
+    // Supabase Auth succeeded (user.id = UUID from auth.users)
+    // Now ensure corresponding profile exists in public.users table
+    const userProfile = await getOrCreateUserProfile(
+      user.id,
+      user.email || '',
+      user.user_metadata?.full_name
     );
 
-    // Optionally clear cookie on error (uncomment if desired)
-    // res.headers.append('Set-Cookie', 'session=; Path=/; HttpOnly; Max-Age=0');
+    if (!userProfile) {
+      console.error('[Auth] Failed to create or retrieve user profile for:', user.email);
+      return NextResponse.json(
+        {
+          error: 'Failed to setup user profile. Please contact support.',
+        },
+        { status: 500 }
+      );
+    }
 
-    return res;
+    // **CRITICAL STEP 2**: Set admin role for admin@arcus.local
+    // For admin@arcus.local, set roleId directly (no database query needed)
+    let roleId: string | undefined = undefined;
+    if (user.email === 'admin@arcus.local') {
+      roleId = 'admin';
+      console.log('[Auth] Admin role set for admin@arcus.local');
+    }
+
+    console.log('[Auth] User profile synced:', {
+      authUserId: user.id,
+      email: user.email,
+      profileId: userProfile.id,
+      isActive: userProfile.isActive,
+      roleId: roleId || 'user',
+    });
+
+    // Store tokens in httpOnly cookies
+    try {
+      await setAccessTokenCookie(access_token);
+      if (refresh_token) {
+        await setRefreshTokenCookie(refresh_token);
+      }
+    } catch (cookieErr) {
+      console.warn('[Auth] Failed to set cookies via API, will use headers:', cookieErr);
+    }
+
+    // Prepare response
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          createdAt: user.created_at,
+        },
+        message: 'Logged in successfully',
+      },
+      { status: 200 }
+    );
+
+    // Set cookies via headers (fallback/explicit)
+    response.headers.append('Set-Cookie', buildSetCookieHeader('__supabase_access_token', access_token, 15 * 60));
+    if (refresh_token) {
+      response.headers.append('Set-Cookie', buildSetCookieHeader('__supabase_refresh_token', refresh_token, 7 * 24 * 60 * 60));
+    }
+
+    return response;
+  } catch (error: any) {
+    console.error('[Auth] Login handler error:', error);
+
+    return NextResponse.json(
+      {
+        error: 'Login failed. Please try again.',
+      },
+      { status: 500 }
+    );
   }
 }
 

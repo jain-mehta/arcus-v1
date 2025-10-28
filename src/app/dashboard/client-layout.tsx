@@ -54,7 +54,6 @@ interface DashboardClientLayoutProps {
   loading: boolean;
   currentUser: {
     id: string;
-    roleIds: string[];
     name: string;
     email: string;
   } | null
@@ -87,8 +86,27 @@ export function DashboardClientLayout({
 
   // --- NEW PERMISSION-MAP BASED SIDEBAR LOGIC ---
 
+  // Log the permissions received on the client
+  if (typeof window !== 'undefined') {
+    console.log('[ClientLayout] Permissions received:', {
+      permissionsExist: !!userPermissions,
+      permissionKeys: userPermissions ? Object.keys(userPermissions).length : 0,
+      permissionModules: userPermissions ? Object.keys(userPermissions).slice(0, 3) : null,
+      firstModuleSample: userPermissions ? Object.entries(userPermissions)[0] : null
+    });
+  }
+
   // Filter main nav items based on user permissions using new PermissionMap structure
   const accessibleNavItems = filterNavItems(navConfig.main, userPermissions);
+  
+  // Log filtered items on client side
+  if (typeof window !== 'undefined') {
+    console.log('[ClientLayout] Filtered main nav items:', {
+      originalCount: navConfig.main.length,
+      filteredCount: accessibleNavItems.length,
+      items: accessibleNavItems.map((item: any) => item.label)
+    });
+  }
 
   // Find the current module's sub-navigation key by finding the longest matching path prefix.
   const subNavKeys = Object.keys(navConfig.subNavigation) as Array<keyof typeof navConfig.subNavigation>;

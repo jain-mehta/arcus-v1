@@ -9,37 +9,57 @@ import { Page, expect } from '@playwright/test';
  * Login as admin user
  */
 export async function loginAsAdmin(page: Page) {
-  await page.goto('http://localhost:3000/login');
+  let retries = 0;
+  const maxRetries = 3;
   
-  // Wait for page to load
-  await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-  
-  await page.fill('input[type="email"]', 'admin@bobssale.com');
-  await page.fill('input[type="password"]', 'Admin@123456');
-  await page.click('button[type="submit"]');
-  
-  // Wait for navigation or error
-  try {
-    await page.waitForURL('**/dashboard**', { timeout: 15000 });
-  } catch (e) {
-    // Check if still on login page with error
-    const currentUrl = page.url();
-    console.log('Login redirect failed, current URL:', currentUrl);
-    
-    // Take screenshot for debugging
-    await page.screenshot({ path: 'test-results/login-failed.png' });
-    
-    // Check for error messages
-    const errorMsg = await page.locator('[role="alert"], .error, .text-red-500').first().textContent().catch(() => null);
-    if (errorMsg) {
-      console.log('Login error:', errorMsg);
+  while (retries < maxRetries) {
+    try {
+      await page.goto('http://localhost:3000/login');
+      
+      // Wait for page to load
+      await page.waitForSelector('input[type="email"]', { timeout: 10000 });
+      
+      await page.fill('input[type="email"]', 'admin@bobssale.com');
+      await page.fill('input[type="password"]', 'Admin@123456');
+      await page.click('button[type="submit"]');
+      
+      // Wait for navigation or error
+      try {
+        await page.waitForURL('**/dashboard**', { timeout: 15000 });
+        console.log('[LOGIN] ✅ Successfully logged in as admin@bobssale.com');
+        return;
+      } catch (e) {
+        // Check if still on login page with error
+        const currentUrl = page.url();
+        console.log('[LOGIN] ⚠️ Login redirect failed, current URL:', currentUrl);
+        
+        // Check for error messages
+        const errorMsg = await page.locator('[role="alert"], .error, .text-red-500').first().textContent().catch(() => null);
+        if (errorMsg && errorMsg.includes('Too many')) {
+          console.log('[LOGIN] ⏳ Rate limited, waiting before retry...');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          retries++;
+          continue;
+        } else if (errorMsg) {
+          console.log('[LOGIN] ❌ Login error:', errorMsg);
+          await page.screenshot({ path: 'test-results/login-failed.png' });
+          throw new Error(errorMsg);
+        }
+      }
+    } catch (error) {
+      retries++;
+      if (retries >= maxRetries) {
+        console.error('[LOGIN] ❌ Failed to login after', maxRetries, 'retries');
+        throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
   
   // Verify we're on dashboard
   const url = page.url();
   if (!url.includes('/dashboard')) {
-    console.warn('Not on dashboard after login. Current URL:', url);
+    console.warn('[LOGIN] ⚠️ Not on dashboard after login. Current URL:', url);
   }
 }
 
@@ -95,14 +115,23 @@ export async function navigateToModule(page: Page, module: string) {
     'inventory': '/dashboard/inventory',
     'products': '/dashboard/inventory/products',
     'vendors': '/dashboard/vendor',
+    'vendor': '/dashboard/vendor',
     'hrms': '/dashboard/hrms',
     'employees': '/dashboard/hrms/employees',
     'settings': '/dashboard/settings',
+    'users': '/dashboard/users',
+    'roles': '/dashboard/users/roles',
+    'permissions': '/dashboard/settings/permissions',
+    'audit': '/dashboard/settings/audit-log',
+    'reports': '/dashboard/reports',
+    'store': '/dashboard/store',
+    'supply-chain': '/dashboard/supply-chain',
+    'admin': '/dashboard/admin',
   };
   
   const url = moduleMap[module.toLowerCase()];
   if (!url) {
-    throw new Error(`Unknown module: ${module}`);
+    throw new Error(`Unknown module: ${module}. Available modules: ${Object.keys(moduleMap).join(', ')}`);
   }
   
   await page.goto(`http://localhost:3000${url}`);

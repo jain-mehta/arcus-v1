@@ -153,7 +153,7 @@ export function QuotationsClient({ initialQuotations, allCustomers }: Quotations
                                     </TableCell>
                                     <TableCell>{customers[quote.customerId] || 'Unknown Customer'}</TableCell>
                                     <TableCell>{new Date(quote.quoteDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>?{quote.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>₹{quote.totalAmount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(quote.status)}>{quote.status}</Badge>
                                     </TableCell>

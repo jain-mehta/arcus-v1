@@ -370,7 +370,7 @@ function OpportunityCard({
                 </div>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-                <p className="text-sm font-bold">?{opportunity.value.toLocaleString('en-IN')}</p>
+                <p className="text-sm font-bold">₹{opportunity.value.toLocaleString('en-IN')}</p>
                 <p className="text-sm text-muted-foreground">{customerName}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                     <Tooltip>

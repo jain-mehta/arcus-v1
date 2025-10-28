@@ -12,7 +12,7 @@
 
 import { cookies } from 'next/headers';
 
-export const ACCESS_TOKEN_COOKIE_NAME = '__supabase_access_token.env.local';
+export const ACCESS_TOKEN_COOKIE_NAME = '__supabase_access_token';
 export const REFRESH_TOKEN_COOKIE_NAME = '__supabase_refresh_token';
 export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
 export const ACCESS_TOKEN_MAX_AGE = 60 * 15; // 15 minutes in seconds

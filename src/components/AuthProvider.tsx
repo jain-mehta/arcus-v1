@@ -89,6 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
       setError(null);
 
+      // Call our backend API to authenticate and set session cookies
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,7 +101,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error(data.error || 'Sign in failed');
       }
 
-      // Auth state will be updated by listener
+      // API call succeeded and cookies are now set
+      // Extract user info from API response
+      const data = await response.json();
+      
+      if (data.success && data.user) {
+        // Update auth state directly from API response (don't rely on Supabase client)
+        setSupabaseUser({
+          id: data.user.id,
+          email: data.user.email,
+          created_at: data.user.createdAt,
+          app_metadata: {},
+          user_metadata: { full_name: email.split('@')[0] },
+          aud: 'authenticated',
+          role: 'authenticated',
+          updated_at: new Date().toISOString(),
+        } as SupabaseUser);
+        
+        setUser({
+          id: data.user.id,
+          email: data.user.email,
+          displayName: email.split('@')[0],
+        });
+        
+        setError(null);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign in failed';
       setError(message);

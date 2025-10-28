@@ -3,7 +3,7 @@
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getNavConfig, getCurrentUser } from '@/lib/mock-data/firestore';
+import { getNavConfig } from '@/lib/mock-data/firestore';
 import { getSessionClaims } from '@/lib/session';
 import { getRolePermissions } from '@/lib/rbac';
 import type { PermissionMap } from '@/lib/rbac';
@@ -16,18 +16,55 @@ import type { PermissionMap } from '@/lib/rbac';
 export async function getLayoutData() {
   const hdrs = await headers();
   const pathname = hdrs.get('x-next-pathname') || '';
-  const currentUser = await getCurrentUser();
+  
+  // Get user from session claims (JWT) instead of Firebase mock data
+  const sessionClaims = await getSessionClaims();
+  
+  console.log('[Dashboard] getLayoutData called');
+  console.log('[Dashboard] Session claims:', sessionClaims ? { uid: sessionClaims.uid, email: sessionClaims.email, roleId: sessionClaims.roleId } : 'null');
 
-  // Enforce forced password change. This is a critical security measure.
-  if (currentUser?.mustChangePassword && pathname !== '/dashboard/settings/profile') {
-    redirect('/dashboard/settings/profile');
+  // If no session, user is not authenticated
+  if (!sessionClaims) {
+    console.log('[Dashboard] No session claims - returning null user');
+    return {
+      navConfig: getNavConfig(),
+      userPermissions: null,
+      currentUser: null,
+      loading: false,
+    };
   }
 
-  const sessionClaims = await getSessionClaims();
+  console.log('[Dashboard] User authenticated:', sessionClaims.email);
+
+  // Enforce forced password change. This is a critical security measure.
+  // Note: For now, we don't have mustChangePassword field in Supabase JWT
+  // if (currentUser?.mustChangePassword && pathname !== '/dashboard/settings/profile') {
+  //   redirect('/dashboard/settings/profile');
+  // }
+
   let userPermissions: PermissionMap | null = null;
   
-  if (sessionClaims?.roleId) {
+  // Check if user is admin by email (primary check)
+  const adminEmails = ['admin@arcus.local'];
+  const isAdminByEmail = sessionClaims.email && adminEmails.includes(sessionClaims.email);
+  
+  console.log('[Dashboard] Checking permissions for:', { 
+    email: sessionClaims.email, 
+    roleId: sessionClaims.roleId, 
+    isAdminByEmail 
+  });
+  
+  if (isAdminByEmail || sessionClaims.roleId === 'admin') {
+    // Admin users should get all permissions
+    console.log('[Dashboard] User is admin, fetching admin permissions');
+    userPermissions = await getRolePermissions('admin');
+    console.log('[Dashboard] Admin permissions retrieved:', userPermissions ? Object.keys(userPermissions) : 'null');
+  } else if (sessionClaims?.roleId) {
+    console.log('[Dashboard] User has role:', sessionClaims.roleId);
     userPermissions = await getRolePermissions(sessionClaims.roleId);
+    console.log('[Dashboard] Role permissions retrieved:', userPermissions ? Object.keys(userPermissions) : 'null');
+  } else {
+    console.log('[Dashboard] User has no role defined');
   }
 
   const navConfig = getNavConfig();
@@ -35,14 +72,16 @@ export async function getLayoutData() {
   // The client will now be responsible for filtering based on permissions.
   // We pass the full config and the user's permissions.
   
-  const userProps = currentUser
+  const userProps = sessionClaims
     ? {
-        id: currentUser.id,
-        roleIds: currentUser.roleIds,
-        name: currentUser.name,
-        email: currentUser.email,
+        id: sessionClaims.uid,
+        name: sessionClaims.email?.split('@')[0] || 'User', // Fallback name from email
+        email: sessionClaims.email,
       }
     : null;
+
+  console.log('[Dashboard] Returning user props:', userProps);
+  console.log('[Dashboard] UserPermissions passed to client:', userPermissions ? `${Object.keys(userPermissions).length} modules` : 'null');
 
   return {
     navConfig,

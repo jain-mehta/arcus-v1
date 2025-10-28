@@ -65,8 +65,8 @@ export const PrintableCreditNote = React.forwardRef<HTMLDivElement, PrintableCre
                             <tr key={index} className="border-b">
                                 <td className="p-3 font-medium">{item.name}</td>
                                 <td className="p-3 text-center">{item.quantity}</td>
-                                <td className="p-3 text-right">?{item.unitPrice.toLocaleString('en-IN')}</td>
-                                <td className="p-3 text-right">?{(item.quantity * item.unitPrice).toLocaleString('en-IN')}</td>
+                                <td className="p-3 text-right">₹{item.unitPrice.toLocaleString('en-IN')}</td>
+                                <td className="p-3 text-right">₹{(item.quantity * item.unitPrice).toLocaleString('en-IN')}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -75,11 +75,11 @@ export const PrintableCreditNote = React.forwardRef<HTMLDivElement, PrintableCre
             
              <section className="flex justify-end mt-6">
                 <div className="w-full max-w-sm space-y-2">
-                    <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>?{subtotal.toLocaleString('en-IN')}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
                     {discountAmount > 0 && <div className="flex justify-between"><span className="text-gray-600">Discount</span><span>- ?{discountAmount.toLocaleString('en-IN')}</span></div>}
-                    <div className="flex justify-between"><span className="text-gray-600">GST (18%)</span><span>?{tax.toLocaleString('en-IN')}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">GST (18%)</span><span>₹{tax.toLocaleString('en-IN')}</span></div>
                     <div className="border-t-2 border-gray-800 my-2"></div>
-                    <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Total Credit</span><span>?{totalCredit.toLocaleString('en-IN')}</span></div>
+                    <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Total Credit</span><span>₹{totalCredit.toLocaleString('en-IN')}</span></div>
                 </div>
             </section>
 

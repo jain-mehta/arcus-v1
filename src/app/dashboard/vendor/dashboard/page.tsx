@@ -159,7 +159,7 @@ function UpcomingPaymentsCard({ upcomingPayments }: { upcomingPayments: any[] })
                         <div className="font-medium">{payment.vendorName}</div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">{payment.poNumber}</TableCell>
-                        <TableCell className="text-right">?{payment.totalAmount.toLocaleString('en-IN')}</TableCell>
+                        <TableCell className="text-right">₹{payment.totalAmount.toLocaleString('en-IN')}</TableCell>
                         <TableCell className="text-right">{new Date(payment.deliveryDate).toLocaleDateString()}</TableCell>
                     </TableRow>
                 )) : (

@@ -109,7 +109,7 @@ export default function ValuationReportsPage() {
                             <div className="grid grid-cols-3 gap-4 mb-6">
                                 <Card>
                                     <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Value</CardTitle></CardHeader>
-                                    <CardContent><p className="text-2xl font-bold">?{reportData.summary.totalValue.toLocaleString('en-IN')}</p></CardContent>
+                                    <CardContent><p className="text-2xl font-bold">₹{reportData.summary.totalValue.toLocaleString('en-IN')}</p></CardContent>
                                 </Card>
                                  <Card>
                                     <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Quantity</CardTitle></CardHeader>

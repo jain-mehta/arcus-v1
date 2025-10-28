@@ -45,7 +45,7 @@ export function CustomerDetailView({
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{customer.totalSpend.toLocaleString('en-IN')}</div>
+            <div className="text-2xl font-bold">>₹{customer.totalSpend.toLocaleString('en-IN')}</div>
           </CardContent>
         </Card>
         <Card>
@@ -97,7 +97,7 @@ export function CustomerDetailView({
                         <TableRow key={order.id}>
                             <TableCell>{order.orderNumber}</TableCell>
                             <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                            <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                            <TableCell>>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
                             <TableCell><Badge>{order.status}</Badge></TableCell>
                         </TableRow>
                     ))}

@@ -31,7 +31,7 @@ export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) 
         <CardHeader>
           <CardTitle className="text-base flex justify-between items-center">
             <span>Total Outstanding Amount</span>
-            <span className="text-2xl font-bold">?{totalOutstanding.toLocaleString('en-IN')}</span>
+            <span className="text-2xl font-bold">₹{totalOutstanding.toLocaleString('en-IN')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">

@@ -68,7 +68,7 @@ export default async function VendorProfilePage({ params }: any) {
   const paymentAndTermsInfo = {
     'Payment Terms': vendorData.paymentTerms,
     'Preferred Payment Method': vendorData.preferredPaymentMethod,
-    'Outstanding Balance': `₹${outstandingBalance.toLocaleString('en-IN')}`,
+    'Outstanding Balance': `>₹${outstandingBalance.toLocaleString('en-IN')}`,
     'Last Payment Date': lastPayment ? new Date(lastPayment.deliveryDate).toLocaleDateString() : 'N/A',
   };
 

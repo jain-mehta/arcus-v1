@@ -162,7 +162,7 @@ export function InvoiceClient({ vendors, initialInvoices }: InvoiceClientProps) 
                                     <TableCell>{getVendorName(inv.vendorId)}</TableCell>
                                     <TableCell>{inv.poNumber}</TableCell>
                                     <TableCell>{new Date(inv.invoiceDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>?{inv.amount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>₹{inv.amount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell><Badge variant={inv.status === 'Paid' ? 'default' : inv.status === 'Overdue' ? 'destructive' : 'secondary'}>{inv.status}</Badge></TableCell>
                                     <TableCell>{inv.discrepancy || 'None'}</TableCell>
                                     <TableCell className="text-right space-x-2">

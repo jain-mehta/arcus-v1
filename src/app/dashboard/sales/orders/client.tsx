@@ -87,7 +87,7 @@ export function OrdersClient({ initialOrders, customerList }: OrdersClientProps)
                                     </TableCell>
                                     <TableCell>{customers[order.customerId] || 'Unknown Customer'}</TableCell>
                                     <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>?{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                                     </TableCell>

@@ -173,7 +173,7 @@ export function CustomersClient({ initialCustomers }: CustomersClientProps) {
                                 </TableCell>
                                 <TableCell>{customer.contact}</TableCell>
                                 <TableCell>{customer.email}</TableCell>
-                                <TableCell>?{customer.totalSpend.toLocaleString('en-IN')}</TableCell>
+                                <TableCell>₹{customer.totalSpend.toLocaleString('en-IN')}</TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href={`/dashboard/sales/customers/${customer.id}`}>View Details</Link>

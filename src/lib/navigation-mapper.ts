@@ -82,27 +82,66 @@ export function hasOldPermission(
     const submodule = parts[1];
     const action = parts[2];
 
+    console.log('[Navigation] Checking permission string:', { permissionString, module, submodule, action });
+
     const modulePerms = permissions[module];
-    if (!modulePerms) return false;
-
-    const submodulePerms = modulePerms[submodule];
-    if (!submodulePerms) return false;
-
-    // Handle 3-level structure (module:submodule:action)
-    if (action && typeof submodulePerms === 'object') {
-      return submodulePerms[action] === true;
+    if (!modulePerms) {
+      console.log('[Navigation] Module not found:', module);
+      return false;
     }
 
-    // Handle 2-level structure (module:submodule) or 3-level where any action is true
-    if (typeof submodulePerms === 'boolean') {
-      return submodulePerms === true;
+    // Strategy 1: Check if the exact permission key exists with true value
+    // Handle formats like 'vendor:viewAll', 'sales:leads:view', etc.
+    
+    // First try the direct key lookup (e.g., modulePerms['viewAll'])
+    if (modulePerms[submodule] === true) {
+      console.log('[Navigation] Permission granted (direct submodule):', submodule);
+      return true;
     }
 
-    if (typeof submodulePerms === 'object') {
-      // If checking module:submodule without specific action, check if ANY action is true
-      return Object.values(submodulePerms).some(val => val === true);
+    // Try nested permission with action (e.g., modulePerms['leads:view'])
+    const nestedKey = `${submodule}:${action || 'view'}`;
+    if (modulePerms[nestedKey] === true) {
+      console.log('[Navigation] Permission granted (nested key):', nestedKey);
+      return true;
     }
 
+    // Try the full dotted permission (e.g., modulePerms['sales:leads:view'])
+    const fullKey = `${module}:${submodule}:${action || 'view'}`;
+    if (modulePerms[fullKey] === true) {
+      console.log('[Navigation] Permission granted (full key):', fullKey);
+      return true;
+    }
+
+    // Try checking if the full permission string is stored directly (e.g., modulePerms['inventory:products:view'])
+    if (modulePerms[permissionString] === true) {
+      console.log('[Navigation] Permission granted (full permission string):', permissionString);
+      return true;
+    }
+
+    // Strategy 2: Check if submodule value is a boolean true
+    const submoduleValue = modulePerms[submodule];
+    if (typeof submoduleValue === 'boolean' && submoduleValue) {
+      console.log('[Navigation] Permission granted (boolean submodule):', submodule);
+      return true;
+    }
+
+    // Strategy 3: If submodule value is an object (nested actions), check if any action is true
+    if (typeof submoduleValue === 'object' && submoduleValue !== null) {
+      // Check if we're looking for a specific action
+      if (action) {
+        const actionResult = submoduleValue[action] === true;
+        console.log('[Navigation] Permission check (action in object):', { submodule, action, result: actionResult });
+        return actionResult;
+      } else {
+        // If no specific action, grant if ANY action in the submodule is true
+        const result = Object.values(submoduleValue).some(val => val === true);
+        console.log('[Navigation] Permission check (any action in object):', { submodule, result });
+        return result;
+      }
+    }
+
+    console.log('[Navigation] No permission found for:', permissionString);
     return false;
   }
 
@@ -111,6 +150,7 @@ export function hasOldPermission(
   
   if (!mapping) {
     // Silently return false for unmapped permissions - they might be handled by the new format
+    console.log('[Navigation] No mapping found for:', permissionString);
     return false;
   }
 
@@ -152,19 +192,52 @@ export function hasModulePermission(
 
 /**
  * Filter navigation items based on user permissions
- * @param navItems - Array of navigation items with permission field
- * @param permissions - User's permission map
+ * @param navItems - Navigation items to filter
+ * @param permissions - User permissions map (can be null for admins)
  * @returns Filtered navigation items
  */
 export function filterNavItems<T extends { permission?: string }>(
   navItems: T[],
   permissions: PermissionMap | null
 ): T[] {
-  if (!permissions) return [];
-
-  return navItems.filter((item) => {
-    if (!item.permission) return true; // No permission required
-    return hasOldPermission(permissions, item.permission);
+  console.log('[Navigation] filterNavItems called with:', { 
+    itemCount: navItems.length, 
+    permissionsModules: permissions ? Object.keys(permissions).length : 'null',
+    permissionModuleNames: permissions ? Object.keys(permissions) : 'null'
   });
+  
+  // If no permissions map provided, show all items (might happen for admins with fallback)
+  if (!permissions) {
+    console.log('[Navigation] No permissions provided, showing all items');
+    return navItems;
+  }
+
+  console.log('[Navigation] Permission map available:', { 
+    moduleCount: Object.keys(permissions).length,
+    modules: Object.keys(permissions).slice(0, 5)
+  });
+
+  const filtered = navItems.filter((item) => {
+    if (!item.permission) {
+      console.log('[Navigation] Item has no permission requirement, including:', (item as any).label);
+      return true;
+    }
+    const hasPermission = hasOldPermission(permissions, item.permission);
+    console.log('[Navigation] Permission check:', { 
+      itemLabel: (item as any).label, 
+      permission: item.permission, 
+      hasPermission,
+      permissionModuleExists: Object.keys(permissions).includes(item.permission.split(':')[0])
+    });
+    return hasPermission;
+  });
+
+  console.log('[Navigation] Filtered items:', { 
+    originalCount: navItems.length, 
+    filteredCount: filtered.length,
+    items: filtered.map((item: any) => item.label)
+  });
+  
+  return filtered;
 }
 

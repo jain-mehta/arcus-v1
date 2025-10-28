@@ -41,7 +41,13 @@ function getJWTFromRequest(req: NextRequest): string | null {
     return authHeader.slice(7);
   }
 
-  // Fallback to session cookie
+  // Try Supabase access token cookie (new flow)
+  const supabaseToken = req.cookies.get('__supabase_access_token');
+  if (supabaseToken?.value) {
+    return supabaseToken.value;
+  }
+
+  // Fallback to old session cookie name
   const sessionCookie = req.cookies.get('__session');
   if (sessionCookie?.value) {
     return sessionCookie.value;
@@ -107,8 +113,11 @@ function isTokenExpired(expiresAt?: number): boolean {
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  console.log('[Middleware] Processing:', pathname);
+
   // Allow public assets and explicit public paths
   if (isPublic(pathname)) {
+    console.log('[Middleware] Path is public, allowing');
     return NextResponse.next();
   }
 
@@ -119,13 +128,17 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/api/');
 
   if (!shouldProtect) {
+    console.log('[Middleware] Path doesn\'t need protection, allowing');
     return NextResponse.next();
   }
+
+  console.log('[Middleware] Path needs protection:', pathname);
 
   // Extract JWT
   const jwt = getJWTFromRequest(req);
   
   if (!jwt) {
+    console.log('[Middleware] No JWT found, redirecting to login');
     // No JWT - redirect to login (for browser requests)
     if (pathname.startsWith('/api/')) {
       return NextResponse.json(
@@ -139,10 +152,15 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  console.log('[Middleware] JWT found, validating');
+
   // Decode JWT claims (basic validation)
   const claims = extractJWTClaims(jwt);
 
-  if (!claims || !claims.userId || !claims.tenantId) {
+  // For now, allow requests if user ID exists (tenant_id may not be set for all users)
+  // Full validation happens in API routes
+  if (!claims || !claims.userId) {
+    console.log('[Middleware] Invalid JWT structure (missing userId), redirecting to login');
     // Invalid JWT structure
     if (pathname.startsWith('/api/')) {
       return NextResponse.json(
@@ -157,6 +175,7 @@ export function middleware(req: NextRequest) {
 
   // Check expiration
   if (isTokenExpired(claims.exp)) {
+    console.log('[Middleware] JWT expired, redirecting to login');
     // Token expired
     if (pathname.startsWith('/api/')) {
       return NextResponse.json(
@@ -169,11 +188,14 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  console.log('[Middleware] JWT valid, allowing request');
   // JWT is structurally valid and not expired
   // Add user context to request headers for downstream handlers
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-user-id', claims.userId);
-  requestHeaders.set('x-tenant-id', claims.tenantId);
+  if (claims.tenantId) {
+    requestHeaders.set('x-tenant-id', claims.tenantId);
+  }
   requestHeaders.set('x-jti', claims.jti || '');
   requestHeaders.set('x-jwt', jwt);
 

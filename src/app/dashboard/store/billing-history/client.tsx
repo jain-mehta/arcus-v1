@@ -148,7 +148,7 @@ export function BillingHistoryClient({ initialOrders, customers, store }: Billin
                                     <TableCell className="font-medium">{order.orderNumber}</TableCell>
                                     <TableCell>{getCustomerForOrder(order)?.name || 'Walk-in'}</TableCell>
                                     <TableCell>{new Date(order.orderDate).toLocaleString()}</TableCell>
-                                    <TableCell>?{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Button variant="outline" size="sm" asChild>
                                             <Link href={`/dashboard/sales/orders/${order.id}`}>

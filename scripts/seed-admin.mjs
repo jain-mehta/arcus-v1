@@ -1,210 +1,221 @@
 /**
- * Seed Control-Plane Database
- * Creates admin user, default organization, and system roles
+ * Seed Admin User for Development
+ * Creates admin user with full RBAC permissions via Supabase Auth
  * 
- * Usage: pnpm seed:admin
+ * Usage: npm run seed:admin
+ * Note: This script uses Supabase's native authentication
+ * No custom tables needed - uses session management instead
  */
 
-import 'reflect-metadata';
-import { getControlRepo } from '../src/lib/controlDataSource.js';
-import { User, Organization, Role, UserRole } from '../src/lib/entities/auth.entity.js';
-import { hashPassword } from '../src/lib/auth.js';
-import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+import 'dotenv/config';
 
-// Admin credentials - CHANGE THESE IN PRODUCTION!
+// Admin credentials
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@arcus.local';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin@123456';
-const ADMIN_NAME = 'System Administrator';
 
-// Default organization
-const ORG_SLUG = process.env.ORG_SLUG || 'demo-org';
-const ORG_NAME = process.env.ORG_NAME || 'Demo Organization';
-const ORG_DB_URL = process.env.ORG_DB_URL || 'postgresql://postgres:postgres123@localhost:5432/arcus_demo_org';
+// Supabase credentials
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// System roles with permissions
-const SYSTEM_ROLES = [
-  {
-    name: 'admin',
-    description: 'Full system administrator with all permissions',
-    permissions: {
-      vendors: { view: true, create: true, edit: true, delete: true },
-      products: { view: true, create: true, edit: true, delete: true },
-      inventory: { view: true, create: true, edit: true, delete: true },
-      purchaseOrders: { view: true, create: true, edit: true, delete: true, approve: true },
-      salesOrders: { view: true, create: true, edit: true, delete: true, approve: true },
-      employees: { view: true, create: true, edit: true, delete: true },
-      reports: { view: true, export: true },
-      settings: { view: true, edit: true },
-      users: { view: true, create: true, edit: true, delete: true },
-      roles: { view: true, create: true, edit: true, delete: true },
-    },
-    isSystemRole: true,
-  },
-  {
-    name: 'manager',
-    description: 'Department manager with most permissions',
-    permissions: {
-      vendors: { view: true, create: true, edit: true, delete: false },
-      products: { view: true, create: true, edit: true, delete: false },
-      inventory: { view: true, create: true, edit: true, delete: false },
-      purchaseOrders: { view: true, create: true, edit: true, delete: false, approve: true },
-      salesOrders: { view: true, create: true, edit: true, delete: false, approve: true },
-      employees: { view: true, create: false, edit: false, delete: false },
-      reports: { view: true, export: true },
-      settings: { view: true, edit: false },
-      users: { view: true, create: false, edit: false, delete: false },
-      roles: { view: true, create: false, edit: false, delete: false },
-    },
-    isSystemRole: true,
-  },
-  {
-    name: 'employee',
-    description: 'Regular employee with basic permissions',
-    permissions: {
-      vendors: { view: true, create: false, edit: false, delete: false },
-      products: { view: true, create: false, edit: false, delete: false },
-      inventory: { view: true, create: false, edit: false, delete: false },
-      purchaseOrders: { view: true, create: true, edit: false, delete: false, approve: false },
-      salesOrders: { view: true, create: true, edit: false, delete: false, approve: false },
-      employees: { view: false, create: false, edit: false, delete: false },
-      reports: { view: true, export: false },
-      settings: { view: false, edit: false },
-      users: { view: false, create: false, edit: false, delete: false },
-      roles: { view: false, create: false, edit: false, delete: false },
-    },
-    isSystemRole: true,
-  },
-];
+// Full admin permissions across all modules
+const ADMIN_PERMISSIONS = {
+  dashboard: { create: true, read: true, update: true, delete: true, manage: true },
+  users: { create: true, read: true, update: true, delete: true, manage: true },
+  roles: { create: true, read: true, update: true, delete: true, manage: true },
+  permissions: { create: true, read: true, update: true, delete: true, manage: true },
+  store: { create: true, read: true, update: true, delete: true, manage: true },
+  sales: { create: true, read: true, update: true, delete: true, manage: true },
+  vendor: { create: true, read: true, update: true, delete: true, manage: true },
+  inventory: { create: true, read: true, update: true, delete: true, manage: true },
+  hrms: { create: true, read: true, update: true, delete: true, manage: true },
+  reports: { create: true, read: true, update: true, delete: true, manage: true },
+  settings: { create: true, read: true, update: true, delete: true, manage: true },
+  audit: { create: true, read: true, update: true, delete: true, manage: true },
+  admin: { create: true, read: true, update: true, delete: true, manage: true },
+};
 
-async function seedControlPlane() {
-  console.log('🌱 Seeding control-plane database...\n');
+async function seedAdmin() {
+  console.log('🌱 Seeding admin user via Supabase Auth...\n');
 
   try {
-    // 1. Create organization
-    console.log('1️⃣  Creating organization...');
-    const orgRepo = await getControlRepo(Organization);
-    
-    let organization = await orgRepo.findOne({ where: { slug: ORG_SLUG } });
-    
-    if (!organization) {
-      organization = orgRepo.create({
-        slug: ORG_SLUG,
-        name: ORG_NAME,
-        dbConnectionString: ORG_DB_URL,
-        settings: {
-          timezone: 'Asia/Kolkata',
-          currency: 'INR',
-        },
-        isActive: true,
-      });
-      
-      await orgRepo.save(organization);
-      console.log(`   ✅ Created organization: ${ORG_NAME} (${ORG_SLUG})`);
-    } else {
-      console.log(`   ⏭️  Organization already exists: ${ORG_NAME}`);
+    // Validate environment variables
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Missing Supabase environment variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)');
     }
 
-    // 2. Create system roles
-    console.log('\n2️⃣  Creating system roles...');
-    const roleRepo = await getControlRepo(Role);
-    const createdRoles = {};
+    // Create Supabase admin client with service role key
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    for (const roleData of SYSTEM_ROLES) {
-      let role = await roleRepo.findOne({
-        where: {
-          organizationId: organization.id,
-          name: roleData.name,
-        },
-      });
+    console.log('1️⃣  Creating admin user in Supabase Auth...');
+    
+    // Check if user already exists
+    const { data: existingUsers, error: checkError } = await supabase
+      .auth
+      .admin
+      .listUsers();
 
-      if (!role) {
-        role = roleRepo.create({
-          organizationId: organization.id,
-          name: roleData.name,
-          description: roleData.description,
-          permissions: roleData.permissions,
-          isSystemRole: roleData.isSystemRole,
+    if (checkError) {
+      throw new Error(`Failed to list users: ${checkError.message}`);
+    }
+
+    const adminExists = existingUsers?.users?.some(u => u.email === ADMIN_EMAIL);
+
+    if (adminExists) {
+      console.log(`   ⏭️  Admin user already exists: ${ADMIN_EMAIL}`);
+    } else {
+      // Create user with auth.admin
+      const { data: newUser, error: createError } = await supabase
+        .auth
+        .admin
+        .createUser({
+          email: ADMIN_EMAIL,
+          password: ADMIN_PASSWORD,
+          email_confirm: true,
+          user_metadata: {
+            fullName: 'System Administrator',
+            role: 'admin',
+            permissions: ADMIN_PERMISSIONS,
+            isSystemAdmin: true,
+          },
         });
-        
-        await roleRepo.save(role);
-        console.log(`   ✅ Created role: ${roleData.name}`);
-      } else {
-        console.log(`   ⏭️  Role already exists: ${roleData.name}`);
+
+      if (createError) {
+        throw new Error(`Failed to create user: ${createError.message}`);
       }
 
-      createdRoles[roleData.name] = role;
-    }
-
-    // 3. Create admin user
-    console.log('\n3️⃣  Creating admin user...');
-    const userRepo = await getControlRepo(User);
-    
-    let adminUser = await userRepo.findOne({ where: { email: ADMIN_EMAIL } });
-    
-    if (!adminUser) {
-      const passwordHash = await hashPassword(ADMIN_PASSWORD);
-      
-      adminUser = userRepo.create({
-        email: ADMIN_EMAIL,
-        passwordHash,
-        fullName: ADMIN_NAME,
-        isActive: true,
-        isEmailVerified: true,
-        emailVerifiedAt: new Date(),
-      });
-      
-      await userRepo.save(adminUser);
       console.log(`   ✅ Created admin user: ${ADMIN_EMAIL}`);
       console.log(`   🔐 Password: ${ADMIN_PASSWORD}`);
-      console.log(`   ⚠️  IMPORTANT: Change this password in production!`);
-    } else {
-      console.log(`   ⏭️  Admin user already exists: ${ADMIN_EMAIL}`);
     }
 
-    // 4. Assign admin role to user
-    console.log('\n4️⃣  Assigning admin role...');
-    const userRoleRepo = await getControlRepo(UserRole);
+    console.log('\n2️⃣  Creating admin profile in application database...');
     
-    let userRole = await userRoleRepo.findOne({
-      where: {
-        userId: adminUser.id,
-        roleId: createdRoles['admin'].id,
-        organizationId: organization.id,
-      },
+    // Get admin user ID from Supabase Auth
+    const { data: { users: allUsers }, error: listError } = await supabase.auth.admin.listUsers();
+    
+    if (listError) {
+      throw new Error(`Failed to list users: ${listError.message}`);
+    }
+
+    const adminAuthUser = allUsers?.find(u => u.email === ADMIN_EMAIL);
+    if (!adminAuthUser) {
+      throw new Error(`Admin user not found in Supabase Auth`);
+    }
+
+    console.log(`   📝 Admin Auth ID: ${adminAuthUser.id}`);
+
+    // Create admin profile in public.users table
+    // This is CRITICAL for multi-layer architecture:
+    // - auth.users (Supabase managed) = credentials
+    // - public.users (app managed) = user profile + metadata
+    
+    const { data: existingUserProfile, error: checkProfileError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', adminAuthUser.id)
+      .maybeSingle();
+
+    if (checkProfileError && checkProfileError.code !== 'PGRST116') {
+      throw new Error(`Failed to check user profile: ${checkProfileError.message}`);
+    }
+
+    if (!existingUserProfile) {
+      const { error: createProfileError } = await supabase
+        .from('users')
+        .insert({
+          id: adminAuthUser.id,
+          email: ADMIN_EMAIL,
+          full_name: 'System Administrator',
+          password_hash: '', // Not used - auth via Supabase
+          is_active: true,
+          is_email_verified: true,
+          email_verified_at: new Date().toISOString(),
+        });
+
+      if (createProfileError) {
+        throw new Error(`Failed to create admin profile: ${createProfileError.message}`);
+      }
+
+      console.log(`   ✅ Created admin profile in public.users table`);
+    } else {
+      console.log(`   ⏭️  Admin profile already exists`);
+    }
+
+    // Store credentials for reference
+    const adminCredentials = {
+      authId: adminAuthUser.id,
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+      fullName: 'System Administrator',
+      role: 'admin',
+      permissions: ADMIN_PERMISSIONS,
+      isSystemAdmin: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log(`   ✅ Admin credentials and profile synced`);
+
+    // Print summary
+    console.log('\n' + '='.repeat(75));
+    console.log('✅ Admin Seeding Completed Successfully!\n');
+    
+    console.log('📋 ARCHITECTURE:');
+    console.log('📋 ARCHITECTURE:');
+    console.log('   Authentication Layer: Supabase Auth (auth.users table)');
+    console.log('   User Profile Layer: PostgreSQL (public.users table)');
+    console.log('   Sync: Automatic on login via /api/auth/login\n');
+
+    console.log('📋 ADMIN ACCOUNT DETAILS:');;
+    console.log(`   Email:        ${ADMIN_EMAIL}`);
+    console.log(`   Password:     ${ADMIN_PASSWORD}`);
+    console.log(`   Full Name:    System Administrator`);
+    console.log(`   Role:         System Administrator`);
+    console.log(`   Status:       Active & Email Verified\n`);
+    
+    console.log('🔐 GRANTED PERMISSIONS (All modules, all actions):');
+    Object.entries(ADMIN_PERMISSIONS).forEach(([module, perms]) => {
+      const actions = Object.keys(perms).filter(k => perms[k]);
+      console.log(`   ✅ ${module.padEnd(15)} → ${actions.join(', ')}`);
     });
 
-    if (!userRole) {
-      userRole = userRoleRepo.create({
-        userId: adminUser.id,
-        roleId: createdRoles['admin'].id,
-        organizationId: organization.id,
-        assignedBy: adminUser.id, // Self-assigned
-      });
-      
-      await userRoleRepo.save(userRole);
-      console.log('   ✅ Assigned admin role to user');
-    } else {
-      console.log('   ⏭️  Admin role already assigned');
-    }
+    console.log('\n🎯 FUNCTIONALITY ACCESS:');
+    console.log('   ✅ Dashboard View & Management');
+    console.log('   ✅ User Management (Create, Edit, Delete)');
+    console.log('   ✅ Role Management (Create, Edit, Delete)');
+    console.log('   ✅ Permission Management');
+    console.log('   ✅ Store & Inventory Management');
+    console.log('   ✅ Sales & Purchase Orders');
+    console.log('   ✅ Vendor Management');
+    console.log('   ✅ HRMS & Employee Management');
+    console.log('   ✅ Reports & Analytics');
+    console.log('   ✅ Settings & Configuration');
+    console.log('   ✅ Audit Logs & Monitoring');
+    console.log('   ✅ Admin Functions');
 
-    // 5. Print summary
-    console.log('\n' + '='.repeat(60));
-    console.log('✅ Seed completed successfully!\n');
-    console.log('📋 SUMMARY:');
-    console.log(`   Organization: ${ORG_NAME}`);
-    console.log(`   Org Slug: ${ORG_SLUG}`);
-    console.log(`   Admin Email: ${ADMIN_EMAIL}`);
-    console.log(`   Admin Password: ${ADMIN_PASSWORD}`);
-    console.log(`   Roles Created: ${Object.keys(createdRoles).join(', ')}`);
-    console.log('\n🚀 You can now login with these credentials!');
-    console.log('='.repeat(60));
+    console.log('\n🚀 NEXT STEPS:');
+    console.log('   1. Start dev server: npm run dev');
+    console.log('   2. Go to: http://localhost:3000/login');
+    console.log(`   3. Login with: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
+    console.log('   4. Access full dashboard with admin privileges\n');
+    
+    console.log('⚠️  IMPORTANT SECURITY NOTES:');
+    console.log('   • Change this password in production immediately');
+    console.log('   • Use environment variables for credentials');
+    console.log('   • Enable 2FA for production admin accounts');
+    console.log('   • Rotate credentials regularly');
+    console.log('='.repeat(75));
 
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Seed failed:', error);
+    console.error('\n❌ Seed Failed:', error.message || error);
+    console.error('\nTroubleshooting:');
+    console.error('1. Verify SUPABASE_URL is set correctly');
+    console.error('2. Verify SUPABASE_SERVICE_ROLE_KEY is set correctly');
+    console.error('3. Check Supabase connection and credentials');
+    console.error('4. Ensure you have network access to Supabase');
     process.exit(1);
   }
 }
 
 // Run seed
-seedControlPlane();
+seedAdmin();

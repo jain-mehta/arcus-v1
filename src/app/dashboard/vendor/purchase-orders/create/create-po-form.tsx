@@ -280,7 +280,7 @@ export function CreatePOForm({ vendors }: CreatePOFormProps) {
                                 />
                                 <div className="w-full md:w-20 text-left md:text-right">
                                     <p className="text-sm text-muted-foreground">Total</p>
-                                    <p className="font-medium">?{(form.watch(`lineItems.${index}.quantity`) * form.watch(`lineItems.${index}.unitPrice`)).toLocaleString('en-IN')}</p>
+                                    <p className="font-medium">₹{(form.watch(`lineItems.${index}.quantity`) * form.watch(`lineItems.${index}.unitPrice`)).toLocaleString('en-IN')}</p>
                                 </div>
                                 <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                                     <Trash2 className="h-4 w-4 text-destructive" />
@@ -303,16 +303,16 @@ export function CreatePOForm({ vendors }: CreatePOFormProps) {
                     <div className="w-full max-w-xs space-y-1">
                          <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Subtotal</span>
-                            <span>?{subtotal.toLocaleString('en-IN')}</span>
+                            <span>₹{subtotal.toLocaleString('en-IN')}</span>
                         </div>
                          <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">GST (18%)</span>
-                            <span>?{tax.toLocaleString('en-IN')}</span>
+                            <span>₹{tax.toLocaleString('en-IN')}</span>
                         </div>
                         <Separator />
                          <div className="flex justify-between font-semibold text-base">
                             <span>Total</span>
-                            <span>?{total.toLocaleString('en-IN')}</span>
+                            <span>₹{total.toLocaleString('en-IN')}</span>
                         </div>
                     </div>
                 </CardFooter>

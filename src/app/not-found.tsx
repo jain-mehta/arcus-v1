@@ -10,7 +10,7 @@ export default function NotFound() {
       <Card className="w-full max-w-md text-center">
         <CardHeader>
           <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
-            <div className="h-8 w-8 text-primary text-4xl font-bold">?</div>
+            <div className="h-8 w-8 text-primary text-4xl font-bold">₹</div>
           </div>
           <CardTitle className="mt-4">404 - Page Not Found</CardTitle>
           <CardDescription>
