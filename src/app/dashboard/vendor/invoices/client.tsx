@@ -282,7 +282,7 @@ function UploadInvoiceDialog({ vendors, onInvoiceUploaded }: { vendors: Vendor[]
                                             <SelectTrigger><SelectValue placeholder="Select a PO" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {purchaseOrders.map(po => <SelectItem key={po.id} value={po.poNumber}>{po.poNumber} - ?{po.totalAmount.toLocaleString('en-IN')}</SelectItem>)}
+                                            {purchaseOrders.map(po => <SelectItem key={po.id} value={po.poNumber}>{po.poNumber} - ₹{po.totalAmount.toLocaleString('en-IN')}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

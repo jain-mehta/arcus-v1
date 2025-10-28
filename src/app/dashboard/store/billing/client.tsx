@@ -331,7 +331,7 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
                                         />
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        ?{(item.unitPrice * item.quantity).toLocaleString('en-IN')}
+                                        ₹{(item.unitPrice * item.quantity).toLocaleString('en-IN')}
                                     </TableCell>
                                     <TableCell>
                                         <Button variant="ghost" size="icon" onClick={() => remove(index)}>
@@ -407,7 +407,7 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
                         
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
-                            <div className="flex justify-between text-destructive"><span className="text-muted-foreground">Discount</span><span>- ?{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
+                            <div className="flex justify-between text-destructive"><span className="text-muted-foreground">Discount</span><span>- ₹{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">GST (18%)</span><span>₹{taxAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
                             <Separator className="my-2" />
                             <div className="flex justify-between font-bold text-lg"><span>Total</span><span>₹{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>

@@ -428,7 +428,7 @@ function SuggestionItemContent({ index, catalogImageDataUri }: { index: number, 
                         <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
                             <span>SKU: {item.sku}</span>
                             <span>|</span>
-                            <span>Price: ?{item.price}</span>
+                            <span>Price: ₹{item.price}</span>
                             <Badge variant="outline">{item.series}</Badge>
                         </div>
                     </div>

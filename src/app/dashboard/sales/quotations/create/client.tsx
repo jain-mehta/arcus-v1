@@ -247,7 +247,7 @@ export function CreateQuotationClient({ products, customers }: CreateQuotationCl
                                          <FormField control={form.control} name={`lineItems.${index}.unitPrice`} render={({ field }) => <Input type="number" {...field} value={field.value || 0} readOnly />} />
                                     </TableCell>
                                     <TableCell className="font-medium">
-                                        ?{(lineItems[index]?.quantity * lineItems[index]?.unitPrice).toLocaleString('en-IN')}
+                                        ₹{(lineItems[index]?.quantity * lineItems[index]?.unitPrice).toLocaleString('en-IN')}
                                     </TableCell>
                                     <TableCell>
                                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -276,7 +276,7 @@ export function CreateQuotationClient({ products, customers }: CreateQuotationCl
                         />
                         <div className="w-full space-y-2">
                             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
-                            {discountAmount > 0 && <div className="flex justify-between text-destructive"><span className="text-muted-foreground">Discount</span><span>- ?{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
+                            {discountAmount > 0 && <div className="flex justify-between text-destructive"><span className="text-muted-foreground">Discount</span><span>- ₹{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
                             <div className="flex justify-between"><span className="text-muted-foreground">GST (18%)</span><span>₹{tax.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
                             <Separator />
                             <div className="flex justify-between font-semibold text-lg"><span>Total</span><span>₹{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
@@ -473,7 +473,7 @@ const PrintableQuotation = React.forwardRef<HTMLDivElement, PrintableQuotationPr
                 <section className="flex justify-end mt-6">
                     <div className="w-full max-w-sm space-y-2">
                         <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
-                        {discountAmount > 0 && <div className="flex justify-between text-destructive"><span className="text-gray-600">Discount</span><span>- ?{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
+                        {discountAmount > 0 && <div className="flex justify-between text-destructive"><span className="text-gray-600">Discount</span><span>- ₹{discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
                         <div className="flex justify-between"><span className="text-gray-600">GST (18%)</span><span>₹{tax.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
                         <div className="border-t-2 border-gray-800 my-2"></div>
                         <div className="flex justify-between font-bold text-lg"><span className="text-gray-800">Total</span><span>₹{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
