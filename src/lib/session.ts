@@ -5,7 +5,7 @@
  * Sessions are 7 days by default and stored as httpOnly cookies.
  */
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { supabaseClient, getSupabaseServerClient } from './supabase/client';
 
 export const SESSION_COOKIE_NAME = '__session';
@@ -140,10 +140,27 @@ export async function getCurrentUserFromSession() {
 /**
  * Get session claims for RBAC checks
  * Includes uid, email, orgId, roleId, reportsTo
+ * Reads from cookies or Authorization Bearer token
  * @returns Session claims or null
  */
 export async function getSessionClaims() {
-  const decodedClaims = await getCurrentUserFromSession();
+  // Try to get token from cookies first
+  let decodedClaims = await getCurrentUserFromSession();
+  
+  if (!decodedClaims) {
+    // Try to get token from Authorization header (for API requests)
+    try {
+      const headersList = await headers();
+      const authHeader = headersList.get('authorization');
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7); // Remove "Bearer " prefix
+        decodedClaims = await verifySessionCookie(token);
+      }
+    } catch (error) {
+      console.log('[Session] Could not read Authorization header:', error);
+    }
+  }
   
   if (!decodedClaims) {
     console.log('[Session] No decoded claims found - user not authenticated');

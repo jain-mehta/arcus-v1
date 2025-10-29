@@ -114,7 +114,7 @@ export function SalesOverview({ data, salesTrendData, revenueFiguresData }: Sale
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" tickLine={false} axisLine={false} />
                         <YAxis hide={true} />
-                        <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `?${new Intl.NumberFormat('en-IN').format(value)}`} />
+                        <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `₹${new Intl.NumberFormat('en-IN').format(value)}`} />
                         <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>

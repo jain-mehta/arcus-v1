@@ -1,18 +1,27 @@
 /**
  * Role-Based Access Control (RBAC) System
  * 
- * Provides centralized permission checking for the entire application.
- * Supports hierarchical permissions with module :: submodule granularity.
+ * Powered by Casbin - Enterprise-grade authorization engine
+ * 
+ * Features:
+ * - Domain-based multi-tenancy (per organization)
+ * - Hierarchical roles with inheritance
+ * - Resource-level permissions with wildcard support
+ * - Dynamic policy management
+ * - Audit logging integration
  * 
  * Permission Structure:
- * {
- *   store: { bills: true, invoices: true, viewPastBills: true },
- *   sales: { quotations: true, leads: false },
- *   inventory: { viewStock: true, editStock: false }
- * }
+ * - Subject: user:{userId} or role:{roleName}
+ * - Domain: org:{organizationId}
+ * - Object: resource path (e.g., 'sales:leads:*', 'store:pos:access')
+ * - Action: operation (e.g., 'view', 'create', 'edit', 'delete', '*')
+ * 
+ * Example Permission Check:
+ * user:123, org:456, sales:leads, view -> true/false
  */
 
 import type { User } from './mock-data/types';
+import { checkCasbin, getPermissionsForUser, initCasbin } from './casbinClient';
 
 export interface PermissionMap {
   [module: string]: {
@@ -34,19 +43,21 @@ export interface UserClaims {
  * @param userClaims - Decoded user claims from session
  * @param moduleName - Module name (e.g., 'store', 'sales')
  * @param submoduleName - Submodule name (e.g., 'bills', 'quotations')
+ * @param action - Action to check (default: 'view')
  * @throws Error with 403 status if permission denied
  */
 export async function assertPermission(
   userClaims: UserClaims,
   moduleName: string,
-  submoduleName?: string
+  submoduleName?: string,
+  action: string = 'view'
 ): Promise<void> {
-  const hasPermission = await checkPermission(userClaims, moduleName, submoduleName);
+  const hasPermission = await checkPermission(userClaims, moduleName, submoduleName, action);
   
   if (!hasPermission) {
     const permissionStr = submoduleName 
-      ? `${moduleName}:${submoduleName}` 
-      : moduleName;
+      ? `${moduleName}:${submoduleName}:${action}` 
+      : `${moduleName}:${action}`;
     const error: any = new Error(`Permission denied: ${permissionStr}`);
     error.status = 403;
     throw error;
@@ -54,49 +65,128 @@ export async function assertPermission(
 }
 
 /**
- * Check if user has a specific permission
+ * Get all permissions for a user (from Casbin, including role inheritance)
+ * @param userClaims - User claims from session
+ * @returns Array of permission objects { resource, action, effect }
+ */
+export async function getAllUserPermissions(userClaims: UserClaims): Promise<Array<{resource: string, action: string, effect: string}>> {
+  // Import from policyAdapterCasbin
+  const { getUserPermissions } = await import('./policyAdapterCasbin');
+  
+  if (!userClaims.orgId) {
+    console.log('[RBAC] No organization ID, returning empty permissions');
+    return [];
+  }
+
+  try {
+    const permissions = await getUserPermissions(userClaims.uid, userClaims.orgId);
+    console.log(`[RBAC] Retrieved ${permissions.length} permissions for user ${userClaims.uid}`);
+    // Map to ensure proper types
+    return permissions.map(p => ({
+      resource: p.resource,
+      action: p.action,
+      effect: p.effect || 'allow'
+    }));
+  } catch (error) {
+    console.error('[RBAC] Failed to get user permissions:', error);
+    return [];
+  }
+}
+
+/**
+ * Check if user has a specific permission using Casbin
  * @param userClaims - Decoded user claims from session
- * @param moduleName - Module name
- * @param submoduleName - Optional submodule name
+ * @param moduleName - Module name (e.g., 'sales', 'store', 'inventory')
+ * @param submoduleName - Optional submodule name (e.g., 'leads', 'bills')
+ * @param action - Optional action (defaults to 'view')
  * @returns true if permission granted, false otherwise
  */
 export async function checkPermission(
   userClaims: UserClaims,
   moduleName: string,
-  submoduleName?: string
+  submoduleName?: string,
+  action: string = 'view'
 ): Promise<boolean> {
-  console.log('[RBAC] Checking permission:', { userId: userClaims.uid, email: userClaims.email, moduleName, submoduleName, roleId: userClaims.roleId });
+  console.log('[RBAC] Checking permission:', { 
+    userId: userClaims.uid, 
+    email: userClaims.email, 
+    moduleName, 
+    submoduleName,
+    action,
+    orgId: userClaims.orgId,
+    roleId: userClaims.roleId 
+  });
+
+  // Initialize Casbin if not already done
+  try {
+    await initCasbin();
+  } catch (error) {
+    console.error('[RBAC] Failed to initialize Casbin:', error);
+    // Fall back to basic checks on initialization failure
+  }
+
+  // SPECIAL CASE: All authenticated users can view dashboard
+  if (moduleName === 'dashboard' && action === 'view') {
+    console.log('[RBAC] ✅ All authenticated users can access dashboard');
+    return true;
+  }
 
   // FIRST: Check if user is admin by email (primary check)
-  // Support multiple admin emails
   const adminEmails = ['admin@arcus.local'];
-  console.log('[RBAC] Email check:', { userEmail: userClaims.email, isAdmin: userClaims.email ? adminEmails.includes(userClaims.email) : false });
+  console.log('[RBAC] Email check:', { 
+    userEmail: userClaims.email, 
+    isAdmin: userClaims.email ? adminEmails.includes(userClaims.email) : false 
+  });
   
   if (userClaims.email && adminEmails.includes(userClaims.email)) {
-    console.log('[RBAC] Admin user detected by email, granting all permissions');
+    console.log('[RBAC] ✅ Admin user detected by email, granting all permissions');
     return true;
   }
 
   // SECOND: Check if user has admin role
-  // Admins have all permissions
-  console.log('[RBAC] Role check:', { userRole: userClaims.roleId, isAdmin: userClaims.roleId === 'admin' });
+  console.log('[RBAC] Role check:', { 
+    userRole: userClaims.roleId, 
+    isAdmin: userClaims.roleId === 'admin' 
+  });
   
   if (userClaims.roleId === 'admin') {
-    console.log('[RBAC] Admin role detected, granting all permissions');
+    console.log('[RBAC] ✅ Admin role detected, granting all permissions');
     return true;
   }
 
-  // THIRD: Check if permissions are in custom claims (for performance)
+  // THIRD: Use Casbin for permission check
+  if (userClaims.orgId) {
+    try {
+      // Build resource path
+      const resource = submoduleName 
+        ? `${moduleName}:${submoduleName}` 
+        : moduleName;
+
+      const allowed = await checkCasbin({
+        userId: userClaims.uid,
+        organizationId: userClaims.orgId,
+        resource,
+        action,
+      });
+
+      console.log(`[RBAC] Casbin check result: ${allowed ? '✅ ALLOWED' : '❌ DENIED'}`);
+      return allowed;
+    } catch (error) {
+      console.error('[RBAC] Casbin check error:', error);
+      // Fall through to legacy check
+    }
+  }
+
+  // FOURTH: Fallback to legacy permission map (for backward compatibility)
   const claimsPerms = (userClaims as any).permissions;
   if (claimsPerms) {
     const result = checkPermissionInMap(claimsPerms, moduleName, submoduleName);
-    console.log('[RBAC] Permission result from claims:', result);
+    console.log('[RBAC] Legacy permission check result:', result);
     return result;
   }
 
-  // Fallback: TODO fetch permissions from Supabase
-  // For now, return false if no permissions found
-  console.log('[RBAC] No permissions found, denying access');
+  // No permissions found
+  console.log('[RBAC] ❌ No permissions found, denying access');
   return false;
 }
 
@@ -201,8 +291,7 @@ export async function getSubordinates(managerId: string, orgId: string): Promise
 export async function getRolePermissions(roleId: string): Promise<PermissionMap | null> {
   console.log('[RBAC] getRolePermissions called for roleId:', roleId);
   
-  // TODO: Implement Supabase query for role permissions
-  // For now, provide complete admin permissions for 'admin' role
+  // If admin role, return full admin permissions
   if (roleId === 'admin') {
     console.log('[RBAC] Returning full admin permissions for admin role with 200+ submodule permissions');
     return {
@@ -759,7 +848,83 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
       }
     };
   }
-  return null;
+
+  // For non-admin roles, query the database
+  console.log('[RBAC] Querying database for non-admin role:', roleId);
+  try {
+    const { getSupabaseServerClient } = await import('./supabase/client');
+    const supabase = getSupabaseServerClient();
+    
+    if (!supabase) {
+      console.error('[RBAC] Supabase client not available');
+      return null;
+    }
+
+    // Query the role from database
+    const { data: roleData, error } = await supabase
+      .from('roles')
+      .select('permissions')
+      .eq('id', roleId)
+      .single();
+
+    if (error || !roleData) {
+      console.log('[RBAC] Role not found:', roleId);
+      return null;
+    }
+
+    // Parse permissions from JSON
+    const permissions = roleData.permissions;
+    console.log('[RBAC] Retrieved permissions for role', roleId, ':', permissions ? Object.keys(permissions).length : 0, 'modules');
+
+    if (!permissions) {
+      console.log('[RBAC] No permissions found for role:', roleId);
+      return null;
+    }
+
+    // Transform the permissions into PermissionMap format
+    // If permissions is already in the right format, use it directly
+    if (typeof permissions === 'object' && !Array.isArray(permissions)) {
+      console.log('[RBAC] Permissions is object format, using directly');
+      return permissions as PermissionMap;
+    }
+
+    // If permissions is an array of permission objects, convert it
+    if (Array.isArray(permissions)) {
+      console.log('[RBAC] Permissions is array format, converting to PermissionMap');
+      const permissionMap: PermissionMap = {};
+      
+      for (const perm of permissions) {
+        if (perm.resource && perm.action) {
+          // Parse "module:submodule" format
+          const parts = perm.resource.split(':');
+          const module = parts[0];
+          const submodule = parts[1] || perm.action;
+          
+          if (!permissionMap[module]) {
+            permissionMap[module] = {};
+          }
+          
+          // Set the permission key to true
+          const key = parts.length > 1 ? `${submodule}:${perm.action}` : submodule;
+          permissionMap[module][key] = true;
+          
+          // Also set shorthand key for compatibility
+          if (!permissionMap[module][submodule]) {
+            permissionMap[module][submodule] = true;
+          }
+        }
+      }
+      
+      console.log('[RBAC] Converted permissions:', Object.keys(permissionMap));
+      return permissionMap;
+    }
+
+    console.log('[RBAC] Could not parse permissions format');
+    return null;
+  } catch (error) {
+    console.error('[RBAC] Error fetching role permissions:', error);
+    return null;
+  }
 }
 
 /**

@@ -25,7 +25,7 @@ export function GoogleAnalyticsProvider() {
   // Track pageviews on route change
   useEffect(() => {
     if (pathname) {
-      const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+      const url = pathname + (searchParams?.toString() ? `₹${searchParams.toString()}` : '');
       pageview(url);
     }
   }, [pathname, searchParams]);

@@ -191,13 +191,9 @@ export function ImprovedUsersClient({ initialUsers, allRoles, allPermissions, al
 }
 
 // Generate random password helper
-function generateRandomPassword(length: number = 12): string {
-  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-  let password = '';
-  for (let i = 0; i < length; i++) {
-    password += charset.charAt(Math.floor(Math.random() * charset.length));
-  }
-  return password;
+async function generateRandomPassword(length: number = 16): Promise<string> {
+  const { generateSecurePassword } = await import('@/lib/password-generator');
+  return generateSecurePassword(length);
 }
 
 interface CreateUserDialogProps {
@@ -229,8 +225,8 @@ function CreateUserDialog({ open, onOpenChange, allRoles, allStores, allUsers, o
     },
   });
 
-  const handleGeneratePassword = () => {
-    const newPassword = generateRandomPassword();
+  const handleGeneratePassword = async () => {
+    const newPassword = await generateRandomPassword();
     setPassword(newPassword);
     form.setValue('password', newPassword);
     toast({
@@ -306,6 +302,7 @@ function CreateUserDialog({ open, onOpenChange, allRoles, allStores, allUsers, o
               type="email"
               placeholder="john@example.com"
               className="h-11"
+              {...form.register('email')}
             />
             {form.formState.errors.email && (
               <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
@@ -478,8 +475,9 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
           reportsTo: reportingManagerId === 'none' ? undefined : reportingManagerId,
         });
 
-        if (result.success && result.updatedUser) {
-          onUserUpdated(result.updatedUser);
+        if (result.success && 'updatedUser' in result && result.updatedUser) {
+          const updated = result.updatedUser as User;
+          onUserUpdated(updated);
           toast({
             title: 'User Updated',
             description: `${user.name} has been updated successfully.`,

@@ -265,11 +265,11 @@ export default function StoreReportsPage() {
                             <BarChart data={reportData.salesByStoreChartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `?${(value / 1000).toLocaleString()}k`} />
+                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${(value / 1000).toLocaleString()}k`} />
                                 <Tooltip
                                     cursor={{ fill: 'hsl(var(--muted))' }}
                                     contentStyle={{ backgroundColor: 'hsl(var(--background))' }}
-                                    formatter={(value: number) => `?${value.toLocaleString()}`}
+                                    formatter={(value: number) => `₹${value.toLocaleString()}`}
                                 />
                                 <Bar dataKey="sales" fill="hsl(var(--primary))" name="Total Revenue" radius={[4, 4, 0, 0]} />
                             </BarChart>

@@ -141,6 +141,8 @@ export async function POST(req: NextRequest) {
           email: user.email,
           createdAt: user.created_at,
         },
+        accessToken: access_token,
+        refreshToken: refresh_token,
         message: 'Logged in successfully',
       },
       { status: 200 }

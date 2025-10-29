@@ -34,13 +34,91 @@ export async function getCurrentUserProfile() {
 
 /**
  * Fetches all users for a given organization.
- * MOCK IMPLEMENTATION: Returns mock user data.
+ * UPDATED: Fetches directly from Supabase
  */
 export async function getAllUsers(): Promise<User[]> {
-  // In a real app, this would be a Firestore query.
-  // We simulate a delay to show loading states.
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return Promise.resolve(MOCK_USERS);
+  try {
+    // Get session for auth
+    const sessionClaims = await getSessionClaims();
+    if (!sessionClaims) {
+      console.warn('[getAllUsers] No session, returning empty users');
+      return [];
+    }
+
+    // Check permission
+    try {
+      await assertPermission(sessionClaims, 'users', 'view');
+    } catch (permError) {
+      console.error('[getAllUsers] Permission denied:', permError);
+      return [];
+    }
+
+    // Import Supabase client dynamically to avoid edge runtime issues
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    
+    if (!supabase) {
+      console.error('[getAllUsers] Supabase client not available');
+      return [];
+    }
+
+    // Fetch all user roles (no organization_id column in user_roles table)
+    const { data: userRolesData, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('user_id, role_id');
+
+    if (rolesError) {
+      console.error('[getAllUsers] Error fetching user roles:', rolesError);
+      return [];
+    }
+
+    // Get unique user IDs 
+    const userIds = [...new Set(userRolesData?.map(ur => ur.user_id) || [])];
+    
+    if (userIds.length === 0) {
+      console.log('[getAllUsers] No users found in organization');
+      return [];
+    }
+
+    // Fetch users from database
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('*')
+      .in('id', userIds)
+      .order('created_at', { ascending: false });
+
+    if (usersError) {
+      console.error('[getAllUsers] Error fetching users:', usersError);
+      return [];
+    }
+
+    // Group roles by user
+    const rolesByUser = (userRolesData || []).reduce((acc: any, ur: any) => {
+      if (!acc[ur.user_id]) acc[ur.user_id] = [];
+      acc[ur.user_id].push(ur.role_id);
+      return acc;
+    }, {});
+
+    // Transform to User type
+    const users: User[] = (usersData || []).map((user: any) => ({
+      id: user.id,
+      email: user.email,
+      name: user.full_name || user.email.split('@')[0],
+      roleIds: rolesByUser[user.id] || [],
+      orgId: sessionClaims.orgId,
+      phone: user.phone || '',
+      storeId: user.store_id || null,
+      reportsTo: user.reports_to || null,
+      isActive: user.is_active !== undefined ? user.is_active : true,
+      status: user.is_active ? 'Active' : 'Inactive',
+      createdAt: user.created_at || new Date().toISOString(),
+    }));
+
+    return users;
+  } catch (error) {
+    console.error('[getAllUsers] Error fetching users:', error);
+    return [];
+  }
 }
 
 /**
@@ -48,16 +126,64 @@ export async function getAllUsers(): Promise<User[]> {
  * Fetches from Supabase roles table.
  */
 export async function getAllRoles(): Promise<Role[]> {
-  const sessionClaims = await getSessionClaims();
-  
-  if (!sessionClaims) {
-    console.warn('[getAllRoles] No session, returning empty roles');
+  try {
+    const sessionClaims = await getSessionClaims();
+    
+    if (!sessionClaims) {
+      console.warn('[getAllRoles] No session, returning empty roles');
+      return [];
+    }
+
+    // Check permission to view roles
+    try {
+      await assertPermission(sessionClaims, 'settings', 'manageRoles');
+    } catch {
+      // Try fallback permission
+      try {
+        await assertPermission(sessionClaims, 'users', 'create');
+      } catch {
+        // Admin bypass
+        if (sessionClaims.email !== 'admin@arcus.local') {
+          console.warn('[getAllRoles] Permission denied');
+          return [];
+        }
+      }
+    }
+
+    // Use Supabase client directly (server-side, no auth header needed)
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    
+    if (!supabase) {
+      console.error('[getAllRoles] Supabase client not available');
+      return [];
+    }
+
+    const { data: roles, error } = await supabase
+      .from('roles')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('[getAllRoles] Error fetching roles:', error);
+      return [];
+    }
+    
+    // Transform to Role type
+    const transformedRoles: Role[] = (roles || []).map((role: any) => ({
+      id: role.id,
+      orgId: role.organization_id || MOCK_ORGANIZATION_ID || '', // Use orgId from role or fallback to mock
+      name: role.name,
+      permissions: role.permissions || {},
+      reportsToRoleId: role.reports_to_role_id,
+    }));
+
+    console.log('[getAllRoles] Fetched', transformedRoles.length, 'roles');
+    return transformedRoles;
+  } catch (error) {
+    console.error('[getAllRoles] Error:', error);
     return [];
   }
-
-  // TODO: Implement Supabase query
-  // For now returning empty to unblock build
-  return [];
 }
 
 /**
@@ -75,24 +201,44 @@ export async function getAllStores(): Promise<Store[]> {
 
 /**
  * Updates a user's assigned roles and other details.
+ * UPDATED: Calls API endpoint instead of MOCK data
  */
-export async function updateUser(userId: string, data: Partial<Omit<User, 'id' | 'name' | 'email' | 'orgId'>>) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'users', 'viewAll');
+export async function updateUser(userId: string, data: Partial<User>) {
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) {
+    throw new Error('Unauthorized');
+  }
+  await assertPermission(sessionClaims, 'users', 'viewAll');
 
   const currentUser = await getCurrentUser();
   if (!currentUser) return { success: false, message: 'Authentication required.' };
-  try { await assertUserPermission(currentUser.id, 'manage-users'); } catch (e: any) { return { success: false, message: 'Forbidden' }; }
   
-  const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-  if (userIndex > -1) {
-    const targetUser = MOCK_USERS[userIndex];
-    MOCK_USERS[userIndex] = { ...targetUser, ...data };
-    
-    // Fetch role names from Firestore instead of MOCK_ROLES
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/users`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        fullName: data.name,
+        phone: data.phone,
+        storeId: data.storeId,
+        reportsTo: data.reportsTo,
+        isActive: data.status === 'Active',
+        roleIds: data.roleIds,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { 
+        success: false, 
+        message: errorData.error || 'Failed to update user' 
+      };
+    }
+
+    // Fetch role names for audit log
     const allRoles = await getAllRoles();
     const roleNames = (data.roleIds || []).map(roleId => allRoles.find(r => r.id === roleId)?.name || roleId);
     const manager = data.reportsTo ? await getUser(data.reportsTo) : null;
@@ -105,19 +251,21 @@ export async function updateUser(userId: string, data: Partial<Omit<User, 'id' |
       entityType: 'user',
       entityId: userId,
       details: { 
-          targetUser: targetUser.name, 
-          roles: roleNames.join(', ') || 'None', 
-          reportsTo: manager?.name || 'None',
-          store: store?.name || 'None',
-          customPermissions: data.customPermissions?.length ? `${data.customPermissions.length} custom permissions` : 'None',
+        targetUser: data.name || 'User', 
+        roles: roleNames.join(', ') || 'None', 
+        reportsTo: manager?.name || 'None',
+        store: store?.name || 'None',
+        customPermissions: data.customPermissions?.length ? `${data.customPermissions.length} custom permissions` : 'None',
       },
-  ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
+      ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
     });
 
     revalidatePath('/dashboard/users');
-    return { success: true, updatedUser: MOCK_USERS[userIndex] };
+    return { success: true };
+  } catch (error: any) {
+    console.error('[updateUser] Error:', error);
+    return { success: false, message: error.message || 'Failed to update user' };
   }
-  return { success: false, message: 'User not found.' };
 }
 
 
@@ -146,42 +294,69 @@ export async function updateCurrentUserProfile(data: { phone: string; address?: 
 }
 
 
-export async function createNewUser(userData: Omit<User, 'id' | 'orgId'>): Promise<{ success: boolean; newUser?: User, message?: string }> {
+/**
+ * Creates a new user via API endpoint
+ * UPDATED: Calls /api/admin/users instead of using MOCK data
+ */
+export async function createNewUser(userData: Omit<User, 'id' | 'orgId'> & { password?: string }): Promise<{ success: boolean; newUser?: User, message?: string }> {
   const currentUser = await getCurrentUser();
   if (!currentUser) return { success: false, message: 'Authentication required.' };
-  try { await assertUserPermission(currentUser.id, 'manage-users'); } catch (e: any) { return { success: false, message: 'Forbidden' }; }
+  
   // Server-side validation (basic)
-  if (!userData.name || !userData.email) return { success: false, message: 'Name and email are required.' };
-
-  const tempPassword = `Tmp!${Math.random().toString(36).slice(2,10)}${Date.now().toString().slice(-3)}`;
-
-  const newUser: User = {
-    id: `user-${Date.now()}`,
-    orgId: MOCK_ORGANIZATION_ID,
-    name: userData.name,
-    email: userData.email,
-    phone: userData.phone,
-    roleIds: userData.roleIds || [],
-    customPermissions: userData.customPermissions || [],
-    reportsTo: userData.reportsTo || null,
-    storeId: userData.storeId || null,
-    status: userData.status || 'Active',
-    createdBy: currentUser.id,
-    createdAt: new Date().toISOString(),
-    mustChangePassword: true,
-  } as User;
-
-  MOCK_USERS.push(newUser);
-
-  // Optional: create a session for the new user (mock)
-  try {
-  const { createSession } = await import('@/lib/mock-sessions');
-  await createSession(newUser.id, { userAgent: 'initial-invite' });
-  } catch (e) {
-    console.warn('Failed to create session for new user (mock):', e);
+  if (!userData.name || !userData.email) {
+    return { success: false, message: 'Name and email are required.' };
   }
 
-  await createAuditLog({
+  // Generate secure password if not provided
+  const { generateSecurePassword } = await import('@/lib/password-generator');
+  const password = userData.password || generateSecurePassword(16);
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: userData.email,
+        password,
+        fullName: userData.name,
+        phone: userData.phone || '',
+        roleIds: userData.roleIds || [],
+        storeId: userData.storeId || null,
+        reportsTo: userData.reportsTo || null,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { 
+        success: false, 
+        message: errorData.error || 'Failed to create user' 
+      };
+    }
+
+    const data = await response.json();
+    
+    // Transform API response to User type
+    const newUser: User = {
+      id: data.user.id,
+      orgId: data.user.orgId || MOCK_ORGANIZATION_ID,
+      name: data.user.fullName,
+      email: data.user.email,
+      phone: data.user.phone || '',
+      roleIds: data.user.roles?.map((r: any) => r.id) || [],
+      customPermissions: [],
+      reportsTo: data.user.reportsTo || null,
+      storeId: data.user.storeId || null,
+      status: data.user.isActive ? 'Active' : 'Inactive',
+      createdBy: currentUser.id,
+      createdAt: new Date().toISOString(),
+      mustChangePassword: true,
+    } as User;
+
+    // Create audit log
+    await createAuditLog({
       userId: currentUser.id,
       userName: currentUser.name,
       action: 'create_user',
@@ -189,10 +364,17 @@ export async function createNewUser(userData: Omit<User, 'id' | 'orgId'>): Promi
       entityId: newUser.id,
       details: { name: newUser.name, email: newUser.email, roles: (newUser.roleIds || []).join(', ') },
       ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
-  });
+    });
 
-  revalidatePath('/dashboard/users');
-  return { success: true, newUser: { ...newUser }, message: tempPassword };
+    revalidatePath('/dashboard/users');
+    return { success: true, newUser, message: password };
+  } catch (error: any) {
+    console.error('[createNewUser] Error:', error);
+    return { 
+      success: false, 
+      message: error.message || 'Failed to create user' 
+    };
+  }
 }
 
 export async function deactivateUser(userId: string): Promise<{ success: boolean, message?: string }> {

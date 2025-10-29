@@ -140,7 +140,7 @@ export function PriceComparisonClient({ materials, initialComparisonData, initia
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-20} textAnchor="end" height={60} />
                                 <YAxis unit="?" />
-                                <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} formatter={(value: number) => `?${value.toFixed(2)}`} />
+                                <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} formatter={(value: number) => `₹${value.toFixed(2)}`} />
                                 <Bar dataKey="price" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>

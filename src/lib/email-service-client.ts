@@ -121,7 +121,7 @@ class EmailServiceClient {
           <ul>
             <li><strong>PO #:</strong> ${data.poNumber}</li>
             <li><strong>Vendor:</strong> ${data.vendorName}</li>
-            <li><strong>Amount:</strong> ?${data.amount}</li>
+            <li><strong>Amount:</strong> ₹${data.amount}</li>
             <li><strong>Expected Delivery:</strong> ${data.expectedDelivery}</li>
           </ul>
           <p><a href="${data.actionUrl}">View Purchase Order</a></p>
@@ -150,7 +150,7 @@ class EmailServiceClient {
           <ul>
             <li><strong>SO #:</strong> ${data.soNumber}</li>
             <li><strong>Customer:</strong> ${data.customerName}</li>
-            <li><strong>Amount:</strong> ?${data.amount}</li>
+            <li><strong>Amount:</strong> ₹${data.amount}</li>
             <li><strong>Promised Delivery:</strong> ${data.promisedDelivery}</li>
           </ul>
           <p><a href="${data.actionUrl}">View Sales Order</a></p>

@@ -175,9 +175,9 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={sourceData} layout="vertical" margin={{ right: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                            <XAxis type="number" tickFormatter={(value) => `?${value / 100000}L`} />
+                            <XAxis type="number" tickFormatter={(value) => `₹${value / 100000}L`} />
                             <YAxis type="category" dataKey="name" width={80} />
-                            <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `?${value.toLocaleString('en-IN')}`} />
+                            <Tooltip cursor={{fill: 'hsl(var(--muted))'}} formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
                             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Revenue" />
                         </BarChart>
                     </ResponsiveContainer>

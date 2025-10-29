@@ -197,8 +197,8 @@ export default function SalesSettingsPage() {
                         </TableCell>
                         <TableCell>{target.month}</TableCell>
                         <TableCell>
-                          {target.type === 'Revenue' ? `?${target.currentValue.toLocaleString('en-IN')}` : target.currentValue}
-                           / {target.type === 'Revenue' ? `?${target.value.toLocaleString('en-IN')}` : target.value}
+                          {target.type === 'Revenue' ? `₹${target.currentValue.toLocaleString('en-IN')}` : target.currentValue}
+                           / {target.type === 'Revenue' ? `₹${target.value.toLocaleString('en-IN')}` : target.value}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

@@ -13,6 +13,7 @@
     "start-control": "node ./scripts/start-control.js",
     "migrate-control": "node ./scripts/migrate-control.js",
     "seed:admin": "node ./scripts/seed-admin.mjs",
+    "seed:casbin": "tsx scripts/seed-casbin-policies.ts",
     "emu": "firebase emulators:start",
     "seed": "node scripts/seedTestData.js",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
@@ -62,6 +63,7 @@
     "@supabase/supabase-js": "^2.76.1",
     "axios": "^1.4.0",
     "bcryptjs": "^3.0.2",
+    "casbin": "^5.40.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -94,6 +96,7 @@
     "tailwindcss-animate": "^1.0.7",
     "taskkill": "^5.0.0",
     "typeorm": "^0.3.27",
+    "typeorm-adapter": "^1.8.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

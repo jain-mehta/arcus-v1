@@ -68,7 +68,7 @@ export async function getReportData() {
   const kpiData = [
     {
       title: 'Pipeline Value',
-      value: `?${pipelineValue.toLocaleString('en-IN')}`,
+      value: `₹${pipelineValue.toLocaleString('en-IN')}`,
       icon: 'HandCoins',
     },
     {
@@ -78,7 +78,7 @@ export async function getReportData() {
     },
     {
       title: 'Average Deal Size',
-      value: `?${avgDealSize.toLocaleString('en-IN', {
+      value: `₹${avgDealSize.toLocaleString('en-IN', {
         maximumFractionDigits: 0,
       })}`,
       icon: 'Target',

@@ -42,7 +42,7 @@ export function ManagerStoreDashboardClient({ dashboardData, storeName }: Manage
   const { totalSales, totalItemsSold, topProducts, salesTrend } = dashboardData;
   
   const kpis = [
-    { title: 'Today\'s Sales', value: `?${totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
+    { title: 'Today\'s Sales', value: `₹${totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
     { title: 'Today\'s Items Sold', value: totalItemsSold.toLocaleString(), icon: Package },
     { title: 'Conversion Rate (Mock)', value: '12.5%', icon: TrendingUp },
   ];
@@ -82,8 +82,8 @@ export function ManagerStoreDashboardClient({ dashboardData, storeName }: Manage
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesTrend}>
                     <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `?${value / 1000}k`} />
-                    <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} formatter={(value: number) => `?${value.toLocaleString()}`} />
+                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`} />
+                    <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))'}} formatter={(value: number) => `₹${value.toLocaleString()}`} />
                     <Line type="monotone" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={2} name="Sales" />
                 </LineChart>
             </ResponsiveContainer>

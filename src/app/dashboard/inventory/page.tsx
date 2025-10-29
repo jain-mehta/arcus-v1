@@ -32,7 +32,7 @@ export default async function InventoryDashboardPage() {
 
   const kpiData = [
     { title: 'Total Products (SKUs)', value: totalProducts, icon: Boxes },
-    { title: 'Total Inventory Value', value: `?${totalStockValue.toLocaleString('en-IN')}`, icon: FileBarChart },
+    { title: 'Total Inventory Value', value: `₹${totalStockValue.toLocaleString('en-IN')}`, icon: FileBarChart },
     { title: 'Low Stock Items', value: lowStockItemsCount, icon: AlertTriangle },
   ];
 

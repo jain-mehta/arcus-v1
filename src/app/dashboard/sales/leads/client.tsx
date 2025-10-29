@@ -89,7 +89,7 @@ export function LeadsClient({ initialLeads, users }: LeadsClientProps) {
       current.set(key, value);
     }
     const search = current.toString();
-    const query = search ? `?${search}` : "";
+    const query = search ? `₹${search}` : "";
     router.push(`/dashboard/sales/leads${query}`);
   };
 
@@ -106,7 +106,7 @@ export function LeadsClient({ initialLeads, users }: LeadsClientProps) {
     }
 
     const search = current.toString();
-    const query = search ? `?${search}` : "";
+    const query = search ? `₹${search}` : "";
     router.push(`/dashboard/sales/leads${query}`);
   }
 
