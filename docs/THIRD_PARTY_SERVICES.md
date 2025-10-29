@@ -206,7 +206,7 @@ Priority: Phase 0
 ## 11. Payments & Billing
 Priority: Phase 1
 
-1. Stripe (recommended) or Razorpay
+1. Stripe (recommended) or Razorpay (check rate) or google pay
 - Purpose: subscriptions, invoicing, usage billing
 - Integration: webhooks, signed event handling, mapping tenant -> subscription
 - Env vars: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
