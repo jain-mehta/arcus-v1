@@ -274,7 +274,7 @@ export default function EditStoreProfilePage() {
                       name="cashAlertThreshold"
                       render={({ field }) => (
                           <FormItem>
-                          <FormLabel>Cash Alert Threshold (>₹)</FormLabel>
+                          <FormLabel>Cash Alert Threshold (₹)</FormLabel>
                           <FormControl>
                               <Input type="number" placeholder="e.g., 75000" {...field} />
                           </FormControl>

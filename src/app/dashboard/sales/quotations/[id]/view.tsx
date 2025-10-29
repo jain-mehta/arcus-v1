@@ -102,8 +102,8 @@ export function QuotationDetailView({
                                 <TableHead>Product</TableHead>
                                 <TableHead>SKU</TableHead>
                                 <TableHead className="text-right">Quantity</TableHead>
-                                <TableHead className="text-right">Unit Price (>₹)</TableHead>
-                                <TableHead className="text-right">Total (>₹)</TableHead>
+                                <TableHead className="text-right">Unit Price (₹)</TableHead>
+                                <TableHead className="text-right">Total (₹)</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
