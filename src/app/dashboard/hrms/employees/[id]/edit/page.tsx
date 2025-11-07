@@ -23,17 +23,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import type { Store, User, Role } from '@/lib/mock-data/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// import { MOCK_USERS, MOCK_ROLES, MOCK_STORES } from '@/lib/mock-data/firestore';
-import { updateStaffMember } from '../../../actions';
+// import { updateStaffMember } from '../../../actions';
 
 // Temporary mock data until we refactor to use server actions
-const MOCK_USERS: any[] = [];
-const MOCK_ROLES: any[] = [];
-const MOCK_STORES: any[] = [];
+const []: any[] = [];
+const []: any[] = [];
+const []: any[] = [];
 
 
 const editStaffSchema = z.object({
@@ -67,7 +65,7 @@ export default function EditStaffProfilePage() {
             setLoading(true);
             try {
                 // For this mock, we get the user directly. In a real app, this might be an API call.
-                const user = MOCK_USERS.find(u => u.id === staffId);
+                const user = [].find(u => u.id === staffId);
 
                 if (!user) {
                     notFound();
@@ -96,7 +94,7 @@ export default function EditStaffProfilePage() {
   async function onSubmit(data: EditStaffFormValues) {
     startTransition(async () => {
         try {
-            const selectedRole = MOCK_ROLES.find(r => r.name === data.designation);
+            const selectedRole = [].find(r => r.name === data.designation);
 
             const result = await updateStaffMember(staffId, { 
               name: data.name,
@@ -209,7 +207,7 @@ export default function EditStaffProfilePage() {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select a designation"/></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        {MOCK_ROLES.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                                        {[].map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             <FormMessage />
@@ -230,7 +228,7 @@ export default function EditStaffProfilePage() {
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="unassigned">No Store</SelectItem>
-                                {MOCK_STORES.map(store => (
+                                {[].map(store => (
                                     <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -253,7 +251,7 @@ export default function EditStaffProfilePage() {
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="none">None</SelectItem>
-                                {MOCK_USERS.filter(u => u.id !== staffId).map(user => (
+                                {[].filter(u => u.id !== staffId).map(user => (
                                     <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -315,4 +313,86 @@ function EditStaffProfileSkeleton() {
             </div>
         </div>
     );
+}
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }

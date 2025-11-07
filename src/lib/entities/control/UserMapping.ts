@@ -7,7 +7,7 @@ export class UserMapping {
 
   @Index({ unique: true })
   @Column({ type: 'text' })
-  legacy_uid!: string; // firebase uid
+  legacy_uid!: string; // legacy system uid
 
   @Index({ unique: true })
   @Column({ type: 'text' })

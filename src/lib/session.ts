@@ -181,6 +181,7 @@ export async function getSessionClaims() {
           uid: decodedClaims.uid,
           email: decodedClaims.email,
           roleId: 'admin',
+          orgId: 'default-org', // Add default org for admin
         };
       }
       return {
@@ -202,6 +203,7 @@ export async function getSessionClaims() {
           uid: decodedClaims.uid,
           email: decodedClaims.email,
           roleId: 'admin',
+          orgId: 'default-org', // Add default org for admin
         };
       }
       return {
@@ -239,6 +241,7 @@ export async function getSessionClaims() {
         uid: decodedClaims.uid,
         email: decodedClaims.email,
         roleId: 'admin',
+        orgId: 'default-org', // Add default org for admin
       };
     }
     return {

@@ -1,7 +1,7 @@
 /**
  * Create Session Cookie API Route
  * 
- * Exchanges a Firebase ID token for a session cookie.
+ * Exchanges a Supabase JWT token for a session cookie.
  * This allows server-side authentication for 7 days.
  */
 

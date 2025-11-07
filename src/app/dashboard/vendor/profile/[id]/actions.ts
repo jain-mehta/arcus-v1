@@ -1,28 +1,51 @@
 
 'use server';
 
-import { MOCK_COMMUNICATION_LOGS, MOCK_USERS, MOCK_VENDORS } from '@/lib/mock-data/firestore';
-import { getUser } from '@/lib/mock-data/rbac';
-import type { CommunicationLog, Vendor, User } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '../../../sales/actions';
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-async function _getCurrentUserId(): Promise<string> {
-    const user = await getCurrentUser();
-    return user?.id || 'user-admin';
+
+export async function getVendor(id: string): Promise<ActionResponse<Vendor | null>> {
+    const authCheck = await checkActionPermission('vendor', 'profile', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        const vendor = [].find(v => v.id === id) || null;
+        await logUserAction(user, 'view', 'vendor_profile', id);
+        return createSuccessResponse(vendor, vendor ? 'Vendor retrieved successfully' : 'Vendor not found');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get vendor: ${error.message}`);
+    }
 }
 
-export async function getVendor(id: string): Promise<Vendor | null> {
-    return MOCK_VENDORS.find(v => v.id === id) || null;
-}
+export async function getStoreManagers(): Promise<ActionResponse<User[]>> {
+    const authCheck = await checkActionPermission('vendor', 'profile', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
 
-export async function getStoreManagers(): Promise<User[]> {
-    // This is incorrectly named, but keeping it to avoid breaking other components for now.
-    // It should fetch users with manager roles.
-    return MOCK_USERS.filter(u => u.roleIds.includes('regional-head') || u.roleIds.includes('admin'));
+    const { user } = authCheck;
+
+    try {
+        // This is incorrectly named, but keeping it to avoid breaking other components for now.
+        // It should fetch users with manager roles.
+        const managers = [].filter(u => u.roleIds.includes('regional-head') || u.roleIds.includes('admin'));
+        await logUserAction(user, 'view', 'store_managers');
+        return createSuccessResponse(managers, 'Store managers retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get store managers: ${error.message}`);
+    }
 }
 
 export async function addCommunicationLog(log: Omit<CommunicationLog, 'id' | 'user' | 'date'>) {
@@ -39,7 +62,7 @@ export async function addCommunicationLog(log: Omit<CommunicationLog, 'id' | 'us
     date: new Date().toISOString(),
     ...log
   };
-  MOCK_COMMUNICATION_LOGS.push(newLog);
+  [].push(newLog);
   revalidatePath(`/dashboard/vendor/profile/${log.vendorId}`);
   return { success: true, newLog };
 }
@@ -51,9 +74,9 @@ export async function deactivateVendor(id: string) {
     }
     await assertPermission(sessionClaims, 'vendor', 'viewAll');
 
-   const index = MOCK_VENDORS.findIndex(v => v.id === id);
+   const index = [].findIndex(v => v.id === id);
   if(index > -1) {
-    MOCK_VENDORS[index].status = 'Inactive';
+    [][index].status = 'Inactive';
   }
   revalidatePath(`/dashboard/vendor/profile/${id}`);
   revalidatePath('/dashboard/vendor/list');
@@ -67,9 +90,9 @@ export async function deleteVendor(id: string) {
     }
     await assertPermission(sessionClaims, 'vendor', 'viewAll');
 
-  const index = MOCK_VENDORS.findIndex(v => v.id === id);
+  const index = [].findIndex(v => v.id === id);
   if (index > -1) {
-    MOCK_VENDORS.splice(index, 1);
+    [].splice(index, 1);
   }
   revalidatePath('/dashboard/vendor/list');
   revalidatePath('/dashboard/vendor/profile');
@@ -83,11 +106,93 @@ export async function updateVendor(id: string, data: Partial<Vendor>) {
     }
     await assertPermission(sessionClaims, 'vendor', 'viewAll');
 
-  const index = MOCK_VENDORS.findIndex(v => v.id === id);
+  const index = [].findIndex(v => v.id === id);
   if(index > -1) {
-      MOCK_VENDORS[index] = { ...MOCK_VENDORS[index], ...data };
+      [][index] = { ...[][index], ...data };
   }
   revalidatePath(`/dashboard/vendor/profile/${id}`);
   revalidatePath('/dashboard/vendor/list');
   return { success: true };
+}
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }

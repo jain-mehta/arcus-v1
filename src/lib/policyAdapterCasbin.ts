@@ -237,7 +237,7 @@ export async function getUserPermissions(
   try {
     const permissions = await getPermissionsForUser(userId, organizationId);
     // Map to ensure correct type
-    return permissions.map(p => ({
+  return permissions.map(p => ({
       resource: p.resource,
       action: p.action,
       effect: (p.effect === 'deny' ? 'deny' : 'allow') as 'allow' | 'deny',

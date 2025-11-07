@@ -1,5 +1,5 @@
-import { getUserPermissions, userHasPermission, assertUserPermission } from '@/lib/mock-data/rbac';
 import { addProduct } from '@/app/dashboard/inventory/actions';
+import { getUserPermissions, userHasPermission, assertUserPermission } from '@/lib/rbac';
 
 async function run() {
   // RBAC core tests
@@ -7,9 +7,9 @@ async function run() {
   console.log('admin perms length:', adminPerms.length);
   console.log('admin has manage-orders:', await userHasPermission('user-admin', 'manage-orders'));
 
-  // Inventory action test (uses mock sessions internally) - call should return success for admin
+  // Inventory action test - call should return success for admin
   const res = await addProduct({ name: 'Test part', sku: 'TP-1', price: 10, quantity: 5, inventoryType: 'Factory' } as any);
-  console.log('addProduct result (admin or mock):', res);
+  console.log('addProduct result (admin):', res);
 
   // Negative test: try asserting a permission for a non-existent user
   try {
@@ -21,5 +21,3 @@ async function run() {
 }
 
 run().catch(err => { console.error('permission-tests failed', err); process.exit(1); });
-
-

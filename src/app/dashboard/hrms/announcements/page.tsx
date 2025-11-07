@@ -22,3 +22,4 @@ export default async function HrmsAnnouncementsPage() {
     );
 }
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';

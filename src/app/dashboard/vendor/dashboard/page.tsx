@@ -62,8 +62,8 @@ function KpiCardsSkeleton() {
   );
 }
 
-function KpiCards({ kpis }: { kpis: { activeVendors: number, outstandingBalance: number, ytdSpend: number }}) {
-  const { activeVendors, outstandingBalance, ytdSpend } = kpis;
+function KpiCards({ kpis }: { kpis?: { activeVendors: number, outstandingBalance: number, ytdSpend: number } }) {
+  const { activeVendors = 0, outstandingBalance = 0, ytdSpend = 0 } = kpis || {};
 
   const kpiData = [
     { title: "Total Active Vendors", value: activeVendors.toString(), icon: Users, change: "in your system" },
@@ -132,7 +132,7 @@ function UpcomingPaymentsSkeleton() {
     )
 }
 
-function UpcomingPaymentsCard({ upcomingPayments }: { upcomingPayments: any[] }) {
+function UpcomingPaymentsCard({ upcomingPayments }: { upcomingPayments?: any[] }) {
 
   return (
     <Card className="xl:col-span-2">
@@ -153,7 +153,7 @@ function UpcomingPaymentsCard({ upcomingPayments }: { upcomingPayments: any[] })
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {upcomingPayments.length > 0 ? upcomingPayments.map(payment => (
+                {upcomingPayments && upcomingPayments.length > 0 ? upcomingPayments.map(payment => (
                     <TableRow key={payment.id}>
                         <TableCell>
                         <div className="font-medium">{payment.vendorName}</div>

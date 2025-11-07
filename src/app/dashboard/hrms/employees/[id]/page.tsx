@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getStaffMember, getShiftLogsForStaff, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { ArrowLeft, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ export default async function StaffDetailPage({ params }: any) {
         notFound();
     }
 
-    const store = MOCK_STORES.find(s => s.id === staff.storeId);
+    const store = [].find(s => s.id === staff.storeId);
 
     return (
         <div className="space-y-8">
@@ -86,3 +85,6 @@ export default async function StaffDetailPage({ params }: any) {
         </div>
     );
 }
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
+
+// TODO: Replace with actual database queries

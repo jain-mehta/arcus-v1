@@ -3,25 +3,25 @@
 'use server';
 
 import {
-  getCustomersFromDb,
-  getOrdersDb,
-  getOpportunitiesFromDb,
-  getSalesSnapshots,
-  MOCK_OPPORTUNITIES,
-} from '@/lib/mock-data/firestore';
-import type { Opportunity, SalesSnapshot } from '@/lib/mock-data/types';
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-export async function getReportData() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getReportData(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('sales', 'reports', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'sales', 'viewAll');
+
+    const { user } = authCheck;
+
+    try {
 
   const [opportunities, { customers }, { orders }] = await Promise.all([
-    Promise.resolve(MOCK_OPPORTUNITIES),
+    Promise.resolve([]),
     getCustomersFromDb(),
     getOrdersDb(),
   ]);
@@ -139,19 +139,29 @@ export async function getReportData() {
     value,
   }));
 
-  return {
-    kpiData,
-    funnelData,
-    topOpportunities,
-    sourceData,
-  };
+        const reportData = {
+            kpiData,
+            funnelData,
+            topOpportunities,
+            sourceData,
+        };
+
+        await logUserAction(user, 'view', 'sales_reports');
+        return createSuccessResponse(reportData, 'Sales report data retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get report data: ${error.message}`);
+    }
 }
 
-export async function generateMonthlySnapshot(): Promise<{
-  success: boolean;
-  newSnapshot?: SalesSnapshot;
-  message?: string;
-}> {
+export async function generateMonthlySnapshot(): Promise<ActionResponse<SalesSnapshot>> {
+    const authCheck = await checkActionPermission('sales', 'reports', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
   const now = new Date();
   const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
     2,
@@ -160,13 +170,10 @@ export async function generateMonthlySnapshot(): Promise<{
 
   const existingSnapshots = await getSalesSnapshots();
 
-  // Check if a snapshot for the current period already exists
-  if (existingSnapshots.some((s) => s.period === period)) {
-    return {
-      success: false,
-      message: `A snapshot for ${period} already exists.`,
-    };
-  }
+        // Check if a snapshot for the current period already exists
+        if (existingSnapshots.some((s) => s.period === period)) {
+            return createErrorResponse(`A snapshot for ${period} already exists.`);
+        }
 
   const opportunities = await getOpportunitiesFromDb();
 
@@ -228,7 +235,93 @@ export async function generateMonthlySnapshot(): Promise<{
   // MOCK_SALES_SNAPSHOTS.push(newSnapshot);
   // MOCK_SALES_SNAPSHOTS.sort((a,b) => a.period.localeCompare(b.period));
 
-  return { success: true, newSnapshot };
+        await logUserAction(user, 'create', 'sales_snapshot', newSnapshot.id, { period });
+        return createSuccessResponse(newSnapshot, 'Monthly snapshot generated successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to generate monthly snapshot: ${error.message}`);
+    }
 }
 
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

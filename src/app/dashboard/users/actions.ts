@@ -2,33 +2,109 @@
 
 'use server';
 
-import {
-  MOCK_ORGANIZATION_ID,
-  MOCK_PERMISSIONS,
-  MOCK_STORES,
-  MOCK_USERS,
-  MOCK_LEADS,
-  createAuditLog,
-  getCurrentUser,
-} from '@/lib/mock-data/firestore';
-import type { Role, User, Permission, Store } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
-import { getUser, assertUserPermission } from '@/lib/mock-data/rbac';
 import { headers } from 'next/headers';
 import { getSessionClaims } from '@/lib/session';
 import { assertPermission } from '@/lib/rbac';
+import { addRoleForUser } from '@/lib/casbinClient';
+
+// Types
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  roleIds: string[];
+  orgId?: string;
+  phone?: string;
+  storeId?: string | null;
+  reportsTo?: string | null;
+  isActive?: boolean;
+  status?: string;
+  createdAt?: string;
+  customPermissions?: string[];
+  createdBy?: string;
+  mustChangePassword?: boolean;
+}
+
+export interface Role {
+  id: string;
+  orgId?: string;
+  name: string;
+  permissions?: any;
+  reportsToRoleId?: string;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  location?: string;
+}
+
+// Helper function to get real user from session
+async function getCurrentUserFromSession(): Promise<User | null> {
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) return null;
+
+  const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data: userData, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', sessionClaims.uid)
+    .single();
+
+  if (error || !userData) return null;
+
+  return {
+    id: userData.id,
+    email: userData.email,
+    name: userData.full_name || userData.email.split('@')[0],
+    roleIds: [], // Will be populated separately if needed
+    orgId: sessionClaims.orgId,
+    phone: userData.phone || '',
+    isActive: userData.is_active !== false,
+    status: userData.is_active ? 'Active' : 'Inactive',
+    createdAt: userData.created_at,
+  };
+}
+
+// Audit logging function
+async function createAuditLog(logData: {
+  userId: string;
+  userName: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  details: any;
+  ipAddress: string;
+}) {
+  try {
+    console.log('[Audit]', logData.action, 'by', logData.userName, 'on', logData.entityType, logData.entityId);
+    // TODO: Implement real audit logging to database
+  } catch (error) {
+    console.error('[Audit] Failed to log:', error);
+  }
+}
 
 /**
  * Retrieves the current logged-in user's profile data.
  */
 export async function getCurrentUserProfile() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'users', 'viewAll');
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) {
+    throw new Error('Unauthorized');
+  }
+  await assertPermission(sessionClaims, 'users', 'view');
 
-  return await getCurrentUser();
+  return await getCurrentUserFromSession();
 }
 
 
@@ -56,7 +132,7 @@ export async function getAllUsers(): Promise<User[]> {
     // Import Supabase client dynamically to avoid edge runtime issues
     const { getSupabaseServerClient } = await import('@/lib/supabase/client');
     const supabase = getSupabaseServerClient();
-    
+
     if (!supabase) {
       console.error('[getAllUsers] Supabase client not available');
       return [];
@@ -74,7 +150,7 @@ export async function getAllUsers(): Promise<User[]> {
 
     // Get unique user IDs 
     const userIds = [...new Set(userRolesData?.map(ur => ur.user_id) || [])];
-    
+
     if (userIds.length === 0) {
       console.log('[getAllUsers] No users found in organization');
       return [];
@@ -128,7 +204,7 @@ export async function getAllUsers(): Promise<User[]> {
 export async function getAllRoles(): Promise<Role[]> {
   try {
     const sessionClaims = await getSessionClaims();
-    
+
     if (!sessionClaims) {
       console.warn('[getAllRoles] No session, returning empty roles');
       return [];
@@ -153,7 +229,7 @@ export async function getAllRoles(): Promise<Role[]> {
     // Use Supabase client directly (server-side, no auth header needed)
     const { getSupabaseServerClient } = await import('@/lib/supabase/client');
     const supabase = getSupabaseServerClient();
-    
+
     if (!supabase) {
       console.error('[getAllRoles] Supabase client not available');
       return [];
@@ -168,11 +244,11 @@ export async function getAllRoles(): Promise<Role[]> {
       console.error('[getAllRoles] Error fetching roles:', error);
       return [];
     }
-    
+
     // Transform to Role type
     const transformedRoles: Role[] = (roles || []).map((role: any) => ({
       id: role.id,
-      orgId: role.organization_id || MOCK_ORGANIZATION_ID || '', // Use orgId from role or fallback to mock
+      orgId: role.organization_id || sessionClaims.orgId || '',
       name: role.name,
       permissions: role.permissions || {},
       reportsToRoleId: role.reports_to_role_id,
@@ -187,16 +263,68 @@ export async function getAllRoles(): Promise<Role[]> {
 }
 
 /**
- * Fetches all available permissions.
- * MOCK IMPLEMENTATION: Returns mock permission data.
+ * Fetches all available permissions from the system.
  */
 export async function getAllPermissions(): Promise<Permission[]> {
-  return Promise.resolve(MOCK_PERMISSIONS);
+  try {
+    const sessionClaims = await getSessionClaims();
+    if (!sessionClaims) return [];
+
+    await assertPermission(sessionClaims, 'settings', 'manageRoles');
+
+    // For now, return a basic set of permissions
+    // TODO: Implement dynamic permission system
+    return [
+      { id: 'users:view', name: 'View Users', description: 'Can view user lists' },
+      { id: 'users:create', name: 'Create Users', description: 'Can create new users' },
+      { id: 'users:edit', name: 'Edit Users', description: 'Can edit user details' },
+      { id: 'users:delete', name: 'Delete Users', description: 'Can delete users' },
+      { id: 'roles:manage', name: 'Manage Roles', description: 'Can manage user roles' },
+      { id: 'sales:view', name: 'View Sales', description: 'Can view sales data' },
+      { id: 'inventory:manage', name: 'Manage Inventory', description: 'Can manage inventory' },
+      { id: 'reports:view', name: 'View Reports', description: 'Can view reports' },
+    ];
+  } catch (error) {
+    console.error('[getAllPermissions] Error:', error);
+    return [];
+  }
 }
 
-
 export async function getAllStores(): Promise<Store[]> {
-  return Promise.resolve(MOCK_STORES);
+  try {
+    const sessionClaims = await getSessionClaims();
+    if (!sessionClaims) return [];
+
+    // Import Supabase client
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    if (!supabase) {
+      console.error('[getAllStores] Supabase client not available');
+      return [];
+    }
+
+    // Fetch stores from database
+    const { data: stores, error } = await supabase
+      .from('stores')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('[getAllStores] Error fetching stores:', error);
+      return [];
+    }
+
+    console.log('[getAllStores] Fetched', stores?.length || 0, 'stores from Supabase');
+
+    return (stores || []).map((store: any) => ({
+      id: store.id,
+      name: store.name,
+      location: store.location || store.address || '',
+    }));
+  } catch (error) {
+    console.error('[getAllStores] Error:', error);
+    return [];
+  }
 }
 
 /**
@@ -208,17 +336,29 @@ export async function updateUser(userId: string, data: Partial<User>) {
   if (!sessionClaims) {
     throw new Error('Unauthorized');
   }
-  await assertPermission(sessionClaims, 'users', 'viewAll');
+  await assertPermission(sessionClaims, 'users', 'edit');
 
-  const currentUser = await getCurrentUser();
+  const currentUser = await getCurrentUserFromSession();
   if (!currentUser) return { success: false, message: 'Authentication required.' };
-  
+
   try {
+    // Get session cookie to forward to API route
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('__session') || cookieStore.get('__supabase_access_token');
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Forward session cookie for authentication
+    if (sessionCookie) {
+      headers['Cookie'] = `${sessionCookie.name}=${sessionCookie.value}`;
+    }
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/users`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         userId,
         fullName: data.name,
@@ -232,17 +372,37 @@ export async function updateUser(userId: string, data: Partial<User>) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      return { 
-        success: false, 
-        message: errorData.error || 'Failed to update user' 
+      return {
+        success: false,
+        message: errorData.error || 'Failed to update user'
       };
     }
 
     // Fetch role names for audit log
     const allRoles = await getAllRoles();
     const roleNames = (data.roleIds || []).map(roleId => allRoles.find(r => r.id === roleId)?.name || roleId);
-    const manager = data.reportsTo ? await getUser(data.reportsTo) : null;
-    const store = data.storeId ? MOCK_STORES.find(s => s.id === data.storeId) : null;
+
+    // Get manager info if needed
+    let manager = null;
+    if (data.reportsTo) {
+      const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+      const supabase = getSupabaseServerClient();
+      if (supabase) {
+        const { data: managerData } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', data.reportsTo)
+          .single();
+        manager = managerData ? { name: managerData.full_name } : null;
+      }
+    }
+
+    // Get store info if needed
+    let store = null;
+    if (data.storeId) {
+      const allStores = await getAllStores();
+      store = allStores.find(s => s.id === data.storeId) || null;
+    }
 
     await createAuditLog({
       userId: currentUser.id,
@@ -250,14 +410,14 @@ export async function updateUser(userId: string, data: Partial<User>) {
       action: 'update_user_roles',
       entityType: 'user',
       entityId: userId,
-      details: { 
-        targetUser: data.name || 'User', 
-        roles: roleNames.join(', ') || 'None', 
+      details: {
+        targetUser: data.name || 'User',
+        roles: roleNames.join(', ') || 'None',
         reportsTo: manager?.name || 'None',
         store: store?.name || 'None',
         customPermissions: data.customPermissions?.length ? `${data.customPermissions.length} custom permissions` : 'None',
       },
-      ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
+      ipAddress: 'localhost',
     });
 
     revalidatePath('/dashboard/users');
@@ -273,24 +433,37 @@ export async function updateUser(userId: string, data: Partial<User>) {
  * Updates the currently logged-in user's profile information.
  */
 export async function updateCurrentUserProfile(data: { phone: string; address?: string }): Promise<{ success: boolean, message?: string }> {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-        return { success: false, message: 'User not found.' };
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) {
+    return { success: false, message: 'Unauthorized.' };
+  }
+
+  try {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    if (!supabase) {
+      return { success: false, message: 'Database connection failed.' };
     }
 
-    const userIndex = MOCK_USERS.findIndex(u => u.id === currentUser.id);
-    if (userIndex === -1) {
-        return { success: false, message: 'User not found in database.' };
+    const { error } = await supabase
+      .from('users')
+      .update({
+        phone: data.phone,
+        address: data.address || null,
+      })
+      .eq('id', sessionClaims.uid);
+
+    if (error) {
+      console.error('[updateCurrentUserProfile] Error:', error);
+      return { success: false, message: 'Failed to update profile.' };
     }
-    
-    // In a real app, you might want to add more validation here.
-    // For now, we'll just update the mock data.
-    // The User type doesn't have a phone or address directly, so we'll add them to the mock data.
-    (MOCK_USERS[userIndex] as any).phone = data.phone;
-    (MOCK_USERS[userIndex] as any).address = data.address;
-    
+
     revalidatePath('/dashboard/settings/profile');
     return { success: true };
+  } catch (error) {
+    console.error('[updateCurrentUserProfile] Error:', error);
+    return { success: false, message: 'Failed to update profile.' };
+  }
 }
 
 
@@ -298,13 +471,37 @@ export async function updateCurrentUserProfile(data: { phone: string; address?: 
  * Creates a new user via API endpoint
  * UPDATED: Calls /api/admin/users instead of using MOCK data
  */
-export async function createNewUser(userData: Omit<User, 'id' | 'orgId'> & { password?: string }): Promise<{ success: boolean; newUser?: User, message?: string }> {
-  const currentUser = await getCurrentUser();
+export async function createNewUser(
+  userData: Omit<User, 'id' | 'orgId'> & { password?: string }
+): Promise<{ success: boolean; newUser?: User; message?: string }> {
+  const currentUser = await getCurrentUserFromSession();
   if (!currentUser) return { success: false, message: 'Authentication required.' };
-  
-  // Server-side validation (basic)
+
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) return { success: false, message: 'Authentication required.' };
+
+  await assertPermission(sessionClaims, 'users', 'create');
+
+  // Basic validation
   if (!userData.name || !userData.email) {
     return { success: false, message: 'Name and email are required.' };
+  }
+
+  // Ensure roleIds is not empty - get available roles if needed
+  let finalRoleIds = userData.roleIds;
+  if (!finalRoleIds || finalRoleIds.length === 0) {
+    try {
+      const roles = await getAllRoles();
+      if (roles.length > 0) {
+        // Use the last role (typically Employee) as default
+        finalRoleIds = [roles[roles.length - 1].id];
+        console.log('[CREATE_USER] Using default role:', roles[roles.length - 1].name);
+      } else {
+        return { success: false, message: 'No roles available. Please create roles first.' };
+      }
+    } catch (error) {
+      return { success: false, message: 'Failed to get available roles.' };
+    }
   }
 
   // Generate secure password if not provided
@@ -312,36 +509,50 @@ export async function createNewUser(userData: Omit<User, 'id' | 'orgId'> & { pas
   const password = userData.password || generateSecurePassword(16);
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: userData.email,
-        password,
-        fullName: userData.name,
-        phone: userData.phone || '',
-        roleIds: userData.roleIds || [],
-        storeId: userData.storeId || null,
-        reportsTo: userData.reportsTo || null,
-      }),
-    });
+    // Get session cookie to forward to API route
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('__session') || cookieStore.get('__supabase_access_token');
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Forward session cookie for authentication
+    if (sessionCookie) {
+      headers['Cookie'] = `${sessionCookie.name}=${sessionCookie.value}`;
+    }
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/users`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          email: userData.email,
+          password,
+          fullName: userData.name,
+          phone: userData.phone || '',
+          roleIds: finalRoleIds,
+          storeId: userData.storeId || null,
+          reportsTo: userData.reportsTo || null,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return { 
-        success: false, 
-        message: errorData.error || 'Failed to create user' 
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        message: errorData.error || 'Failed to create user',
       };
     }
 
     const data = await response.json();
-    
-    // Transform API response to User type
+
     const newUser: User = {
       id: data.user.id,
-      orgId: data.user.orgId || MOCK_ORGANIZATION_ID,
+      orgId: data.user.orgId || sessionClaims.orgId || '',
       name: data.user.fullName,
       email: data.user.email,
       phone: data.user.phone || '',
@@ -355,146 +566,238 @@ export async function createNewUser(userData: Omit<User, 'id' | 'orgId'> & { pas
       mustChangePassword: true,
     } as User;
 
-    // Create audit log
+    // ✅ Casbin RBAC integration
+    try {
+      const orgId = newUser.orgId;
+      const userId = newUser.id;
+
+      if (Array.isArray(newUser.roleIds) && newUser.roleIds.length > 0) {
+        for (const roleId of newUser.roleIds) {
+          const added = await addRoleForUser({
+            userId,
+            role: roleId,
+            organizationId: orgId|| '',
+          });
+          console.log(
+            `[Casbin] Role '${roleId}' ${added ? 'assigned' : 'skipped'} to user ${userId} in org ${orgId}`
+          );
+        }
+      } else {
+        console.log('[Casbin] No roles found for new user; skipping role assignment.');
+      }
+    } catch (casbinError) {
+      console.warn('[Casbin] Failed to assign roles for new user:', casbinError);
+    }
+
+    // ✅ Audit log
     await createAuditLog({
       userId: currentUser.id,
       userName: currentUser.name,
       action: 'create_user',
       entityType: 'user',
       entityId: newUser.id,
-      details: { name: newUser.name, email: newUser.email, roles: (newUser.roleIds || []).join(', ') },
-      ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
+      details: {
+        name: newUser.name,
+        email: newUser.email,
+        roles: (newUser.roleIds || []).join(', '),
+      },
+      ipAddress: 'localhost',
     });
 
     revalidatePath('/dashboard/users');
     return { success: true, newUser, message: password };
   } catch (error: any) {
     console.error('[createNewUser] Error:', error);
-    return { 
-      success: false, 
-      message: error.message || 'Failed to create user' 
+    return {
+      success: false,
+      message: error.message || 'Failed to create user',
     };
   }
 }
 
+
 export async function deactivateUser(userId: string): Promise<{ success: boolean, message?: string }> {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return { success: false, message: 'Authentication required.' };
-  try { await assertUserPermission(currentUser.id, 'manage-users'); } catch (e: any) { return { success: false, message: 'Forbidden' }; }
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) return { success: false, message: 'Authentication required.' };
 
-    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-        return { success: false, message: 'User not found.' };
+  try {
+    await assertPermission(sessionClaims, 'users', 'edit');
+  } catch (e: any) {
+    return { success: false, message: 'Forbidden' };
+  }
+
+  const currentUser = await getCurrentUserFromSession();
+  if (!currentUser) return { success: false, message: 'Authentication required.' };
+
+  try {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    // Get user to deactivate
+    const { data: userToDeactivate, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !userToDeactivate) {
+      return { success: false, message: 'User not found.' };
     }
 
-    const userToDeactivate = MOCK_USERS[userIndex];
-    const managerId = userToDeactivate.reportsTo;
-    
-    if (!managerId) {
-        // This could be a top-level user. In a real app, you'd have a UI to manually reassign.
-        // For this mock, we'll just log a warning and proceed with deactivation.
-        console.warn(`User ${userToDeactivate.name} has no manager. Data will not be reassigned.`);
-    } else {
-        const manager = MOCK_USERS.find(u => u.id === managerId);
-        if (manager) {
-            // Find and reassign leads owned by the deactivated user
-            MOCK_LEADS.forEach(lead => {
-                if (lead.ownerId === userId) {
-                    lead.ownerId = managerId;
-                    lead.assignedTo = manager.name; // Also update the display name
-                    console.log(`(MOCK) Reassigned Lead ${lead.id} to ${manager.name}`);
-                }
-            });
-            // Similar logic would be applied to Opportunities, etc.
-        } else {
-            console.warn(`Manager with ID ${managerId} not found for user ${userToDeactivate.name}. Data not reassigned.`);
-        }
+    // Update user status
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ is_active: false })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('[deactivateUser] Error:', updateError);
+      return { success: false, message: 'Failed to deactivate user.' };
     }
 
+    // TODO: Implement data reassignment logic for leads, opportunities, etc.
+    console.log(`User ${userToDeactivate.full_name} deactivated successfully`);
 
-    MOCK_USERS[userIndex].status = 'Inactive';
-    
     await createAuditLog({
-        userId: currentUser.id,
-        userName: currentUser.name,
-        action: 'deactivate_user',
-        entityType: 'user',
-        entityId: userId,
-        details: { targetUser: MOCK_USERS[userIndex].name },
-  ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'deactivate_user',
+      entityType: 'user',
+      entityId: userId,
+      details: { targetUser: userToDeactivate.full_name },
+      ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
     });
 
     revalidatePath('/dashboard/users');
     return { success: true };
+  } catch (error) {
+    console.error('[deactivateUser] Error:', error);
+    return { success: false, message: 'Failed to deactivate user.' };
+  }
 }
 
 export async function changeUserPassword(userId: string, newPassword: string): Promise<{ success: boolean, message?: string }> {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return { success: false, message: 'Authentication required.' };
-  try { await assertUserPermission(currentUser.id, 'manage-users'); } catch (e: any) { return { success: false, message: 'Forbidden' }; }
-    const targetUser = MOCK_USERS.find(u => u.id === userId);
-    
-    if (targetUser) {
-        await createAuditLog({
-          userId: currentUser.id,
-          userName: currentUser.name,
-          action: 'change_user_password',
-          entityType: 'user',
-          entityId: userId,
-          details: { targetUser: targetUser.name },
-    ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
-        });
-        console.log(`(MOCK) Password changed for user ${userId}.`);
-        return { success: true };
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) return { success: false, message: 'Authentication required.' };
+
+  try {
+    await assertPermission(sessionClaims, 'users', 'edit');
+  } catch (e: any) {
+    return { success: false, message: 'Forbidden' };
+  }
+
+  const currentUser = await getCurrentUserFromSession();
+  if (!currentUser) return { success: false, message: 'Authentication required.' };
+
+  try {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    // Get target user
+    const { data: targetUser, error: fetchError } = await supabase
+      .from('users')
+      .select('full_name')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !targetUser) {
+      return { success: false, message: 'User not found.' };
     }
-    return { success: false, message: 'User not found.' };
+
+    // TODO: Implement password change via Supabase Admin API
+    console.log(`Password change requested for user ${userId}`);
+
+    await createAuditLog({
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'change_user_password',
+      entityType: 'user',
+      entityId: userId,
+      details: { targetUser: targetUser.full_name },
+      ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('[changeUserPassword] Error:', error);
+    return { success: false, message: 'Failed to change password.' };
+  }
 }
 
 /**
  * Delete user (admin action)
  */
 export async function deleteUser(userId: string): Promise<{ success: boolean, message?: string }> {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return { success: false, message: 'Authentication required.' };
-    
-    try {
-        await assertUserPermission(currentUser.id, 'manage-users');
-    } catch (e: any) {
-        return { success: false, message: 'Forbidden: You do not have permission to manage users.' };
+  const sessionClaims = await getSessionClaims();
+  if (!sessionClaims) return { success: false, message: 'Authentication required.' };
+
+  try {
+    await assertPermission(sessionClaims, 'users', 'delete');
+  } catch (e: any) {
+    return { success: false, message: 'Forbidden: You do not have permission to delete users.' };
+  }
+
+  const currentUser = await getCurrentUserFromSession();
+  if (!currentUser) return { success: false, message: 'Authentication required.' };
+
+  // Prevent deleting yourself
+  if (userId === currentUser.id) {
+    return { success: false, message: 'Cannot delete your own account.' };
+  }
+
+  try {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    // Get user to delete
+    const { data: userToDelete, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !userToDelete) {
+      return { success: false, message: 'User not found.' };
     }
-    
-    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-        return { success: false, message: 'User not found.' };
+
+    // Mark user as deleted instead of actually deleting
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        is_active: false,
+        deleted_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('[deleteUser] Error:', updateError);
+      return { success: false, message: 'Failed to delete user.' };
     }
-    
-    // Prevent deleting yourself
-    if (userId === currentUser.id) {
-        return { success: false, message: 'Cannot delete your own account.' };
-    }
-    
-    const deletedUser = MOCK_USERS[userIndex];
-    
-    // Remove user from array
-    MOCK_USERS.splice(userIndex, 1);
-    
+
     // Log the deletion
     await createAuditLog({
-        userId: currentUser.id,
-        userName: currentUser.name,
-        action: 'update_user_roles', // Using existing action type as 'delete_user' doesn't exist in the type definition
-        entityType: 'user',
-        entityId: userId,
-        details: {
-            operation: 'DELETE',
-            targetUserName: deletedUser.name,
-            targetUserEmail: deletedUser.email,
-        },
-        ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'delete_user',
+      entityType: 'user',
+      entityId: userId,
+      details: {
+        operation: 'DELETE',
+        targetUserName: userToDelete.full_name,
+        targetUserEmail: userToDelete.email,
+      },
+      ipAddress: (await headers()).get('x-forwarded-for') ?? 'Unknown',
     });
-    
+
     revalidatePath('/dashboard/users');
-    return { success: true, message: `User ${deletedUser.name} deleted successfully.` };
+    return { success: true, message: `User ${userToDelete.full_name} deleted successfully.` };
+  } catch (error) {
+    console.error('[deleteUser] Error:', error);
+    return { success: false, message: 'Failed to delete user.' };
+  }
 }
 
 

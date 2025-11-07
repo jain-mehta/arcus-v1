@@ -1,20 +1,10 @@
 
 'use server';
 
-import {
-  MOCK_VENDORS,
-  MOCK_RATING_CRITERIA,
-  MOCK_RATING_HISTORY,
-} from '@/lib/mock-data/firestore';
-import type {
-  Vendor,
-  VendorRatingCriteria,
-  VendorRatingHistory,
-} from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
 
 export async function getVendors(): Promise<Vendor[]> {
-  return MOCK_VENDORS;
+  return [];
 }
 
 export async function getVendorRatingCriteria(
@@ -58,9 +48,9 @@ export async function calculateAndUpdateVendorScores(
   const newOverallScore = weightedScoreSum / totalWeight;
 
   // 3. Update the vendor's main qualityScore
-  const vendorIndex = MOCK_VENDORS.findIndex(v => v.id === vendorId);
+  const vendorIndex = [].findIndex(v => v.id === vendorId);
   if (vendorIndex > -1) {
-    MOCK_VENDORS[vendorIndex].qualityScore = newOverallScore;
+    [][vendorIndex].qualityScore = newOverallScore;
   } else {
     return { success: false, message: "Vendor not found to update score." };
   }
@@ -83,3 +73,6 @@ export async function calculateAndUpdateVendorScores(
 }
 
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
+
+// TODO: Replace with actual database queries

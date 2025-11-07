@@ -20,7 +20,15 @@
  * user:123, org:456, sales:leads, view -> true/false
  */
 
-import type { User } from './mock-data/types';
+// Database types for RBAC
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  organization_id?: string;
+  role_ids?: string[];
+  is_active?: boolean;
+}
 import { checkCasbin, getPermissionsForUser, initCasbin } from './casbinClient';
 
 export interface PermissionMap {
@@ -155,26 +163,25 @@ export async function checkPermission(
   }
 
   // THIRD: Use Casbin for permission check
-  if (userClaims.orgId) {
-    try {
-      // Build resource path
-      const resource = submoduleName 
-        ? `${moduleName}:${submoduleName}` 
-        : moduleName;
+  const orgId = userClaims.orgId || 'default-org';
+  try {
+    // Build resource path
+    const resource = submoduleName
+      ? `${moduleName}:${submoduleName}`
+      : moduleName;
 
-      const allowed = await checkCasbin({
-        userId: userClaims.uid,
-        organizationId: userClaims.orgId,
-        resource,
-        action,
-      });
+    const allowed = await checkCasbin({
+      userId: userClaims.uid,
+      organizationId: orgId,
+      resource,
+      action,
+    });
 
-      console.log(`[RBAC] Casbin check result: ${allowed ? '✅ ALLOWED' : '❌ DENIED'}`);
-      return allowed;
-    } catch (error) {
-      console.error('[RBAC] Casbin check error:', error);
-      // Fall through to legacy check
-    }
+    console.log(`[RBAC] Casbin check result: ${allowed ? '✅ ALLOWED' : '❌ DENIED'}`);
+    return allowed;
+  } catch (error) {
+    console.error('[RBAC] Casbin check error:', error);
+    // Fall through to legacy check
   }
 
   // FOURTH: Fallback to legacy permission map (for backward compatibility)

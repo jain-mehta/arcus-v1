@@ -1,40 +1,107 @@
 'use server';
 
 import type { GenerateQuotationOutput } from '@/ai/flows/generate-quotation-flow';
-import { MOCK_ORGANIZATION_ID } from '@/lib/mock-data/firestore';
-import { getUser, getUserPermissions, getSubordinates } from '@/lib/mock-data/rbac';
-import type { UserContext } from '@/lib/mock-data/types';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-async function buildUserContext(userId: string): Promise<UserContext> {
-    const [user, permissions, subordinates] = await Promise.all([
-        getUser(userId),
-        getUserPermissions(userId),
-        getSubordinates(userId)
-    ]);
-
-    if (!user) {
-        throw new Error("User not found, cannot build user context.");
+export async function generateQuotation(input: any): Promise<ActionResponse<GenerateQuotationOutput>> {
+    const authCheck = await checkActionPermission('sales', 'quotations', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    return {
-        user,
-        permissions,
-        subordinates,
-        orgId: user.orgId || MOCK_ORGANIZATION_ID,
-    };
+    const { user } = authCheck;
+
+    try {
+        const { generateQuotation: callGenerateQuotation } = await import('@/ai/flows/generate-quotation-flow');
+        const result = await callGenerateQuotation(input);
+        await logUserAction(user, 'generate', 'quotation', 'ai', { inputType: typeof input });
+        return createSuccessResponse(result, 'Quotation generated successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to generate quotation: ${error.message}`);
+    }
+}\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-async function getCurrentUserId(): Promise<string> {
-    return 'user-admin'; 
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export async function generateQuotation(customerId: string, prompt: string): Promise<GenerateQuotationOutput> {
-    const userId = await getCurrentUserId();
-    await buildUserContext(userId);
-    // In a real app, you might use the user context to check for permissions
-    // before calling the AI flow.
-    const { generateQuotation: callGenerateQuotation } = await import('@/ai/flows/generate-quotation-flow');
-    return callGenerateQuotation({ customerId, prompt });
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

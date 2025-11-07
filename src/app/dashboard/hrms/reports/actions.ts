@@ -2,8 +2,6 @@
 
 'use server';
 
-import { MOCK_USERS, MOCK_LEAVE_REQUESTS, MOCK_ROLES } from '@/lib/mock-data/firestore';
-import type { LeaveType, LeaveRequest } from '@/lib/mock-data/types';
 import { differenceInDays, isWithinInterval } from 'date-fns';
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
@@ -29,8 +27,8 @@ export async function getHrmsReportData() {
     await assertPermission(sessionClaims, 'hrms', 'attendance');
 
   // --- KPI Cards Data ---
-  const totalEmployees = MOCK_USERS.length;
-  const departments = new Set(MOCK_ROLES.map(r => r.name.replace(' Head', '').replace(' Executive', '').replace(' Supervisor', ''))).size;
+  const totalEmployees = [].length;
+  const departments = new Set([].map(r => r.name.replace(' Head', '').replace(' Executive', '').replace(' Supervisor', ''))).size;
   const monthlyAttrition = '1.2%'; // Mocked value as it requires historical data
 
   const kpis = [
@@ -41,9 +39,9 @@ export async function getHrmsReportData() {
 
   // --- Headcount by Department Chart ---
   const headcountByDept: Record<string, number> = {};
-  MOCK_USERS.forEach(user => {
+  [].forEach(user => {
     const roleId = user.roleIds[0];
-    const role = MOCK_ROLES.find(r => r.id === roleId);
+    const role = [].find(r => r.id === roleId);
     const dept = role ? role.name.replace(' Head', '').replace(' Executive', '').replace(' Supervisor', '') : 'Unassigned';
     headcountByDept[dept] = (headcountByDept[dept] || 0) + 1;
   });
@@ -51,7 +49,7 @@ export async function getHrmsReportData() {
   const headcountData = Object.entries(headcountByDept).map(([name, count]) => ({ name, count }));
 
   // --- Leave Consumption Chart ---
-  const leaveConsumption = MOCK_LEAVE_REQUESTS.reduce((acc, req) => {
+  const leaveConsumption = [].reduce((acc, req) => {
     if (req.status === 'Approved') {
         const start = new Date(req.startDate);
         const end = new Date(req.endDate);
@@ -82,7 +80,7 @@ export async function generateHrmsReport(
     case 'leave_report':
       headers = ['Employee Name', 'Leave Type', 'Start Date', 'End Date', 'Duration (Days)', 'Reason', 'Status', 'Applied On'];
       
-      const filteredLeaves = MOCK_LEAVE_REQUESTS.filter(req => {
+      const filteredLeaves = [].filter(req => {
         const reqDate = new Date(req.startDate);
         return isWithinInterval(reqDate, { start: dateRange.from, end: dateRange.to });
       });
@@ -105,6 +103,86 @@ export async function generateHrmsReport(
   }
 
   csvData = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+\n');
   return csvData;
 }
 

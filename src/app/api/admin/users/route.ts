@@ -20,10 +20,10 @@ const createUserSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   fullName: z.string().min(1, 'Full name is required'),
-  phone: z.string().optional(),
+  phone: z.string().optional().or(z.literal('')),
   roleIds: z.array(z.string()).min(1, 'At least one role is required'),
-  storeId: z.string().optional(),
-  reportsTo: z.string().optional(),
+  storeId: z.string().optional().nullable(),
+  reportsTo: z.string().optional().nullable(),
 });
 
 /**
@@ -164,9 +164,12 @@ export async function POST(request: NextRequest) {
 
     // 3. Parse and validate request
     const body = await request.json();
+    console.log('[Admin] Create user request body:', JSON.stringify(body, null, 2));
+
     const validation = createUserSchema.safeParse(body);
 
     if (!validation.success) {
+      console.log('[Admin] Validation failed:', validation.error.flatten().fieldErrors);
       return NextResponse.json(
         {
           error: 'Invalid input',
@@ -183,8 +186,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database client not available' }, { status: 500 });
     }
 
-    // Use org ID from session
-    const orgId = sessionClaims.orgId;
+    // Use org ID from session or default for admin
+    const orgId = sessionClaims.orgId || 'default-org';
 
     // 4. Check if user already exists
     const { data: existingUser } = await supabase

@@ -1,58 +1,136 @@
-
 'use server';
 
-import { MOCK_COMPLIANCE_DOCS } from "@/lib/mock-data/firestore";
 import { revalidatePath } from "next/cache";
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-
-export async function getComplianceDocuments() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getComplianceDocuments(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'compliance', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'hrms', 'attendance');
 
-    // In a real app, you would apply user-specific filtering here.
-    return MOCK_COMPLIANCE_DOCS;
+    const { user } = authCheck;
+
+    try {
+        // In a real app, you would apply user-specific filtering here.
+        await logUserAction(user, 'view', 'compliance_documents');
+        return createSuccessResponse([], 'Compliance documents retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get compliance documents: ${error.message}`);
+    }
 }
 
 export async function uploadComplianceDocument(
     docData: { name: string; category: string },
     fileBase64: string
-): Promise<{ success: boolean; newDoc?: any; message?: string }> {
+): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'compliance', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
     try {
         const newDoc = {
-            id: `doc-${Date.now()}`,
-            name: docData.name,
-            category: docData.category,
+            id: `comp-doc-${Date.now()}`,
+            ...docData,
             uploadDate: new Date().toISOString(),
-            fileName: 'mock_file.pdf',
-            fileUrl: '#', // In a real app, this would be a download URL from storage
-            filePath: `mock/compliance/${Date.now()}_mock_file.pdf`,
+            fileUrl: fileBase64,
+            filePath: `compliance/${docData.name}`
         };
-        MOCK_COMPLIANCE_DOCS.unshift(newDoc);
+        [].push(newDoc);
+        await logUserAction(user, 'create', 'compliance_document', newDoc.id, { category: docData.category });
         revalidatePath('/dashboard/hrms/compliance');
-        return { success: true, newDoc };
+        return createSuccessResponse(newDoc, 'Compliance document uploaded successfully');
     } catch (error: any) {
-        return { success: false, message: error.message };
+        return createErrorResponse(`Failed to upload compliance document: ${error.message}`);
     }
+}\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export async function deleteComplianceDocument(
-    docId: string,
-    filePath: string
-): Promise<{ success: boolean; message?: string }> {
-    const index = MOCK_COMPLIANCE_DOCS.findIndex(doc => doc.id === docId);
-    if (index > -1) {
-        MOCK_COMPLIANCE_DOCS.splice(index, 1);
-        revalidatePath('/dashboard/hrms/compliance');
-        // In a real app, you would also delete the file from storage using the filePath
-        console.log(`(Simulated) Deleting file from storage at: ${filePath}`);
-        return { success: true };
-    }
-    return { success: false, message: 'Document not found.' };
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

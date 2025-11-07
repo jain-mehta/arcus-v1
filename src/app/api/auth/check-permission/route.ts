@@ -17,15 +17,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUserFromSession } from '@/lib/session';
-import { evaluatePolicy } from '@/lib/policyAdapter';
+import { getSessionClaims } from '@/lib/session';
+import { checkPermission } from '@/lib/rbac';
 
 export async function POST(req: NextRequest) {
   try {
-    // Get user from Supabase session
-    const decodedClaims = await getCurrentUserFromSession();
+    // Get user session claims
+    const sessionClaims = await getSessionClaims();
 
-    if (!decodedClaims) {
+    if (!sessionClaims) {
       return NextResponse.json(
         { error: 'Unauthorized', allowed: false },
         { status: 401 }
@@ -43,24 +43,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Evaluate policy
-    const allowed = await evaluatePolicy({
-      principal: decodedClaims.uid,
-      action,
-      resource: resource_id ? `${resource}:${resource_id}` : resource,
-      context: context || {},
-      tenant_id: decodedClaims.uid, // Use uid as tenant_id for now
-    });
+    // Check permission using Casbin RBAC
+    const allowed = await checkPermission(
+      sessionClaims,
+      resource,
+      resource_id ? 'specific' : undefined,
+      action
+    );
 
     return NextResponse.json({
       allowed,
-      user_id: decodedClaims.uid,
+      user_id: sessionClaims.uid,
       action,
       resource,
       resource_id,
       reason: allowed
-        ? 'Permission granted'
-        : 'Permission denied',
+        ? 'Permission granted by Casbin'
+        : 'Permission denied by Casbin',
     });
   } catch (error: any) {
     console.error('Permission check error:', error);

@@ -1,22 +1,78 @@
-
 'use server';
 
 import type {
   SuggestKpisBasedOnPerformanceInput,
   SuggestKpisBasedOnPerformanceOutput,
 } from '@/ai/flows/suggest-kpis-based-on-performance';
-import {
-  MOCK_ORGANIZATION_ID,
-  getCurrentUser,
-} from '@/lib/mock-data/firestore';
-import {
-  getUser,
-  getUserPermissions,
-  getSubordinates,
-} from '@/lib/mock-data/rbac';
-import type { UserContext } from '@/lib/mock-data/types';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 
-// MOCK: In a real app, this would get the logged-in user's ID from the session.
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface UserContext {
+  user: User;
+  permissions: string[];
+  subordinates: User[];
+  orgId: string;
+}
+
+// Get current user from Supabase
+async function getCurrentUser(): Promise<User | null> {
+  const supabase = getSupabaseServerClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+
+  if (!authUser) return null;
+
+  const { data: user } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', authUser.id)
+    .single();
+
+  return user;
+}
+
+// Get user permissions
+async function getUserPermissions(userId: string): Promise<string[]> {
+  const supabase = getSupabaseServerClient();
+
+  // Get user roles and permissions from database
+  const { data: roles } = await supabase
+    .from('user_roles')
+    .select('role_id')
+    .eq('user_id', userId);
+
+  if (!roles?.length) return [];
+
+  const { data: permissions } = await supabase
+    .from('role_permissions')
+    .select('permission')
+    .in('role_id', roles.map(r => r.role_id));
+
+  return permissions?.map(p => p.permission) || [];
+}
+
+// Get subordinates
+async function getSubordinates(userId: string): Promise<User[]> {
+  const supabase = getSupabaseServerClient();
+
+  const { data: subordinates } = await supabase
+    .from('users')
+    .select('*')
+    .eq('manager_id', userId);
+
+  return subordinates || [];
+}
+
 async function getCurrentUserId(): Promise<string> {
   const user = await getCurrentUser();
   return user?.id || 'user-admin';
@@ -24,7 +80,7 @@ async function getCurrentUserId(): Promise<string> {
 
 async function buildUserContext(userId: string): Promise<UserContext> {
   const [user, permissions, subordinates] = await Promise.all([
-    getUser(userId),
+    getCurrentUser(),
     getUserPermissions(userId),
     getSubordinates(userId),
   ]);
@@ -37,7 +93,7 @@ async function buildUserContext(userId: string): Promise<UserContext> {
     user,
     permissions,
     subordinates: subordinates,
-    orgId: user.orgId || MOCK_ORGANIZATION_ID,
+    orgId: user.organization_id || '',
   };
 }
 
@@ -55,5 +111,3 @@ export async function suggestKpis(
   const { suggestKpisBasedOnPerformance } = await import('@/ai/flows/suggest-kpis-based-on-performance');
   return suggestKpisBasedOnPerformance(input);
 }
-
-

@@ -336,3 +336,4 @@ function GeneratedPayslipPreview({ layout }: { layout: PayslipLayout }) {
     );
 }
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';

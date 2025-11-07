@@ -35,21 +35,21 @@ export async function initCasbin(): Promise<Enforcer> {
   }
 
   try {
-    // Check if Supabase connection URL is available
-    const supabaseDbUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
-    
-    if (!supabaseDbUrl) {
-      console.warn('⚠️  SUPABASE_DB_URL or DATABASE_URL not set - Casbin will run in memory mode without persistence');
+    // Check if database connection URL is available
+    const dbUrl = process.env.CONTROL_DATABASE_URL || process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+
+    if (!dbUrl) {
+      console.warn('⚠️  No database URL found (CONTROL_DATABASE_URL, DATABASE_URL, or SUPABASE_DB_URL) - Casbin will run in memory mode without persistence');
       // Return a basic enforcer without database persistence
       const modelPath = path.join(process.cwd(), 'casbin_model.conf');
       enforcer = await newEnforcer(modelPath);
       return enforcer;
     }
 
-    // Use TypeORM adapter with Supabase connection string
+    // Use TypeORM adapter with database connection string
     const adapter = await TypeORMAdapter.newAdapter({
       type: 'postgres',
-      url: supabaseDbUrl,
+      url: dbUrl,
     });
 
     // Load Casbin model
@@ -59,11 +59,22 @@ export async function initCasbin(): Promise<Enforcer> {
     // Enable auto-save to persist policy changes
     enforcer.enableAutoSave(true);
 
-    console.log('✅ Casbin enforcer initialized successfully');
+    console.log('✅ Casbin enforcer initialized successfully with database persistence');
     return enforcer;
   } catch (error) {
-    console.error('❌ Failed to initialize Casbin:', error);
-    throw error;
+    console.error('❌ Failed to initialize Casbin with database:', error);
+    console.log('⚠️  Falling back to in-memory mode for Casbin');
+
+    // Fall back to in-memory mode
+    try {
+      const modelPath = path.join(process.cwd(), 'casbin_model.conf');
+      enforcer = await newEnforcer(modelPath);
+      console.log('✅ Casbin enforcer initialized in memory mode');
+      return enforcer;
+    } catch (fallbackError) {
+      console.error('❌ Failed to initialize Casbin even in memory mode:', fallbackError);
+      throw fallbackError;
+    }
   }
 }
 
@@ -113,7 +124,7 @@ export async function checkCasbin(req: CasbinCheckRequest): Promise<boolean> {
 
     // Format: sub, dom, obj, act
     const subject = `user:${req.userId}`;
-    const domain = `org:${req.organizationId}`;
+    const domain = `org:${req.organizationId || 'default-org'}`;
     const object = req.resource;
     const action = req.action;
 

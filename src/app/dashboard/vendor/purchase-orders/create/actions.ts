@@ -1,37 +1,126 @@
 
 'use server';
 
-import {
-  MOCK_MATERIAL_MAPPINGS,
-  getVendors,
-  createPurchaseOrderInDb,
-} from '@/lib/mock-data/firestore';
-import { getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
-import { assertUserPermission } from '@/lib/mock-data/rbac';
-import type { MaterialMapping, PurchaseOrder } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-export async function getMaterialMappings(vendorId: string): Promise<MaterialMapping[]> {
-  return MOCK_MATERIAL_MAPPINGS.filter((m) => m.vendorId === vendorId);
+// Database types for Material Mapping and Purchase Order - using Supabase tables
+interface MaterialMapping {
+  id: string;
+  vendor_id: string;
+  product_id: string;
+  vendor_product_name?: string;
+  vendor_price: number;
+  discount_percentage?: number;
+  final_price: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export async function createPurchaseOrder(data: any) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+interface PurchaseOrder {
+  id: string;
+  vendor_id: string;
+  vendor_name?: string;
+  total_amount: number;
+  line_items: any[];
+  delivery_date?: string;
+  status: string;
+  payment_status?: string;
+  organization_id?: string;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function getMaterialMappings(vendorId: string): Promise<ActionResponse<MaterialMapping[]>> {
+    const authCheck = await checkActionPermission('vendor', 'purchase-orders', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'supply', 'pos');
 
-  const currentUser = await getCurrentUserFromDb();
-  await assertUserPermission(currentUser?.id || '', 'manage-purchase-orders');
+    const { user } = authCheck;
 
-  // Try to persist to Firestore (server-side). If admin isn't available we fallback in the helper.
-  const orgId = currentUser?.orgId || 'bobs-org';
-  const result = await createPurchaseOrderInDb({ ...data, orgId }, { user: currentUser as any, permissions: [], subordinates: [], orgId });
-  revalidatePath('/dashboard/vendor/purchase-orders');
-  return result;
+    try {
+        // Import Supabase client
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+
+        if (!supabase) {
+            return createErrorResponse('Database connection failed');
+        }
+
+        // Fetch material mappings from Supabase
+        const { data: mappings, error } = await supabase
+            .from('material_mappings')
+            .select('*')
+            .eq('vendor_id', vendorId)
+            .eq('organization_id', user.orgId || 'default-org')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[getMaterialMappings] Error:', error);
+            return createErrorResponse('Failed to fetch material mappings from database');
+        }
+
+        await logUserAction(user, 'view', 'material_mappings', vendorId, { count: mappings?.length });
+        return createSuccessResponse(mappings || [], 'Material mappings retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get material mappings: ${error.message}`);
+    }
+}
+
+export async function createPurchaseOrder(data: any): Promise<ActionResponse<PurchaseOrder>> {
+    const authCheck = await checkActionPermission('vendor', 'purchase-orders', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        // Import Supabase client
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+
+        if (!supabase) {
+            return createErrorResponse('Database connection failed');
+        }
+
+        // Create purchase order in Supabase
+        const { data: newPO, error } = await supabase
+            .from('purchase_orders')
+            .insert({
+                vendor_id: data.vendorId,
+                vendor_name: data.vendorName,
+                total_amount: data.totalAmount,
+                line_items: data.lineItems || [],
+                delivery_date: data.deliveryDate,
+                status: 'Pending',
+                payment_status: 'Pending',
+                organization_id: user.orgId || 'default-org',
+                created_by: user.id
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[createPurchaseOrder] Error:', error);
+            return createErrorResponse('Failed to create purchase order in database');
+        }
+
+        await logUserAction(user, 'create', 'purchase_order', newPO.id, { vendorId: data.vendorId });
+        revalidatePath('/dashboard/vendor/purchase-orders');
+        return createSuccessResponse(newPO, 'Purchase order created successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to create purchase order: ${error.message}`);
+    }
 }
 
 

@@ -1,10 +1,7 @@
 
 "use server";
 import { z } from 'zod';
-import { MOCK_PAYROLL_FORMATS, MOCK_STORES, getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
 import { revalidatePath } from 'next/cache';
-import { assertUserPermission } from '@/lib/mock-data/rbac';
-
 // Define the schema for the AI's expected output
 const PayslipFieldSchema = z.object({
   label: z.string().describe("The label for the payslip field (e.g., 'Basic Salary', 'Employee ID')."),
@@ -141,9 +138,9 @@ export async function setDefaultFormatForStore(storeId: string, formatId: string
   if (!currentUser) return { success: false };
   try { await assertUserPermission(currentUser.id, 'manage-payslip-formats'); } catch (err) { return { success: false } }
     // In a real app, you would update the store document in Firestore.
-    const storeIndex = MOCK_STORES.findIndex(s => s.id === storeId);
+    const storeIndex = [].findIndex(s => s.id === storeId);
     if (storeIndex > -1) {
-        // (MOCK_STORES[storeIndex] as any).defaultPayslipFormatId = formatId;
+        // ([][storeIndex] as any).defaultPayslipFormatId = formatId;
         console.log(`(Mock) Set default format for store ${storeId} to ${formatId}`);
         revalidatePath('/dashboard/hrms/payroll/formats');
         return { success: true };
@@ -152,3 +149,85 @@ export async function setDefaultFormatForStore(storeId: string, formatId: string
 }
 
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

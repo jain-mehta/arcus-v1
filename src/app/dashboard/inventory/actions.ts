@@ -3,282 +3,360 @@
 
 import type { ExtractProductImageFromCatalogInput, ExtractProductImageFromCatalogOutput } from '@/ai/flows/extract-product-image-from-catalog';
 import type { SuggestProductsFromCatalogTextOnlyInput, SuggestProductsFromCatalogTextOnlyOutput } from '@/ai/flows/suggest-products-from-catalog-text-only';
-import {
-  MOCK_ORGANIZATION_ID,
-  addProduct as addProductToDb,
-  updateProduct as updateProductInDb,
-  deleteProduct as deleteProductFromDb,
-  addStock as addStockToDb,
-  deleteAllProducts as deleteAllProductsFromDb,
-  simulateSale as simulateSaleInDb,
-  dispatchStock as dispatchStockInDb,
-  transferStock as transferStockInDb,
-  getCurrentUser
-} from '@/lib/mock-data/firestore';
-import { assertUserPermission } from '@/lib/mock-data/rbac';
-import { getUser, getSubordinates, getUserPermissions } from '@/lib/mock-data/rbac';
-import type { Product, UserContext } from '@/lib/mock-data/types';
+
+// Database types from Supabase tables
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  sku: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  dimensions?: string;
+  weight?: number;
+  imageUrl?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  getCurrentUserFromSession,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-/**
- * A helper function to build the full user context required for data access calls.
- */
-async function buildUserContext(userId: string | null): Promise<UserContext | null> {
-    if (!userId) return null;
 
-    const [user, permissions, subordinates] = await Promise.all([
-        getUser(userId),
-        getUserPermissions(userId),
-        getSubordinates(userId)
-    ]);
-
-    if (!user) {
-        console.warn("User not found, cannot build user context.");
-        return null;
+export async function addProduct(data: Omit<Product, 'id' | 'orgId'>): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'products', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    return {
-        user,
-        permissions,
-        subordinates,
-        orgId: user.orgId || MOCK_ORGANIZATION_ID,
-    };
-}
-
-// MOCK: In a real app, this would get the logged-in user's ID from the session.
-async function getCurrentUserId(): Promise<string | null> {
-    const user = await getCurrentUser();
-    return user ? user.id : null;
-}
-
-export async function addProduct(data: Omit<Product, 'id' | 'orgId'>) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
-
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-      return { success: false, message: 'You do not have permission to add products.' };
-    }
-
-    // Enforce RBAC: require either manage-factory-inventory or manage-store-inventory
-    try {
-        await assertUserPermission(userContext.user.id, 'manage-factory-inventory');
-    } catch (err) {
-        // Try store permission as alternative
-        try { await assertUserPermission(userContext.user.id, 'manage-store-inventory'); } catch (err2) {
-            return { success: false, message: 'You do not have permission to add products.' };
-        }
-    }
-
-    const newProduct = await addProductToDb(data, userContext);
-    return { success: true, product: newProduct };
-}
-
-export async function updateProduct(id: string, data: Partial<Omit<Product, 'id' | 'orgId'>>) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
-
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-      return { success: false, message: 'You do not have permission to update products.' };
-    }
+    const { user } = authCheck;
 
     try {
-        await assertUserPermission(userContext.user.id, 'manage-factory-inventory');
-    } catch (err) {
-        try { await assertUserPermission(userContext.user.id, 'manage-store-inventory'); } catch (err2) {
-            return { success: false, message: 'You do not have permission to update products.' };
+        // Import Supabase client
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+
+        if (!supabase) {
+            return createErrorResponse('Database connection failed');
         }
+
+        // Insert product into Supabase
+        const { data: newProduct, error } = await supabase
+            .from('products')
+            .insert({
+                name: data.name,
+                description: data.description,
+                sku: data.sku,
+                category: data.category,
+                price: data.price,
+                cost: data.cost,
+                unit: data.unit,
+                dimensions: data.dimensions,
+                weight: data.weight,
+                image_url: data.imageUrl,
+                created_by: user.id,
+                organization_id: user.orgId || 'default-org'
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[addProduct] Error:', error);
+            return createErrorResponse('Failed to add product to database');
+        }
+
+        await logUserAction(user, 'create', 'product', newProduct.id, { productName: data.name });
+        return createSuccessResponse(newProduct, 'Product added successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to add product: ${error.message}`);
     }
-
-    // In a real app, we might add logic here to check if a shop owner is trying
-    // to edit a product outside their store. The firestore.ts layer currently handles this.
-
-    const result = await updateProductInDb(id, data, userContext);
-    return result;
 }
 
-export async function deleteProduct(id: string) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function updateProduct(id: string, data: Partial<Omit<Product, 'id' | 'orgId'>>): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'products', 'edit');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
 
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-      return { success: false, message: 'You do not have permission to delete products.' };
-    }
+    const { user } = authCheck;
 
     try {
-        await assertUserPermission(userContext.user.id, 'manage-factory-inventory');
-    } catch (err) {
-        try { await assertUserPermission(userContext.user.id, 'manage-store-inventory'); } catch (err2) {
-            return { success: false, message: 'You do not have permission to delete products.' };
+        // Import Supabase client
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+
+        if (!supabase) {
+            return createErrorResponse('Database connection failed');
         }
+
+        // Update product in Supabase
+        const updateData: any = {};
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.description !== undefined) updateData.description = data.description;
+        if (data.sku !== undefined) updateData.sku = data.sku;
+        if (data.category !== undefined) updateData.category = data.category;
+        if (data.price !== undefined) updateData.price = data.price;
+        if (data.cost !== undefined) updateData.cost = data.cost;
+        if (data.unit !== undefined) updateData.unit = data.unit;
+        if (data.dimensions !== undefined) updateData.dimensions = data.dimensions;
+        if (data.weight !== undefined) updateData.weight = data.weight;
+        if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
+        updateData.updated_at = new Date().toISOString();
+        updateData.updated_by = user.id;
+
+        const { data: updatedProduct, error } = await supabase
+            .from('products')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[updateProduct] Error:', error);
+            return createErrorResponse('Failed to update product in database');
+        }
+
+        await logUserAction(user, 'update', 'product', id, { changes: data });
+        return createSuccessResponse(updatedProduct, 'Product updated successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to update product: ${error.message}`);
     }
-    
-    const result = await deleteProductFromDb(id, userContext);
-    return result;
 }
 
-export async function addStock(productId: string, quantity: number) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function deleteProduct(id: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'products', 'delete');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
 
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-      return { success: false, message: 'You do not have permission to add stock.' };
-    }
+    const { user } = authCheck;
 
     try {
-        await assertUserPermission(userContext.user.id, 'manage-factory-inventory');
-    } catch (err) {
-        try { await assertUserPermission(userContext.user.id, 'manage-store-inventory'); } catch (err2) {
-            return { success: false, message: 'You do not have permission to add stock.' };
-        }
-    }
+        // Import Supabase client
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
 
-    const result = await addStockToDb(productId, quantity, userContext);
-    return result;
+        if (!supabase) {
+            return createErrorResponse('Database connection failed');
+        }
+
+        // Soft delete product in Supabase
+        const { error } = await supabase
+            .from('products')
+            .update({
+                deleted_at: new Date().toISOString(),
+                deleted_by: user.id
+            })
+            .eq('id', id);
+
+        if (error) {
+            console.error('[deleteProduct] Error:', error);
+            return createErrorResponse('Failed to delete product in database');
+        }
+
+        await logUserAction(user, 'delete', 'product', id);
+        return createSuccessResponse({ success: true }, 'Product deleted successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to delete product: ${error.message}`);
+    }
 }
 
-export async function dispatchStock(productId: string, quantity: number) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function addStock(productId: string, quantity: number): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'stock', 'edit');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
 
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-      return { success: false, message: 'You do not have permission to dispatch stock.' };
-    }
+    const { user } = authCheck;
 
     try {
-        await assertUserPermission(userContext.user.id, 'manage-factory-inventory');
-    } catch (err) {
-        try { await assertUserPermission(userContext.user.id, 'manage-store-inventory'); } catch (err2) {
-            return { success: false, message: 'You do not have permission to dispatch stock.' };
-        }
+        const userContext = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                orgId: user.orgId || 'default-org'
+            },
+            permissions: [],
+            subordinates: [],
+            orgId: user.orgId || 'default-org'
+        };
+
+        const result = await addStockToDb(productId, quantity, userContext);
+        await logUserAction(user, 'add_stock', 'product', productId, { quantity });
+        return createSuccessResponse(result, 'Stock added successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to add stock: ${error.message}`);
+    }
+}
+
+export async function dispatchStock(productId: string, quantity: number): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'stock', 'edit');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    return dispatchStockInDb(productId, quantity, userContext);
+    const { user } = authCheck;
+
+    try {
+        const userContext = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                orgId: user.orgId || 'default-org'
+            },
+            permissions: [],
+            subordinates: [],
+            orgId: user.orgId || 'default-org'
+        };
+
+        const result = await dispatchStockInDb(productId, quantity, userContext);
+        await logUserAction(user, 'dispatch_stock', 'product', productId, { quantity });
+        return createSuccessResponse(result, 'Stock dispatched successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to dispatch stock: ${error.message}`);
+    }
 }
 
 export async function transferStock(data: {
     fromLocation: string; // 'Factory' or a storeId
     toLocation: string; // 'Factory' or a storeId
     lineItems: { productId: string, quantity: number }[];
-}) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
-
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-      return { success: false, message: 'You do not have permission to transfer stock.' };
+}): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'stock', 'edit');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    try { await assertUserPermission(userContext.user.id, 'manage-factory-inventory'); } catch (err) {
-        return { success: false, message: 'You do not have permission to transfer stock.' };
+    const { user } = authCheck;
+
+    try {
+        const userContext = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                orgId: user.orgId || 'default-org'
+            },
+            permissions: [],
+            subordinates: [],
+            orgId: user.orgId || 'default-org'
+        };
+
+        const result = await transferStockInDb(data, userContext);
+        await logUserAction(user, 'transfer_stock', 'inventory', 'bulk', { transferData: data });
+        return createSuccessResponse(result, 'Stock transferred successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to transfer stock: ${error.message}`);
     }
-    
-    return transferStockInDb(data, userContext);
 }
 
 
-export async function deleteAllProducts() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function deleteAllProducts(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'products', 'delete');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
 
-  const userId = await getCurrentUserId();
-  const userContext = await buildUserContext(userId);
-  if (!userContext) {
-      return { success: false, message: 'You do not have permission to delete all products.' };
-  }
+    const { user } = authCheck;
 
-  const canDelete = userContext.permissions.includes('manage-factory-inventory');
-   if (!canDelete) {
-        return { success: false, message: 'You do not have permission to delete all products.' };
+    try {
+        const userContext = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                orgId: user.orgId || 'default-org'
+            },
+            permissions: ['manage-factory-inventory'],
+            subordinates: [],
+            orgId: user.orgId || 'default-org'
+        };
+
+        const result = await deleteAllProductsFromDb(userContext);
+        await logUserAction(user, 'delete_all', 'products', 'bulk');
+        return createSuccessResponse(result, 'All products deleted successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to delete all products: ${error.message}`);
     }
-  return deleteAllProductsFromDb(userContext);
 }
 
-export async function simulateSale(productId: string) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
-
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-
-    if (!userContext) {
-        return { success: false, message: 'You do not have permission to simulate sales.' };
+export async function simulateSale(productId: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('inventory', 'sales', 'simulate');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    const canSimulateSale = userContext.permissions.includes('manage-store-inventory');
-    if (!canSimulateSale) {
-        return { success: false, message: 'You do not have permission to simulate sales.' };
+    const { user } = authCheck;
+
+    try {
+        const userContext = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                orgId: user.orgId || 'default-org'
+            },
+            permissions: ['manage-store-inventory'],
+            subordinates: [],
+            orgId: user.orgId || 'default-org'
+        };
+
+        const result = await simulateSaleInDb(productId, userContext);
+        await logUserAction(user, 'simulate_sale', 'product', productId);
+        return createSuccessResponse(result, 'Sale simulated successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to simulate sale: ${error.message}`);
     }
-    return simulateSaleInDb(productId, userContext);
 }
 
 
-export async function addMultipleProducts(products: Omit<Product, 'id' | 'orgId'>[]) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'inventory', 'viewStock');
-
-    const userId = await getCurrentUserId();
-    const userContext = await buildUserContext(userId);
-    if (!userContext) {
-        return { success: false, message: "Permission denied." };
+export async function addMultipleProducts(products: Omit<Product, 'id' | 'orgId'>[]): Promise<ActionResponse<{count: number, products: Product[]}>> {
+    const authCheck = await checkActionPermission('inventory', 'products', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    const canAdd = userContext.permissions.includes('manage-factory-inventory');
-    if (!canAdd) {
-        return { success: false, message: "You do not have permission to add products." };
-    }
+    const { user } = authCheck;
 
-    const addedProducts: Product[] = [];
-    for (const productData of products) {
-        const newProduct = await addProductToDb(productData, userContext);
-        addedProducts.push(newProduct);
+    try {
+        const userContext = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                orgId: user.orgId || 'default-org'
+            },
+            permissions: ['manage-factory-inventory'],
+            subordinates: [],
+            orgId: user.orgId || 'default-org'
+        };
+
+        const addedProducts: Product[] = [];
+        for (const productData of products) {
+            const newProduct = await addProductToDb(productData, userContext);
+            addedProducts.push(newProduct);
+        }
+
+        const result = { count: addedProducts.length, products: addedProducts };
+        await logUserAction(user, 'bulk_create', 'products', 'bulk', { count: addedProducts.length });
+        return createSuccessResponse(result, `${addedProducts.length} products added successfully`);
+    } catch (error: any) {
+        return createErrorResponse(`Failed to add multiple products: ${error.message}`);
     }
-    
-    return { success: true, count: addedProducts.length };
 }
 
 

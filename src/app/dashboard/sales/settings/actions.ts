@@ -1,14 +1,13 @@
-
+import { getSupabaseServerClient } from '@/lib/supabase/client';\n
 
 'use server';
 
-import type { SalesTarget, SalesTargetWithProgress } from '@/lib/mock-data/types';
-import { MOCK_SALES_TARGETS, MOCK_OPPORTUNITIES } from '@/lib/mock-data/firestore';
+// TODO: Replace with actual database queries
 
 export async function getSalesTargetsWithProgress(): Promise<SalesTargetWithProgress[]> {
   // In a real app, 'currentValue' would be a dynamic query.
   // Here, we simulate it.
-  return MOCK_SALES_TARGETS.map((target) => {
+  return [].map((target) => {
     let currentValue = 0;
     if (target.type === 'Deals') {
       currentValue = 12; // Mock value
@@ -30,14 +29,14 @@ export async function addSalesTarget(data: any): Promise<{ success: boolean }> {
     id: `target-${Date.now()}`,
     ...data,
   };
-  MOCK_SALES_TARGETS.push(newTarget);
+  [].push(newTarget);
   return { success: true };
 }
 
 export async function deleteSalesTarget(id: string): Promise<{ success: boolean }> {
-  const index = MOCK_SALES_TARGETS.findIndex((t) => t.id === id);
+  const index = [].findIndex((t) => t.id === id);
   if (index > -1) {
-    MOCK_SALES_TARGETS.splice(index, 1);
+    [].splice(index, 1);
     return { success: true };
   }
   return { success: false };
@@ -52,7 +51,7 @@ export async function archiveOldOpportunities(): Promise<{
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
   let archivedCount = 0;
-  MOCK_OPPORTUNITIES.forEach((opp) => {
+  [].forEach((opp) => {
     const isClosed =
       opp.stage === 'Closed Won' || opp.stage === 'Closed Lost';
     const closeDate = new Date(opp.closeDate);
@@ -71,3 +70,83 @@ export async function archiveOldOpportunities(): Promise<{
 }
 
 
+\n\n
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

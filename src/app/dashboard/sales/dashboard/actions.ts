@@ -4,16 +4,23 @@
 
 import { DollarSign, ShoppingCart, Users, Wallet } from 'lucide-react';
 import { getOrders, getSalesCustomers } from '../actions';
-import { MOCK_ORDERS } from '@/lib/mock-data/firestore';
-import { getSessionClaims } from '@/lib/session';
-import { assertPermission } from '@/lib/rbac';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-export async function getSalesDashboardData() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getSalesDashboardData(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('sales', 'dashboard', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'sales', 'viewAll');
+
+    const { user } = authCheck;
+
+    try {
 
   const [{ orders }, { customers }] = await Promise.all([
     getOrders(),
@@ -66,7 +73,7 @@ export async function getSalesDashboardData() {
     amount: `₹${order.totalAmount.toLocaleString('en-IN')}`,
   }));
 
-  const salesChartData = MOCK_ORDERS.reduce((acc, order) => {
+  const salesChartData = [].reduce((acc, order) => {
     const month = new Date(order.orderDate).toLocaleString('default', { month: 'short' });
     const unitsSold = order.lineItems.reduce((sum, item) => sum + item.quantity, 0);
     const existing = acc.find(item => item.month === month);
@@ -80,11 +87,20 @@ export async function getSalesDashboardData() {
   }, [] as { month: string, revenue: number, unitsSold: number }[]);
 
 
-  return {
-    kpis,
-    recentSales,
-    salesChartData,
-  };
+        const dashboardData = {
+            kpis,
+            recentSales,
+            salesChartData,
+        };
+
+        await logUserAction(user, 'view', 'sales_dashboard');
+        return createSuccessResponse(dashboardData, 'Sales dashboard data retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get sales dashboard data: ${error.message}`);
+    }
 }
 
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
+
+// TODO: Replace with actual database queries

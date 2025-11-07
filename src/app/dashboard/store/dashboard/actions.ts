@@ -2,21 +2,27 @@
 
 'use server';
 
-import { MOCK_ORDERS, MOCK_PRODUCTS, MOCK_STORES, getCurrentUser } from '@/lib/mock-data/firestore';
-import { getUserPermissions } from '@/lib/mock-data/rbac';
-import type { Product } from '@/lib/mock-data/types';
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  getCurrentUserFromSession,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 import { startOfDay, subDays, startOfToday, endOfDay, isWithinInterval } from 'date-fns';
 
 export type AdminDashboardFilter = 'last24hours' | 'last48hours' | 'last7days' | 'last30days' | 'last90days' | 'allTime';
 
-export async function getAdminStoreDashboardData(duration: AdminDashboardFilter = 'allTime') {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getAdminStoreDashboardData(duration: AdminDashboardFilter = 'allTime'): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('store', 'dashboard', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'store', 'bills');
+
+    const { user } = authCheck;
+
+    try {
 
   
   const now = new Date();
@@ -34,22 +40,22 @@ export async function getAdminStoreDashboardData(duration: AdminDashboardFilter 
     startDate = new Date(new Date().setDate(now.getDate() - 90));
   }
 
-  const salesInDuration = MOCK_ORDERS.filter(o => 
+  const salesInDuration = [].filter(o => 
       o.status === 'Delivered' && new Date(o.orderDate) >= startDate
   );
 
-  const totalStores = MOCK_STORES.length;
+  const totalStores = [].length;
   const totalSales = salesInDuration.reduce((sum, order) => sum + order.totalAmount, 0);
   const totalItemsSold = salesInDuration.reduce((sum, order) => sum + order.lineItems.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
 
   const salesByStoreMap = new Map<string, number>();
   salesInDuration.forEach(order => {
-    const storeId = order.storeId || MOCK_STORES[0].id;
+    const storeId = order.storeId || [][0].id;
     const currentSales = salesByStoreMap.get(storeId) || 0;
     salesByStoreMap.set(storeId, currentSales + order.totalAmount);
   });
   
-  const salesByStore = MOCK_STORES.map(store => ({
+  const salesByStore = [].map(store => ({
       id: store.id,
       name: store.name,
       sales: salesByStoreMap.get(store.id) || 0,
@@ -72,7 +78,7 @@ export async function getAdminStoreDashboardData(duration: AdminDashboardFilter 
           let productEntry = productSalesMap.get(baseSku);
           
           if (!productEntry) {
-              const productDetails = MOCK_PRODUCTS.find(p => p.sku.startsWith(baseSku));
+              const productDetails = [].find(p => p.sku.startsWith(baseSku));
               // Clean the name by removing "- Store"
               const cleanedName = item.name.replace(/ - Store$/, '');
 
@@ -98,26 +104,35 @@ export async function getAdminStoreDashboardData(duration: AdminDashboardFilter 
     .slice(0, 5);
 
 
-  return {
-    totalStores,
-    totalSales,
-    totalItemsSold,
-    salesByStore,
-    topPerformingStore,
-    topProducts,
-    allStores: MOCK_STORES,
-  };
+        const data = {
+            totalStores,
+            totalSales,
+            totalItemsSold,
+            salesByStore,
+            topPerformingStore,
+            topProducts,
+            allStores: [],
+        };
+
+        await logUserAction(user, 'view', 'store_dashboard', undefined, { duration, totalSales });
+        return createSuccessResponse(data, 'Store dashboard data retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to load store dashboard: ${error.message}`);
+    }
 }
 
 
-export async function getManagerStoreDashboardData(storeId: string) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getManagerStoreDashboardData(storeId: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('store', 'dashboard', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'store', 'bills');
 
-    const store = MOCK_STORES.find(s => s.id === storeId);
+    const { user } = authCheck;
+
+    try {
+
+    const store = [].find(s => s.id === storeId);
     if (!store) {
         throw new Error("Store not found");
     }
@@ -126,7 +141,7 @@ export async function getManagerStoreDashboardData(storeId: string) {
     const todayStart = startOfToday();
     const todayEnd = endOfDay(new Date());
 
-    const salesToday = MOCK_ORDERS.filter(o => {
+    const salesToday = [].filter(o => {
         const orderDate = new Date(o.orderDate);
         return (
             o.storeId === storeId &&
@@ -156,7 +171,7 @@ export async function getManagerStoreDashboardData(storeId: string) {
         const dateStart = startOfDay(date);
         const dateEnd = endOfDay(date);
         
-        const salesOnDate = MOCK_ORDERS.filter(o => {
+        const salesOnDate = [].filter(o => {
             const orderDate = new Date(o.orderDate);
             return (
                 o.storeId === storeId &&
@@ -181,30 +196,128 @@ export async function getManagerStoreDashboardData(storeId: string) {
 }
 
 
-export async function getInitialStoreDashboardData() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getInitialStoreDashboardData(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('store', 'dashboard', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'store', 'bills');
 
-    const user = await getCurrentUser();
-    if (!user) {
-        return null;
-    }
-    const permissions = await getUserPermissions(user.id);
-    const isAdmin = permissions.includes('manage-stores');
+    const { user } = authCheck;
 
-    if (isAdmin) {
-        const adminDashboardData = await getAdminStoreDashboardData('allTime');
-        return { isAdmin: true, adminDashboardData, managerDashboardData: null };
-    } else {
-        if (!user.storeId) {
-             return { isAdmin: false, adminDashboardData: null, managerDashboardData: { storeName: 'N/A', totalSales: 0, totalItemsSold: 0, topProducts: [], salesTrend: [] } };
+    try {
+        // Check if user has admin permissions for store management
+        const adminCheck = await checkActionPermission('store', 'manage', 'view');
+        const isAdmin = !('error' in adminCheck);
+
+        if (isAdmin) {
+            const adminDashboardData = await getAdminStoreDashboardData('allTime');
+            await logUserAction(user, 'view', 'admin_store_dashboard');
+            return createSuccessResponse({
+                isAdmin: true,
+                adminDashboardData: 'success' in adminDashboardData ? adminDashboardData.data : null,
+                managerDashboardData: null
+            }, 'Admin store dashboard data retrieved successfully');
+        } else {
+            if (!user.storeId) {
+                return createSuccessResponse({
+                    isAdmin: false,
+                    adminDashboardData: null,
+                    managerDashboardData: { storeName: 'N/A', totalSales: 0, totalItemsSold: 0, topProducts: [], salesTrend: [] }
+                }, 'Manager dashboard data retrieved (no store assigned)');
+            }
+            const managerDashboardData = await getManagerStoreDashboardData(user.storeId);
+            await logUserAction(user, 'view', 'manager_store_dashboard', user.storeId);
+            return createSuccessResponse({
+                isAdmin: false,
+                adminDashboardData: null,
+                managerDashboardData
+            }, 'Manager store dashboard data retrieved successfully');
         }
-        const managerDashboardData = await getManagerStoreDashboardData(user.storeId);
-        return { isAdmin: false, adminDashboardData: null, managerDashboardData };
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get initial store dashboard data: ${error.message}`);
     }
 }
 
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

@@ -1,67 +1,128 @@
-
-
 'use server';
 
-import { getCurrentUser, MOCK_USERS } from "@/lib/mock-data/firestore";
-import type { User } from "@/lib/mock-data/types";
 import { revalidatePath } from "next/cache";
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-export async function getUserProfile() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getUserProfile(): Promise<ActionResponse<User | null>> {
+    const authCheck = await checkActionPermission('settings', 'profile', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'settings', 'view');
 
-    return await getCurrentUser();
+    const { user } = authCheck;
+
+    try {
+        const profile = await getCurrentUser();
+        await logUserAction(user, 'view', 'user_profile');
+        return createSuccessResponse(profile, 'User profile retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get user profile: ${error.message}`);
+    }
 }
 
-export async function getActiveSessionsForCurrentUser() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getActiveSessionsForCurrentUser(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('settings', 'profile', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'settings', 'view');
 
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return [];
-    const { getSessionsForUser } = await import('@/lib/mock-sessions');
-    return getSessionsForUser(currentUser.id);
+    const { user } = authCheck;
+
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
+            return createErrorResponse('Current user not found');
+        }
+        const { getSessionsForUser } = await import('@/lib/mock-sessions');
+        const sessions = await getSessionsForUser(currentUser.id);
+        await logUserAction(user, 'view', 'active_sessions');
+        return createSuccessResponse(sessions, 'Active sessions retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get active sessions: ${error.message}`);
+    }
+}\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export async function revokeSessionById(sessionId: string) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'settings', 'view');
-
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return { success: false, message: 'Authentication required.' };
-    const { revokeSession } = await import('@/lib/mock-sessions');
-    const ok = await revokeSession(sessionId);
-    revalidatePath('/dashboard/settings/profile');
-    return { success: ok };
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export async function updateCurrentUserProfile(data: Partial<User>): Promise<{ success: boolean, user?: User, message?: string }> {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-        return { success: false, message: "User not authenticated." };
-    }
-
-    const userIndex = MOCK_USERS.findIndex(u => u.id === currentUser.id);
-    if (userIndex === -1) {
-        return { success: false, message: "User not found in database." };
-    }
-
-    // Merge new data with existing data
-    MOCK_USERS[userIndex] = { ...MOCK_USERS[userIndex], ...data };
-
-    revalidatePath('/dashboard/settings/profile');
-    return { success: true, user: MOCK_USERS[userIndex] };
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

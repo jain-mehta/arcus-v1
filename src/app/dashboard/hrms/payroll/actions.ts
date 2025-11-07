@@ -2,76 +2,114 @@
 
 'use server';
 
-import { MOCK_USERS, MOCK_SALARY_STRUCTURES, MOCK_PAYSLIPS } from '@/lib/mock-data/firestore';
-import { getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
-import { assertUserPermission } from '@/lib/mock-data/rbac';
-import type { SalaryStructure, Payslip, Customer } from '@/lib/mock-data/types';
 import { revalidatePath } from 'next/cache';
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
 
-export async function getPayrollPageData() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getPayrollPageData(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'payroll', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'hrms', 'payroll');
 
-  // In a real app, these would be database queries.
-  const users = MOCK_USERS;
-  const salaryStructures = MOCK_SALARY_STRUCTURES;
-  return { users, salaryStructures };
+    const { user } = authCheck;
+
+    try {
+
+        // In a real app, these would be database queries.
+        const users = [];
+        const salaryStructures = MOCK_SALARY_STRUCTURES;
+
+        await logUserAction(user, 'view', 'payroll_data');
+        return createSuccessResponse({ users, salaryStructures }, 'Payroll data retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get payroll data: ${error.message}`);
+    }
 }
 
-export async function createSalaryStructure(data: Omit<SalaryStructure, 'id'>): Promise<{ success: boolean, newStructure?: SalaryStructure }> {
-    const currentUser = await getCurrentUserFromDb();
-    if (!currentUser) return { success: false, newStructure: undefined };
-    try { await assertUserPermission(currentUser.id, 'manage-payroll'); } catch (err) { return { success: false, newStructure: undefined } }
+export async function createSalaryStructure(data: Omit<SalaryStructure, 'id'>): Promise<ActionResponse<SalaryStructure>> {
+    const authCheck = await checkActionPermission('hrms', 'payroll', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
 
-    const newStructure: SalaryStructure = { ...data, id: `struct-${Date.now()}`};
-    MOCK_SALARY_STRUCTURES.push(newStructure);
-    revalidatePath('/dashboard/hrms/payroll');
-    return { success: true, newStructure };
+    const { user } = authCheck;
+
+    try {
+        const newStructure: SalaryStructure = { ...data, id: `struct-${Date.now()}`};
+        MOCK_SALARY_STRUCTURES.push(newStructure);
+        await logUserAction(user, 'create', 'salary_structure', newStructure.id, { structureName: newStructure.name });
+        revalidatePath('/dashboard/hrms/payroll');
+        return createSuccessResponse(newStructure, 'Salary structure created successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to create salary structure: ${error.message}`);
+    }
 }
 
-export async function updateSalaryStructure(id: string, data: Partial<SalaryStructure>): Promise<{ success: boolean; updatedStructure?: SalaryStructure, message?: string }> {
-    const currentUser = await getCurrentUserFromDb();
-    if (!currentUser) return { success: false };
-    try { await assertUserPermission(currentUser.id, 'manage-payroll'); } catch (err) { return { success: false, message: 'Forbidden' } }
+export async function updateSalaryStructure(id: string, data: Partial<SalaryStructure>): Promise<ActionResponse<SalaryStructure>> {
+    const authCheck = await checkActionPermission('hrms', 'payroll', 'edit');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
 
-    const index = MOCK_SALARY_STRUCTURES.findIndex(s => s.id === id);
-    if (index > -1) {
+    const { user } = authCheck;
+
+    try {
+        const index = MOCK_SALARY_STRUCTURES.findIndex(s => s.id === id);
+        if (index === -1) {
+            return createErrorResponse('Salary structure not found');
+        }
+
         MOCK_SALARY_STRUCTURES[index] = { ...MOCK_SALARY_STRUCTURES[index], ...data };
+        await logUserAction(user, 'update', 'salary_structure', id, { changes: data });
         revalidatePath('/dashboard/hrms/payroll');
-        return { success: true, updatedStructure: MOCK_SALARY_STRUCTURES[index] };
+        return createSuccessResponse(MOCK_SALARY_STRUCTURES[index], 'Salary structure updated successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to update salary structure: ${error.message}`);
     }
-    return { success: false, message: 'Structure not found.' };
 }
 
-export async function deleteSalaryStructure(id: string): Promise<{ success: boolean; message?: string }> {
-    const currentUser = await getCurrentUserFromDb();
-    if (!currentUser) return { success: false, message: 'Permission denied.' };
-    try { await assertUserPermission(currentUser.id, 'manage-payroll'); } catch (err) { return { success: false, message: 'Forbidden' } }
+export async function deleteSalaryStructure(id: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'payroll', 'delete');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
 
-    const index = MOCK_SALARY_STRUCTURES.findIndex(s => s.id === id);
-    if (index > -1) {
+    const { user } = authCheck;
+
+    try {
+        const index = MOCK_SALARY_STRUCTURES.findIndex(s => s.id === id);
+        if (index === -1) {
+            return createErrorResponse('Salary structure not found');
+        }
+
         MOCK_SALARY_STRUCTURES.splice(index, 1);
+        await logUserAction(user, 'delete', 'salary_structure', id);
         revalidatePath('/dashboard/hrms/payroll');
-        return { success: true };
+        return createSuccessResponse(null, 'Salary structure deleted successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to delete salary structure: ${error.message}`);
     }
-    return { success: false, message: 'Structure not found.' };
 }
 
 
-export async function runPayroll(month: string, staffId?: string): Promise<{ success: boolean; payslips: Payslip[]; message?: string }> {
-    const currentUser = await getCurrentUserFromDb();
-    if (!currentUser) return { success: false, payslips: [], message: 'Permission denied.' };
-    try { await assertUserPermission(currentUser.id, 'manage-payroll'); } catch (err) { return { success: false, payslips: [], message: 'Forbidden' } }
+export async function runPayroll(month: string, staffId?: string): Promise<ActionResponse<{ payslips: Payslip[] }>> {
+    const authCheck = await checkActionPermission('hrms', 'payroll', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
 
     try {
         const staffToProcess = staffId 
-            ? MOCK_USERS.filter(u => u.id === staffId)
-            : MOCK_USERS.filter(u => u.roleIds.length > 0 && u.designation);
+            ? [].filter(u => u.id === staffId)
+            : [].filter(u => u.roleIds.length > 0 && u.designation);
 
         if (staffToProcess.length === 0) {
             return { success: true, payslips: [], message: 'No staff found to run payroll for.' };
@@ -121,14 +159,109 @@ export async function runPayroll(month: string, staffId?: string): Promise<{ suc
             }
         });
 
-        return { success: true, payslips };
+        await logUserAction(user, 'create', 'payroll_run', 'bulk', { month, staffCount: payslips.length });
+        return createSuccessResponse({ payslips }, `Payroll run completed for ${payslips.length} staff members`);
     } catch (error: any) {
-        return { success: false, payslips: [], message: error.message };
+        return createErrorResponse(`Failed to run payroll: ${error.message}`);
     }
 }
 
-export async function getSalaryStructures(): Promise<SalaryStructure[]> {
-    return MOCK_SALARY_STRUCTURES;
+export async function getSalaryStructures(): Promise<ActionResponse<SalaryStructure[]>> {
+    const authCheck = await checkActionPermission('hrms', 'payroll', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        await logUserAction(user, 'view', 'salary_structures');
+        return createSuccessResponse(MOCK_SALARY_STRUCTURES, 'Salary structures retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get salary structures: ${error.message}`);
+    }
 }
 
 
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}

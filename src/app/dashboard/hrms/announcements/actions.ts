@@ -1,133 +1,217 @@
-
 'use server';
 
-import { MOCK_ANNOUNCEMENTS, MOCK_POLICY_DOCS } from '@/lib/mock-data/firestore';
 import { revalidatePath } from 'next/cache';
-import { getCurrentUser as getCurrentUserFromDb } from '@/lib/mock-data/firestore';
-import { getUserPermissions as getUserPermissionsFromDb } from '@/lib/mock-data/rbac';
-import { assertPermission } from '@/lib/rbac';
-import { getSessionClaims } from '@/lib/session';
-
+import {
+  checkActionPermission,
+  createSuccessResponse,
+  createErrorResponse,
+  getCurrentUserFromSession,
+  logUserAction,
+  type ActionResponse
+} from '@/lib/actions-utils';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 
 // --- Data Fetching ---
 
-export async function getAnnouncements() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getAnnouncements(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'announcements', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'hrms', 'attendance');
 
-    return MOCK_ANNOUNCEMENTS.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const { user } = authCheck;
+
+    try {
+        const supabase = getSupabaseServerClient();
+
+        const { data: announcements } = await supabase
+            .from('announcements')
+            .select('*')
+            .eq('organization_id', user.organization_id)
+            .order('created_at', { ascending: false });
+
+        await logUserAction(user, 'view', 'announcements', undefined, { count: announcements?.length || 0 });
+        return createSuccessResponse(announcements || [], 'Announcements retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get announcements: ${error.message}`);
+    }
 }
 
-export async function getPolicies() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getPolicies(): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'policies', 'view');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
-    await assertPermission(sessionClaims, 'hrms', 'attendance');
 
-    return MOCK_POLICY_DOCS.sort((a,b) => a.name.localeCompare(b.name));
+    const { user } = authCheck;
+
+    try {
+        const supabase = getSupabaseServerClient();
+
+        const { data: policies } = await supabase
+            .from('policies')
+            .select('*')
+            .eq('organization_id', user.organization_id)
+            .order('name');
+
+        await logUserAction(user, 'view', 'policies', undefined, { count: policies?.length || 0 });
+        return createSuccessResponse(policies || [], 'Policies retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get policies: ${error.message}`);
+    }
 }
 
-export async function getCurrentUser() {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
+export async function getCurrentUser(): Promise<ActionResponse> {
+    try {
+        const user = await getCurrentUserFromSession();
+        if (!user) {
+            return createErrorResponse('No user found in session');
+        }
+        return createSuccessResponse(user, 'User retrieved successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to get current user: ${error.message}`);
     }
-    await assertPermission(sessionClaims, 'hrms', 'attendance');
-
-    return getCurrentUserFromDb();
 }
 
-export async function getUserPermissions(userId: string) {
-    const sessionClaims = await getSessionClaims();
-    if (!sessionClaims) {
-        throw new Error('Unauthorized');
-    }
-    await assertPermission(sessionClaims, 'hrms', 'attendance');
+// --- Mutations ---
 
-    return getUserPermissionsFromDb(userId);
-}
-
-
-// --- Admin Actions ---
-
-export async function createAnnouncement(data: { title: string; content: string; }): Promise<{ success: boolean; message?: string; newAnnouncement?: any }> {
-    const user = await getCurrentUserFromDb();
-    if (!user) return { success: false, message: 'Permission denied.' };
-    const permissions = await getUserPermissionsFromDb(user.id);
-    if (!permissions.includes('manage-users')) {
-        return { success: false, message: 'Permission denied.' };
-    }
-    
-    const newAnnouncement = {
-        id: `ann-${Date.now()}`,
-        title: data.title,
-        content: data.content,
-        date: new Date().toISOString(),
-        author: user.name,
-    };
-    MOCK_ANNOUNCEMENTS.push(newAnnouncement);
-    revalidatePath('/dashboard/hrms/announcements');
-    return { success: true, newAnnouncement };
-}
-
-export async function deleteAnnouncement(id: string): Promise<{ success: boolean; message?: string; }> {
-     const user = await getCurrentUserFromDb();
-    if (!user) return { success: false, message: 'Permission denied.' };
-    const permissions = await getUserPermissionsFromDb(user.id);
-    if (!permissions.includes('manage-users')) {
-        return { success: false, message: 'Permission denied.' };
+export async function createAnnouncement(data: {
+    title: string;
+    content: string;
+}): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'announcements', 'create');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    const index = MOCK_ANNOUNCEMENTS.findIndex(a => a.id === id);
-    if (index > -1) {
-        MOCK_ANNOUNCEMENTS.splice(index, 1);
+    const { user } = authCheck;
+
+    try {
+        const supabase = getSupabaseServerClient();
+
+        const newAnnouncement = {
+            title: data.title,
+            content: data.content,
+            author_id: user.id,
+            organization_id: user.organization_id,
+        };
+
+        const { data: announcement, error } = await supabase
+            .from('announcements')
+            .insert(newAnnouncement)
+            .select()
+            .single();
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        await logUserAction(user, 'create', 'announcement', announcement.id, data);
         revalidatePath('/dashboard/hrms/announcements');
-        return { success: true };
+        return createSuccessResponse(announcement, 'Announcement created successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to create announcement: ${error.message}`);
     }
-    return { success: false, message: 'Announcement not found.' };
 }
 
-export async function uploadPolicy(data: { name: string; version: string; }, file: File): Promise<{ success: boolean; message?: string; newPolicy?: any; }> {
-     const user = await getCurrentUserFromDb();
-    if (!user) return { success: false, message: 'Permission denied.' };
-    const permissions = await getUserPermissionsFromDb(user.id);
-    if (!permissions.includes('manage-users')) {
-        return { success: false, message: 'Permission denied.' };
+export async function deleteAnnouncement(id: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'announcements', 'delete');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
     }
 
-    // In a real app, you would upload the file to Firebase Storage here.
-    // For this mock, we just add it to the array.
-    const newPolicy = {
-        id: `pol-${Date.now()}`,
-        name: data.name,
-        version: data.version,
-        fileName: file.name,
-        fileUrl: '#', // Placeholder URL
-    };
-    MOCK_POLICY_DOCS.push(newPolicy);
-    revalidatePath('/dashboard/hrms/announcements');
-    return { success: true, newPolicy };
-}
+    const { user } = authCheck;
 
-export async function deletePolicy(id: string): Promise<{ success: boolean; message?: string; }> {
-    const user = await getCurrentUserFromDb();
-    if (!user) return { success: false, message: 'Permission denied.' };
-    const permissions = await getUserPermissionsFromDb(user.id);
-    if (!permissions.includes('manage-users')) {
-        return { success: false, message: 'Permission denied.' };
-    }
-    
-    const index = MOCK_POLICY_DOCS.findIndex(p => p.id === id);
-    if (index > -1) {
-        MOCK_POLICY_DOCS.splice(index, 1);
+    try {
+        const supabase = getSupabaseServerClient();
+
+        const { error } = await supabase
+            .from('announcements')
+            .delete()
+            .eq('id', id)
+            .eq('organization_id', user.organization_id);
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        await logUserAction(user, 'delete', 'announcement', id);
         revalidatePath('/dashboard/hrms/announcements');
-        return { success: true };
+        return createSuccessResponse(null, 'Announcement deleted successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to delete announcement: ${error.message}`);
     }
-    return { success: false, message: 'Policy not found.' };
 }
 
+export async function uploadPolicy(data: {
+    name: string;
+    version: string;
+    file: File;
+}): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'policies', 'upload');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
 
+    const { user, file } = authCheck;
+
+    try {
+        const supabase = getSupabaseServerClient();
+
+        // TODO: Implement file upload to storage
+        const fileUrl = '#'; // Placeholder until storage is implemented
+
+        const newPolicy = {
+            name: data.name,
+            version: data.version,
+            file_name: file.name,
+            file_url: fileUrl,
+            organization_id: user.organization_id,
+        };
+
+        const { data: policy, error } = await supabase
+            .from('policies')
+            .insert(newPolicy)
+            .select()
+            .single();
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        await logUserAction(user, 'upload', 'policy', policy.id, { ...data, fileName: file.name });
+        revalidatePath('/dashboard/hrms/announcements');
+        return createSuccessResponse(policy, 'Policy uploaded successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to upload policy: ${error.message}`);
+    }
+}
+
+export async function deletePolicy(id: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'policies', 'delete');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        const supabase = getSupabaseServerClient();
+
+        const { error } = await supabase
+            .from('policies')
+            .delete()
+            .eq('id', id)
+            .eq('organization_id', user.organization_id);
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        await logUserAction(user, 'delete', 'policy', id);
+        revalidatePath('/dashboard/hrms/announcements');
+        return createSuccessResponse(null, 'Policy deleted successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to delete policy: ${error.message}`);
+    }
+}

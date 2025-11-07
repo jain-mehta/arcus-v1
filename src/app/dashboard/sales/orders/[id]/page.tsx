@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from '@/components/ui/separator';
-import { getOrder, getCustomer, MOCK_STORES } from '@/lib/mock-data/firestore';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Printer, Download, MessageCircle, Truck } from 'lucide-react';
@@ -12,8 +11,6 @@ import { PrintableInvoice } from '@/app/dashboard/store/components/printable-inv
 import { PrintableThermalReceipt } from '@/app/dashboard/store/components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '@/app/dashboard/store/components/printable-packing-slip';
 import { PrintableDeliveryChallan } from '@/app/dashboard/store/components/printable-delivery-challan';
-import type { Customer, Store } from '@/lib/mock-data/types';
-
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
         case 'Delivered':
@@ -72,7 +69,7 @@ export default async function SalesOrderDetailPage({ params }: any) {
     customer = { id: 'walk-in-customer', name: 'Walk-in Customer' };
   }
 
-  const store = order.storeId ? MOCK_STORES.find(s => s.id === order.storeId) : MASTER_STORE_FALLBACK;
+  const store = order.storeId ? [].find(s => s.id === order.storeId) : MASTER_STORE_FALLBACK;
 
   const subtotal = order.lineItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
   const discountAmount = subtotal * ((order.discountPercentage || 0) / 100);
@@ -127,4 +124,86 @@ export default async function SalesOrderDetailPage({ params }: any) {
         </Card>
     </div>
   );
+}
+\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+
+// TODO: Replace with actual database queries
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
