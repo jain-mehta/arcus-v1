@@ -2,6 +2,51 @@
 
 import { getLeaveRequests, getLeavePolicies, getStaff } from '../actions';
 import { LeavesClient } from './client';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
+import { getSessionClaims } from '@/lib/session';
+
+async function getCurrentUser() {
+    const claims = await getSessionClaims();
+    if (!claims?.uid) return null;
+    
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return null;
+    
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', claims.uid)
+        .single();
+    
+    return error ? null : data;
+}
+
+async function getUserPermissions(userId: string): Promise<string[]> {
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return [];
+    
+    const { data: userRole, error } = await supabase
+        .from('user_roles')
+        .select('role_id')
+        .eq('user_id', userId)
+        .single();
+    
+    if (error || !userRole) return [];
+    
+    const { data: role } = await supabase
+        .from('roles')
+        .select('permissions')
+        .eq('id', userRole.role_id)
+        .single();
+    
+    if (!role || !role.permissions) return [];
+    
+    // Handle both array and JSON string formats
+    const perms = Array.isArray(role.permissions) ? role.permissions : 
+                  typeof role.permissions === 'string' ? JSON.parse(role.permissions) : [];
+    return perms;
+}
+
 export default async function HrmsLeavesPage() {
     const user = await getCurrentUser();
     if (!user) {
@@ -16,11 +61,16 @@ export default async function HrmsLeavesPage() {
     const isAdmin = permissions.includes('manage-users');
 
     // Pass the user context directly to the action
-    const [requests, policies, staff] = await Promise.all([
-        getLeaveRequests(user, permissions),
+    const [requestsResp, policiesResp, staffResp] = await Promise.all([
+        getLeaveRequests(user.id),
         getLeavePolicies(),
         getStaff(),
     ]);
+
+    // Unwrap ActionResponse results
+    const requests = (requestsResp?.success && Array.isArray(requestsResp.data)) ? requestsResp.data : [];
+    const policies = (policiesResp?.success && Array.isArray(policiesResp.data)) ? policiesResp.data : [];
+    const staff = (staffResp?.success && Array.isArray(staffResp.data)) ? staffResp.data : [];
 
     return (
         <LeavesClient
@@ -34,7 +84,6 @@ export default async function HrmsLeavesPage() {
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

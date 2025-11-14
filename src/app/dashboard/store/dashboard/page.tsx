@@ -30,9 +30,9 @@ function DashboardSkeleton() {
 
 export default async function StoreDashboardPage({ searchParams }: any) {
     
-    const initialData = await getInitialStoreDashboardData();
+    const initialDataResult = await getInitialStoreDashboardData();
 
-    if (!initialData) {
+    if (!initialDataResult.success || !initialDataResult.data) {
         return (
              <div className="flex justify-center items-start pt-16 h-full">
                 <Card className="w-full max-w-md text-center">
@@ -53,11 +53,27 @@ export default async function StoreDashboardPage({ searchParams }: any) {
         )
     }
 
+    const initialData = initialDataResult.data;
     const { isAdmin } = initialData;
     
     if (isAdmin) {
         const filter = (searchParams?.filter as AdminDashboardFilter) || 'allTime';
-        const adminDashboardData = await getAdminStoreDashboardData(filter);
+        const adminDashboardDataResult = await getAdminStoreDashboardData(filter);
+        const adminDashboardData = adminDashboardDataResult.success ? adminDashboardDataResult.data : null;
+        
+        if (!adminDashboardData) {
+            return (
+                <div className="flex justify-center items-start pt-16 h-full">
+                    <Card className="w-full max-w-md text-center">
+                        <CardHeader>
+                            <CardTitle>Error</CardTitle>
+                            <CardDescription>Failed to load dashboard data</CardDescription>
+                        </CardHeader>
+                    </Card>
+                </div>
+            );
+        }
+        
         return (
             <Suspense fallback={<DashboardSkeleton />}>
                 <AdminStoreDashboardClient 

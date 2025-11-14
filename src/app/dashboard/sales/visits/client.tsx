@@ -48,7 +48,7 @@ import { MapPin, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Visit } from '@/lib/mock-data/types';
+import type { Visit } from '@/lib/types/domain';
 import { logVisit } from '../actions';
 import { useRouter } from 'next/navigation';
 
@@ -98,24 +98,33 @@ export function VisitLoggingClient({ dealers, initialVisits }: VisitLoggingClien
     startTransition(async () => {
         const dealerName = dealers.find(d => d.id === values.dealerId)?.name || '';
         const submissionData = {
-            ...values,
-            dealerName: dealerName,
-            visitDate: values.visitDate.toISOString(),
-            nextFollowUpDate: values.nextFollowUpDate?.toISOString(),
+            customer_id: values.dealerId,
+            sales_person_id: '',  // will be set by server action
+            visit_date: values.visitDate.toISOString(),
+            purpose: values.purpose,
+            notes: values.feedback,
+            status: 'completed' as const,
+            
+            // Additional fields for flexibility
+            dealer_id: values.dealerId,
+            outcome: values.outcome,
+            next_follow_up_date: values.nextFollowUpDate?.toISOString(),
+            tenant_id: '',
+            salesperson_id: '',
         };
 
         try {
-            const result = await logVisit(submissionData);
-            if (result.success && 'visit' in result && result.visit) {
+            const result = await logVisit(submissionData as any);
+            if (result.success && result.data) {
                 toast({
                     title: 'Visit Logged!',
                     description: `Your visit with ${dealerName} has been recorded.`,
                 });
-                setVisits(prev => [result.visit, ...prev]);
+                setVisits(prev => [result.data as Visit, ...prev]);
                 form.reset();
                  form.setValue('visitDate', new Date());
             } else {
-                const msg = (result as any).message || 'Failed to log visit.';
+                const msg = (result as any).error || 'Failed to log visit.';
                 throw new Error(msg);
             }
         } catch (error: any) {
@@ -341,11 +350,11 @@ export function VisitLoggingClient({ dealers, initialVisits }: VisitLoggingClien
                     {visits.length > 0 ? (
                         visits.map(visit => (
                             <TableRow key={visit.id}>
-                                <TableCell className='font-medium'>{visit.dealerName}</TableCell>
-                                <TableCell>{new Date(visit.visitDate).toLocaleDateString()}</TableCell>
-                                <TableCell>{visit.purpose}</TableCell>
-                                <TableCell className='text-muted-foreground max-w-xs'>{visit.outcome}</TableCell>
-                                <TableCell>{visit.nextFollowUpDate ? new Date(visit.nextFollowUpDate).toLocaleDateString() : 'N/A'}</TableCell>
+                                <TableCell className='font-medium'>{visit.dealerName || visit.customer_id}</TableCell>
+                                <TableCell>{new Date(visit.visitDate || visit.visit_date || '').toLocaleDateString()}</TableCell>
+                                <TableCell>{visit.purpose || visit.visit_purpose || 'N/A'}</TableCell>
+                                <TableCell className='text-muted-foreground max-w-xs'>{visit.outcome || visit.notes || 'N/A'}</TableCell>
+                                <TableCell>{visit.nextFollowUpDate || visit.next_follow_up_date ? new Date(visit.nextFollowUpDate || visit.next_follow_up_date || '').toLocaleDateString() : 'N/A'}</TableCell>
                             </TableRow>
                         ))
                     ) : (

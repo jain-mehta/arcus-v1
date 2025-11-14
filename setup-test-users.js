@@ -62,13 +62,13 @@ async function createTestUser(user) {
 }
 
 async function setupTestUsers() {
-  console.log('🚀 Starting test user setup...\n');
+  console.log('🚀 Starting test user setup...');
   
   for (const user of TEST_USERS) {
     await createTestUser(user);
   }
   
-  console.log('\n✅ Setup complete!');
+  console.log('✅ Setup complete!');
   console.log('Test credentials:');
   TEST_USERS.forEach(user => {
     console.log(`  - Email: ${user.email}`);

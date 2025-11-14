@@ -1,4 +1,6 @@
 
+
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -8,12 +10,17 @@ import { useTransition } from 'react';
 import { Loader2, ShoppingCart, Download, Printer } from 'lucide-react';
 import Link from 'next/link';
 
+interface Quotation {
+    id: string;
+    customerId: string;
+    status: string;
+    [key: string]: any;
+}
+
 interface QuotationDetailClientProps {
     quotation: Quotation;
     createOrderFromQuote: (quote: Quotation) => Promise<{ success: boolean; orderId?: string; message?: string; }>;
 }
-
-
 export function QuotationDetailClient({ quotation, createOrderFromQuote }: QuotationDetailClientProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -58,7 +65,7 @@ export function QuotationDetailClient({ quotation, createOrderFromQuote }: Quota
     </div>
   );
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

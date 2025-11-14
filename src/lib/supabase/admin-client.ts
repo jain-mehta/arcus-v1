@@ -61,7 +61,7 @@ export async function createTenantDatabase(
   const startTime = Date.now();
   const databaseName = `tenant_${options.tenantId.replace(/-/g, '_')}`;
 
-  console.log(`\n?? Creating tenant database: ${databaseName}`);
+  console.log(`?? Creating tenant database: ${databaseName}`);
 
   try {
     const databaseUrl = generateTenantDatabaseUrl(databaseName, options.tenantId);
@@ -127,7 +127,7 @@ export async function listTenantDatabases(): Promise<TenantDatabase[]> {
  * WARNING: This is destructive and should require confirmation
  */
 export async function deleteTenantDatabase(tenantId: string): Promise<boolean> {
-  console.log(`\n???  Deleting tenant database for: ${tenantId}`);
+  console.log(`???  Deleting tenant database for: ${tenantId}`);
 
   try {
     const admin = getSupabaseAdmin();

@@ -34,6 +34,19 @@ const iconMap: { [key: string]: React.ElementType } = {
     TrendingUp,
 };
 
+interface Opportunity {
+    stage: string;
+    value: number;
+    customerId: string;
+    [key: string]: any;
+}
+
+interface SalesSnapshot {
+    id: string;
+    period: string;
+    createdAt?: string;
+    [key: string]: any;
+}
 
 interface SalesReportData {
     kpiData: {
@@ -65,22 +78,22 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
   const { toast } = useToast();
   const [snapshots, setSnapshots] = useState(initialSnapshots);
   const [isGenerating, startGeneration] = useTransition();
-  const [selectedKpi, setSelectedKpi] = useState<keyof Omit<SalesSnapshot, 'id' | 'period' | 'createdAt'>>('winRate');
+  const [selectedKpi, setSelectedKpi] = useState<string>('winRate');
 
   const handleGenerateSnapshot = () => {
     startGeneration(async () => {
         try {
             const result = await generateMonthlySnapshot();
-            if (result.success && result.newSnapshot) {
+            if (result.success && result.data) {
                 setSnapshots(prev => {
-                    const existing = prev.find(s => s.id === result.newSnapshot!.id);
+                    const existing = prev.find(s => s.id === result.data!.id);
                     if (existing) return prev;
 
-                    const newSnapshots: SalesSnapshot[] = [...prev, result.newSnapshot as SalesSnapshot];
+                    const newSnapshots: SalesSnapshot[] = [...prev, result.data as SalesSnapshot];
                     newSnapshots.sort((a,b) => a.period.localeCompare(b.period));
                     return newSnapshots;
                 });
-                toast({ title: 'Snapshot Generated', description: `Historical data for ${result.newSnapshot.period} has been saved.`});
+                toast({ title: 'Snapshot Generated', description: `Historical data for ${result.data.period} has been saved.`});
             } else {
                  toast({ variant: 'destructive', title: 'Error', description: result.message });
             }
@@ -252,7 +265,7 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

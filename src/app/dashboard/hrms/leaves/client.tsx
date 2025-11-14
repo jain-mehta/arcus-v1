@@ -57,6 +57,31 @@ import { cn } from '@/lib/utils';
 import { addLeaveRequest, updateLeaveRequestStatus } from '../actions';
 import type { DateRange } from 'react-day-picker';
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  [key: string]: any;
+}
+
+interface LeaveRequest {
+  id: string;
+  staffId: string;
+  type: string;
+  startDate: string | Date;
+  endDate: string | Date;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  managerComments?: string;
+  [key: string]: any;
+}
+
+interface LeavePolicy {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
 const leaveRequestSchema = z.object({
   staffId: z.string().min(1, 'Please select a staff member.'),
   type: z.string().min(1, 'Please select a leave type.'),
@@ -101,7 +126,7 @@ export function LeavesClient({ initialRequests, leavePolicies, staffList, curren
 
         leavePolicies.forEach(p => {
             const taken = requests
-                .filter(r => r.staffId === currentUser.id && r.type === p.leaveType && r.status === 'Approved')
+                .filter(r => r.staffId === currentUser.id && r.type === p.leaveType && r.status === 'approved')
                 .reduce((total, req) => total + req.duration, 0);
             balance[p.leaveType] = p.daysAllowed - taken;
         });
@@ -109,7 +134,7 @@ export function LeavesClient({ initialRequests, leavePolicies, staffList, curren
     }, [requests, currentUser.id, leavePolicies]);
 
 
-    const pendingRequests = requests.filter(r => r.status === 'Pending');
+    const pendingRequests = requests.filter(r => r.status === 'pending');
     const myRequests = requests.filter(r => r.staffId === currentUser.id);
 
     return (
@@ -171,9 +196,9 @@ export function LeavesClient({ initialRequests, leavePolicies, staffList, curren
 
 function LeaveTable({ requests, onStatusUpdated, showActions = true }: { requests: LeaveRequestWithDuration[], onStatusUpdated: (req: LeaveRequest) => void, showActions?: boolean }) {
     
-    const getStatusBadgeVariant = (status: LeaveStatus) => {
-        if (status === 'Approved') return 'default';
-        if (status === 'Rejected') return 'destructive';
+    const getStatusBadgeVariant = (status: string) => {
+        if (status === 'approved') return 'default';
+        if (status === 'rejected') return 'destructive';
         return 'secondary';
     }
 
@@ -193,7 +218,7 @@ function LeaveTable({ requests, onStatusUpdated, showActions = true }: { request
             <TableBody>
                 {requests.length > 0 ? requests.map(req => (
                     <TableRow key={req.id}>
-                        <TableCell className="font-medium">{req.staffName}</TableCell>
+                        <TableCell className="font-medium">{(req as any).staffName}</TableCell>
                         <TableCell>{req.type}</TableCell>
                         <TableCell>{format(new Date(req.startDate), 'PPP')} - {format(new Date(req.endDate), 'PPP')}</TableCell>
                         <TableCell>{req.duration} day(s)</TableCell>
@@ -201,7 +226,7 @@ function LeaveTable({ requests, onStatusUpdated, showActions = true }: { request
                         <TableCell><Badge variant={getStatusBadgeVariant(req.status)}>{req.status}</Badge></TableCell>
                         {showActions && (
                             <TableCell className="text-right">
-                                {req.status === 'Pending' && <ManagerActionDialog request={req} onStatusUpdated={onStatusUpdated} />}
+                                {req.status === 'pending' && <ManagerActionDialog request={req} onStatusUpdated={onStatusUpdated} />}
                             </TableCell>
                         )}
                     </TableRow>
@@ -239,9 +264,9 @@ function ApplyLeaveDialog({ leavePolicies, staffList, currentUser, onLeaveAdded,
                 endDate: values.dateRange.to.toISOString(),
                 reason: values.reason,
             }
-            const result = await addLeaveRequest(dataToSubmit as any, currentUser);
-            if (result.success && result.newRequest) {
-                onLeaveAdded(result.newRequest);
+            const result = await addLeaveRequest(dataToSubmit as any);
+            if (result.success && (result as any).newRequest) {
+                onLeaveAdded((result as any).newRequest);
                 toast({ title: "Leave Request Submitted" });
                 setOpen(false);
                 form.reset();
@@ -352,10 +377,10 @@ function ManagerActionDialog({ request, onStatusUpdated }: { request: LeaveReque
         defaultValues: { managerComments: '' }
     });
 
-    const handleAction = async (status: 'Approved' | 'Rejected') => {
+    const handleAction = async (status: 'approved' | 'rejected') => {
         startSubmitting(async () => {
             const values = form.getValues();
-            const result = await updateLeaveRequestStatus(request.id, status, values.managerComments || '');
+            const result = await updateLeaveRequestStatus(request.id, status);
             if (result.success) {
                 onStatusUpdated({ ...request, status, managerComments: values.managerComments });
                 toast({ title: `Request ${status}`});
@@ -393,11 +418,11 @@ function ManagerActionDialog({ request, onStatusUpdated }: { request: LeaveReque
                             )}
                         />
                         <DialogFooter>
-                            <Button type="button" variant="destructive" onClick={() => handleAction('Rejected')} disabled={isSubmitting}>
+                            <Button type="button" variant="destructive" onClick={() => handleAction('rejected')} disabled={isSubmitting}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 <X className="mr-2 h-4 w-4" />Reject
                             </Button>
-                            <Button type="button" variant="default" onClick={() => handleAction('Approved')} disabled={isSubmitting}>
+                            <Button type="button" variant="default" onClick={() => handleAction('approved')} disabled={isSubmitting}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 <Check className="mr-2 h-4 w-4" />Approve
                             </Button>
@@ -410,7 +435,6 @@ function ManagerActionDialog({ request, onStatusUpdated }: { request: LeaveReque
 }
 
 
-\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

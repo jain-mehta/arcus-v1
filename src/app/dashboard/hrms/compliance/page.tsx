@@ -1,12 +1,77 @@
 
 import { getComplianceDocuments } from './actions';
 import { HrmsComplianceClient } from './client';
+import { getCurrentUserFromSession } from '@/lib/session';
+import { getSessionClaims } from '@/lib/session';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
+
+async function getCurrentUser() {
+    try {
+        const sessionClaims = await getSessionClaims();
+        if (!sessionClaims) return null;
+
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return null;
+
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', sessionClaims.uid)
+            .single();
+
+        return error ? null : user;
+    } catch (error) {
+        console.error('Error getting current user:', error);
+        return null;
+    }
+}
+
+async function getUserPermissions(userId: string): Promise<string[]> {
+    try {
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return [];
+
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('role_id')
+            .eq('id', userId)
+            .single();
+
+        if (userError || !user) return [];
+
+        const { data: role, error: roleError } = await supabase
+            .from('roles')
+            .select('permissions')
+            .eq('id', user.role_id)
+            .single();
+
+        if (roleError || !role) return [];
+
+        const permissions = Array.isArray(role.permissions) 
+            ? role.permissions 
+            : (typeof role.permissions === 'string' ? JSON.parse(role.permissions) : []);
+        
+        return permissions || [];
+    } catch (error) {
+        console.error('Error getting user permissions:', error);
+        return [];
+    }
+}
+
 export default async function HrmsDocumentsPage() {
     // In a real app, this would be a proper async data fetch.
-    const [documents, user] = await Promise.all([
+    const [documentsResponse, user] = await Promise.all([
         getComplianceDocuments(),
         getCurrentUser()
     ]);
+
+    // Normalize the response to an array: if the fetch returns an ActionResponse-like object,
+    // prefer its `data` property; if it already is an array, use it directly; otherwise fallback to [].
+    const initialDocuments: any[] = Array.isArray(documentsResponse)
+        ? documentsResponse
+        : (documentsResponse && (documentsResponse as any).data && Array.isArray((documentsResponse as any).data))
+            ? (documentsResponse as any).data
+            : [];
 
     let isAdmin = false;
     if (user) {
@@ -14,11 +79,9 @@ export default async function HrmsDocumentsPage() {
         isAdmin = permissions.includes('manage-users');
     }
     
-    return <HrmsComplianceClient initialDocuments={documents} isAdmin={isAdmin} />;
+    return <HrmsComplianceClient initialDocuments={initialDocuments} isAdmin={isAdmin} />;
 }
 
-
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

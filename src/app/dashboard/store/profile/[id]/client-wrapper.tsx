@@ -76,7 +76,7 @@ export function ClientWrapper({ storeData, storeManagers }: { storeData: Store, 
             <p className="text-muted-foreground">Store ID: {storeData.id}</p>
         </div>
         <div className="flex items-center gap-2">
-            <StoreDialog mode="edit" store={storeData} storeManagers={storeManagers} />
+            <StoreDialog mode="edit" store={storeData as any} storeManagers={storeManagers as any} />
             <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="destructive" disabled={isDeleting}>
@@ -109,7 +109,7 @@ export function ClientWrapper({ storeData, storeManagers }: { storeData: Store, 
   )
 }
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

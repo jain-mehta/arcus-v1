@@ -95,7 +95,7 @@ export default async function InventoryDashboardPage() {
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell className="hidden sm:table-cell">{item.sku}</TableCell>
                        <TableCell className='text-center'>
-                          <Badge variant={item.quantity > (item.reorderLevel || 0) ? "outline" : "destructive"}>{item.quantity}</Badge>
+                          <Badge variant={(item.quantity || 0) > (item.reorderLevel || 0) ? "outline" : "destructive"}>{item.quantity || 0}</Badge>
                       </TableCell>
                       <TableCell className="text-right">{item.reorderLevel}</TableCell>
                     </TableRow>

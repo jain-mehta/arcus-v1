@@ -9,6 +9,47 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, Handshake, FileText, ShoppingCart, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
+interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  industry?: string;
+  [key: string]: any;
+}
+
+interface Opportunity {
+  id: string;
+  name: string;
+  value?: number;
+  stage?: string;
+  [key: string]: any;
+}
+
+interface Quotation {
+  id: string;
+  number?: string;
+  amount?: number;
+  status?: string;
+  [key: string]: any;
+}
+
+interface Order {
+  id: string;
+  number?: string;
+  total?: number;
+  status?: string;
+  [key: string]: any;
+}
+
+interface CommunicationLog {
+  id: string;
+  type: string;
+  date: string;
+  [key: string]: any;
+}
+
 interface CustomerDetailViewProps {
   customer: Customer;
   opportunities: Opportunity[];
@@ -127,7 +168,7 @@ export function CustomerDetailView({
     </div>
   );
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

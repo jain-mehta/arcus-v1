@@ -1,8 +1,13 @@
 
 import { CreatePOForm } from './create-po-form';
 
+async function getVendors() {
+  return [];
+}
+
 export default async function CreatePurchaseOrderPage() {
-  const vendors = await getVendors();
+  const vendorsResult = await getVendors();
+  const vendors = vendorsResult as any[] || [];
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -16,7 +21,7 @@ export default async function CreatePurchaseOrderPage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

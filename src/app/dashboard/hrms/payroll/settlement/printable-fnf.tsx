@@ -71,7 +71,7 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
 
             <section className="my-8">
                 <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 text-gray-600">Employee Details:</h3>
-                <p className="font-bold">{employee?.name || 'N/A'}</p>
+                <p className="font-bold">{(employee as any)?.full_name || (employee as any)?.name || 'N/A'}</p>
                  <p>{employee?.email || ''}</p>
             </section>
 
@@ -132,7 +132,7 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
 
             <footer className="mt-12 pt-6 border-t text-center text-xs text-gray-500">
                 <p>This is a computer generated document.</p>
-                <p>{store?.receiptFooter || 'Thank you for your service!'}</p>
+                <p>{(store as any)?.receiptFooter || 'Thank you for your service!'}</p>
             </footer>
         </div>
     );
@@ -140,7 +140,7 @@ export const PrintableFnF = React.forwardRef<HTMLDivElement, PrintableFnFProps>(
 PrintableFnF.displayName = 'PrintableFnF';
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { getPurchaseHistoryForVendor, updatePurchaseHistory } from '../actions';
-import type { PurchaseOrder, Vendor } from '@/lib/mock-data/types';
+import type { PurchaseOrder, Vendor } from '@/lib/types/domain';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -42,8 +42,9 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
     const [isFetching, setIsFetching] = useState(false);
     
     const [selectedVendor, setSelectedVendor] = useState<string>(vendors[0]?.id || '');
-    const [purchaseHistory, setPurchaseHistory] = useState<EditablePurchaseOrder[]>(initialHistory);
-    const [initialPurchaseHistory, setInitialPurchaseHistory] = useState<EditablePurchaseOrder[]>(initialHistory);
+    const editableInitial: EditablePurchaseOrder[] = initialHistory.map(po => ({ ...po, isDirty: false }));
+    const [purchaseHistory, setPurchaseHistory] = useState<EditablePurchaseOrder[]>(editableInitial);
+    const [initialPurchaseHistory, setInitialPurchaseHistory] = useState<EditablePurchaseOrder[]>(editableInitial);
     const [loading, setLoading] = useState(true);
 
     const [date, setDate] = useState<DateRange | undefined>();
@@ -66,9 +67,20 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
         try {
             const fromDate = applyFilters ? date?.from : undefined;
             const toDate = applyFilters ? date?.to : undefined;
-            const history = await getPurchaseHistoryForVendor(vendorId, fromDate, toDate);
-            setPurchaseHistory(history);
-            setInitialPurchaseHistory(history); // Store initial state
+            const response = await getPurchaseHistoryForVendor(vendorId, fromDate, toDate);
+            const history = response.success && response.data ? response.data : [];
+            // Normalize incoming PO objects to ensure required PurchaseOrder fields exist
+            const editableHistory = history.map((po: any) => ({
+                ...(po as any),
+                tenant_id: po.tenant_id ?? po.tenantId ?? po.orgId ?? '',
+                vendor_id: po.vendor_id ?? po.vendorId ?? vendorId,
+                order_number: po.order_number ?? po.orderNumber ?? po.poNumber ?? '',
+                order_date: po.order_date ?? po.orderDate ?? po.createdAt ?? '',
+                total_amount: po.total_amount ?? po.totalAmount ?? po.total ?? 0,
+                isDirty: false,
+            })) as EditablePurchaseOrder[];
+            setPurchaseHistory(editableHistory);
+            setInitialPurchaseHistory(editableHistory); // Store initial state
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch purchase history.' });
         } finally {
@@ -86,7 +98,7 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
     const filteredHistory = useMemo(() => {
         if (!materialFilter) return purchaseHistory;
         return purchaseHistory.filter(po => 
-            po.lineItems.some(item => item.material.toLowerCase().includes(materialFilter.toLowerCase()))
+            (po.lineItems || []).some(item => (item.material || '').toLowerCase().includes(materialFilter.toLowerCase()))
         );
     }, [purchaseHistory, materialFilter]);
 
@@ -112,8 +124,8 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
             .filter(po => po.isDirty)
             .map(po => ({
                 poId: po.id,
-                amountGiven: po.amountGiven,
-                paymentStatus: po.paymentStatus,
+                amountGiven: po.amountGiven || 0,
+                paymentStatus: po.paymentStatus || 'pending',
             }));
 
         if (updates.length === 0) {
@@ -257,10 +269,10 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
                             ) : filteredHistory.length > 0 ? (
                                 filteredHistory.map((po) => (
                                     <TableRow key={po.id} className={cn(po.isDirty && 'bg-accent/50')}>
-                                        <TableCell className="font-medium">{po.poNumber}</TableCell>
-                                        <TableCell>{new Date(po.orderDate).toLocaleDateString()}</TableCell>
-                                        <TableCell>{po.lineItems.length}</TableCell>
-                                        <TableCell className="text-right">{po.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                        <TableCell className="font-medium">{po.poNumber || po.order_number}</TableCell>
+                                        <TableCell>{new Date(po.orderDate || po.order_date || '').toLocaleDateString()}</TableCell>
+                                        <TableCell>{(po.lineItems || []).length}</TableCell>
+                                        <TableCell className="text-right">{(po.totalAmount || po.total_amount || 0).toLocaleString('en-IN')}</TableCell>
                                         <TableCell className="text-right">
                                             <Input
                                                 type="number"
@@ -273,7 +285,7 @@ export function PurchaseHistoryClient({ vendors, initialHistory }: PurchaseHisto
                                             <Badge variant={getStatusBadgeVariant(po.status)}>{po.status}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Select defaultValue={po.paymentStatus} onValueChange={(value) => handleFieldChange(po.id, 'paymentStatus', value)}>
+                                            <Select defaultValue={po.paymentStatus || ''} onValueChange={(value) => handleFieldChange(po.id, 'paymentStatus', value)}>
                                                 <SelectTrigger className="w-[140px]">
                                                     <SelectValue placeholder="Select status" />
                                                 </SelectTrigger>

@@ -2,13 +2,16 @@ import { PriceComparisonClient } from './client';
 import { getAllMaterials, fetchPriceComparisonData } from './actions';
 
 export default async function PriceComparisonPage() {
-    const materials = await getAllMaterials();
+    const materialsResult = await getAllMaterials();
+    const materials = materialsResult.success ? ((materialsResult.data as any) || []) : [];
     
-    const initialMaterial = materials[0] || '';
+    const initialMaterial = (materials as any)[0] || '';
 
-    const initialComparisonData = initialMaterial 
-        ? await fetchPriceComparisonData(initialMaterial) 
-        : [];
+    let initialComparisonData: any = [];
+    if (initialMaterial) {
+        const comparisonResult = await fetchPriceComparisonData(initialMaterial);
+        initialComparisonData = comparisonResult.success ? ((comparisonResult.data as any) || []) : [];
+    }
     
     return (
         <PriceComparisonClient 

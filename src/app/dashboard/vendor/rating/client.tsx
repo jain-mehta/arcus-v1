@@ -16,23 +16,23 @@ import { calculateAndUpdateVendorScores, getVendorRatingCriteria, getVendorRatin
 import { cn } from '@/lib/utils';
 
 
-type EditableRatingCriteria = VendorRatingCriteria & { isDirty?: boolean };
+type EditableRatingCriteria = any & { isDirty?: boolean };
 
 interface RatingClientProps {
-    vendors: Vendor[];
-    initialCriteria: VendorRatingCriteria[];
-    initialHistory: VendorRatingHistory[];
+    vendors: any[];
+    initialCriteria: any[];
+    initialHistory: any[];
 }
 
 export function RatingClient({ vendors: initialVendors, initialCriteria, initialHistory }: RatingClientProps) {
     const { toast } = useToast();
-    const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
-    const [selectedVendor, setSelectedVendor] = useState<string>(initialVendors[0]?.id || '');
+    const [vendors, setVendors] = useState<any[]>(initialVendors);
+    const [selectedVendor, setSelectedVendor] = useState<string>((initialVendors[0] as any)?.id || '');
     const [loading, setLoading] = useState(false);
     const [isSaving, startSaving] = useTransition();
-    const [criteriaData, setCriteriaData] = useState<EditableRatingCriteria[]>(initialCriteria);
-    const [initialCriteriaData, setInitialCriteriaData] = useState<EditableRatingCriteria[]>(initialCriteria);
-    const [historicalData, setHistoricalData] = useState<VendorRatingHistory[]>(initialHistory);
+    const [criteriaData, setCriteriaData] = useState<any[]>(initialCriteria);
+    const [initialCriteriaData, setInitialCriteriaData] = useState<any[]>(initialCriteria);
+    const [historicalData, setHistoricalData] = useState<any[]>(initialHistory);
 
     useEffect(() => {
         // This effect runs only when the selected vendor changes, not on initial load
@@ -267,7 +267,7 @@ export function RatingClient({ vendors: initialVendors, initialCriteria, initial
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

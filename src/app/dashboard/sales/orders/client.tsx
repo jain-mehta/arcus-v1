@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
-import type { Order, Customer } from '@/lib/mock-data/types';
+import type { Order, Customer } from '@/lib/types/domain';
 import Link from 'next/link';
 
 interface OrdersClientProps {
@@ -82,12 +82,12 @@ export function OrdersClient({ initialOrders, customerList }: OrdersClientProps)
                                 <TableRow key={order.id}>
                                     <TableCell className="font-medium">
                                         <Link href={`/dashboard/sales/orders/${order.id}`} className="hover:underline">
-                                            {order.orderNumber}
+                                            {order.orderNumber || order.order_number}
                                         </Link>
                                     </TableCell>
-                                    <TableCell>{customers[order.customerId] || 'Unknown Customer'}</TableCell>
-                                    <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>{customers[order.customerId || order.customer_id || ''] || 'Unknown Customer'}</TableCell>
+                                    <TableCell>{new Date(order.orderDate || order.order_date || '').toLocaleDateString()}</TableCell>
+                                    <TableCell>₹{(order.totalAmount || order.total_amount || 0).toLocaleString('en-IN')}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                                     </TableCell>

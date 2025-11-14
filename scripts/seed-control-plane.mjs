@@ -21,7 +21,7 @@ const shouldClear = args.includes('--clear');
 const shouldDemo = args.includes('--demo') || args.length === 0;
 
 async function main() {
-  console.log('\n🌱 Control Plane Seeder\n');
+  console.log('🌱 Control Plane Seeder');
 
   try {
     // Initialize DataSource
@@ -44,12 +44,12 @@ async function main() {
       await sessionRepo.clear();
       await tenantRepo.clear();
 
-      console.log('✅ Data cleared\n');
+      console.log('✅ Data cleared');
     }
 
     // Seed demo data
     if (shouldDemo) {
-      console.log('📝 Seeding demo data...\n');
+      console.log('📝 Seeding demo data...');
 
       const tenantRepo = dataSource.getRepository(TenantMetadata);
       const userMappingRepo = dataSource.getRepository(UserMapping);
@@ -74,9 +74,9 @@ async function main() {
         });
 
         await tenantRepo.save(newTenant);
-        console.log('     ✅ Demo Tenant created\n');
+        console.log('     ✅ Demo Tenant created');
       } else {
-        console.log('     ⚠️  Demo Tenant already exists\n');
+        console.log('     ⚠️  Demo Tenant already exists');
       }
 
       // Demo users
@@ -140,11 +140,11 @@ async function main() {
           });
 
           await userMappingRepo.save(userMapping);
-          console.log(`     ✅ ${userData.email}\n`);
+          console.log(`     ✅ ${userData.email}`);
         }
       }
 
-      console.log('✅ Demo data seeded\n');
+      console.log('✅ Demo data seeded');
     }
 
     console.log('🎉 Seeding complete!');

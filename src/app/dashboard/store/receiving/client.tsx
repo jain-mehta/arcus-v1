@@ -41,7 +41,8 @@ export function ProductReceivingClient({ initialShipments, isAdmin, allStores, u
         setSelectedShipment(null);
         setShipments([]);
         startLoadingShipments(async () => {
-             const newShipments = await getStoreShipments(storeId);
+             const newShipmentsResult = await getStoreShipments(storeId);
+             const newShipments = (newShipmentsResult.success ? newShipmentsResult.data || [] : []) as any[];
              setShipments(newShipments);
              if (newShipments.length > 0) {
                  setSelectedShipment(newShipments[0]);
@@ -166,7 +167,7 @@ export function ProductReceivingClient({ initialShipments, isAdmin, allStores, u
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

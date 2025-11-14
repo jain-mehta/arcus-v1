@@ -28,6 +28,8 @@ interface UserContext {
 // Get current user from Supabase
 async function getCurrentUser(): Promise<User | null> {
   const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
+  
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
   if (!authUser) return null;
@@ -44,6 +46,7 @@ async function getCurrentUser(): Promise<User | null> {
 // Get user permissions
 async function getUserPermissions(userId: string): Promise<string[]> {
   const supabase = getSupabaseServerClient();
+  if (!supabase) return [];
 
   // Get user roles and permissions from database
   const { data: roles } = await supabase
@@ -64,6 +67,7 @@ async function getUserPermissions(userId: string): Promise<string[]> {
 // Get subordinates
 async function getSubordinates(userId: string): Promise<User[]> {
   const supabase = getSupabaseServerClient();
+  if (!supabase) return [];
 
   const { data: subordinates } = await supabase
     .from('users')

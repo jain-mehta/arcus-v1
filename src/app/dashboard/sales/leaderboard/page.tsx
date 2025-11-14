@@ -37,7 +37,7 @@ export default async function LeaderboardPage() {
             </TableHeader>
             <TableBody>
               {leaderboardData.length > 0 ? (
-                leaderboardData.map((data, index) => (
+                leaderboardData.map((data: any, index: number) => (
                   <TableRow key={data.user.id}>
                     <TableCell className="font-bold text-lg">{index + 1}</TableCell>
                     <TableCell>

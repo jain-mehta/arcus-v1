@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/mock-data/types';
+import type { Order, Customer, Store } from '@/lib/types/domain';
 
 interface DebitNoteData {
     originalOrderNumber: string;

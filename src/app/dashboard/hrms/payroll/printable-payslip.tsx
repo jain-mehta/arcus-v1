@@ -3,7 +3,7 @@
 'use client';
 
 import React from 'react';
-import type { Payslip, Store } from '@/lib/mock-data/types';
+import type { Payslip, Store } from '@/lib/types/domain';
 import type { PayslipLayout } from '../payroll/formats/actions';
 
 interface PrintablePayslipProps {
@@ -14,13 +14,14 @@ interface PrintablePayslipProps {
 
 
 // A simplified function to replace placeholders like {{employeeName}}
-const replacePlaceholders = (text: string, payslip: Payslip, store: Partial<Store>) => {
+const replacePlaceholders = (text: string | undefined, payslip: Payslip, store: Partial<Store>) => {
+    if (!text) return '';
     return text
         .replace(/{{companyName}}/g, store.name || '')
         .replace(/{{companyAddress}}/g, store.address || '')
-        .replace(/{{payslipMonth}}/g, payslip.month)
-        .replace(/{{employeeName}}/g, payslip.staffName)
-        .replace(/{{employeeId}}/g, payslip.staffId);
+        .replace(/{{payslipMonth}}/g, payslip.month || '')
+        .replace(/{{employeeName}}/g, payslip.staffName || '')
+        .replace(/{{employeeId}}/g, payslip.staffId || '');
 };
 
 const renderSection = (section: any, payslip: Payslip) => {
@@ -29,12 +30,12 @@ const renderSection = (section: any, payslip: Payslip) => {
 
         // This is a more robust mapping from field labels to actual payslip data
         const label = field.label.toLowerCase();
-        if (label.includes('gross')) value = payslip.grossSalary;
-        else if (label.includes('total deduction')) value = payslip.deductions;
-        else if (label.includes('net')) value = payslip.netSalary;
-        else if (label.includes('employee id')) value = payslip.staffId;
+        if (label.includes('gross')) value = payslip.grossSalary || 0;
+        else if (label.includes('total deduction')) value = payslip.deductions || 0;
+        else if (label.includes('net')) value = payslip.netSalary || 0;
+        else if (label.includes('employee id')) value = payslip.staffId || '';
         else {
-            const component = payslip.components.find(c => c.name.toLowerCase() === label);
+            const component = (payslip.components || []).find((c: any) => c.name.toLowerCase() === label);
             if (component) {
                  if (component.calculationType === 'Percentage') {
                     value = `${component.value}%`; // Show percentage for relevant fields
@@ -71,15 +72,15 @@ export const PrintablePayslip = React.forwardRef<HTMLDivElement, PrintablePaysli
         
     // Fallback to a default layout if none is provided, to avoid crashes
     const safeLayout = layout || {
-        header: { companyName: store.name || 'Company Name', companyAddress: store.address || 'Address', title: 'Payslip', period: payslip.month },
+        header: { companyName: store.name || 'Company Name', companyAddress: store.address || 'Address', title: 'Payslip', period: payslip.month || '' },
         body: { gridColumns: 2, sections: [
-            { title: 'Earnings', columns: 1, fields: payslip.components.filter(c => c.type === 'Earning').map(c => ({ label: c.name, exampleValue: `₹${c.value}`})) },
-            { title: 'Deductions', columns: 1, fields: payslip.components.filter(c => c.type === 'Deduction').map(c => ({ label: c.name, exampleValue: `₹${c.value}`})) },
+            { title: 'Earnings', columns: 1, fields: (payslip.components || []).filter((c: any) => c.type === 'Earning').map((c: any) => ({ label: c.name, exampleValue: `₹${c.value}`})) },
+            { title: 'Deductions', columns: 1, fields: (payslip.components || []).filter((c: any) => c.type === 'Deduction').map((c: any) => ({ label: c.name, exampleValue: `₹${c.value}`})) },
         ] },
         footer: { summary: [
-            { label: 'Gross Salary', exampleValue: `₹${payslip.grossSalary}`, isTotal: false },
-            { label: 'Total Deductions', exampleValue: `₹${payslip.deductions}`, isTotal: false },
-            { label: 'Net Salary', exampleValue: `₹${payslip.netSalary}`, isTotal: true },
+            { label: 'Gross Salary', exampleValue: `₹${payslip.grossSalary || 0}`, isTotal: false },
+            { label: 'Total Deductions', exampleValue: `₹${payslip.deductions || 0}`, isTotal: false },
+            { label: 'Net Salary', exampleValue: `₹${payslip.netSalary || 0}`, isTotal: true },
         ], notes: 'This is a computer-generated payslip.' },
     };
 
@@ -100,7 +101,7 @@ export const PrintablePayslip = React.forwardRef<HTMLDivElement, PrintablePaysli
                  {safeLayout.footer.summary.map(item => (
                     <div key={item.label} className="flex justify-between font-bold text-lg">
                         <span>{item.label}</span>
-                        <span>{item.label.includes('Net') ? `₹${payslip.netSalary.toLocaleString('en-IN')}` : item.label.includes('Gross') ? `₹${payslip.grossSalary.toLocaleString('en-IN')}` : item.label.includes('Deduction') ? `₹${payslip.deductions.toLocaleString('en-IN')}` : item.exampleValue}</span>
+                        <span>{item.label.includes('Net') ? `₹${(payslip.netSalary || 0).toLocaleString('en-IN')}` : item.label.includes('Gross') ? `₹${(payslip.grossSalary || 0).toLocaleString('en-IN')}` : item.label.includes('Deduction') ? `₹${(payslip.deductions || 0).toLocaleString('en-IN')}` : item.exampleValue}</span>
                     </div>
                 ))}
             </section>

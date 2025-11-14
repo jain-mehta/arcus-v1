@@ -52,11 +52,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import type { Product } from '@/lib/types';
 
 
 interface ProductTableProps {
   products: Product[];
-  stores: TStore[];
+  stores: any[];
   inventoryType?: 'Factory' | 'Store';
   showTypeColumn?: boolean;
   showSimulateSale?: boolean;
@@ -92,16 +93,16 @@ export function ProductTable({
   const filteredProducts = useMemo(() => {
     return products.filter(
       (product) =>
-        (product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase())))
+        ((product as any).name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ((product as any).sku || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ((product as any).category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ((product as any).brand && (product as any).brand.toLowerCase().includes(searchTerm.toLowerCase())))
     );
   }, [products, searchTerm]);
 
   const groupedProducts = useMemo(() => {
-    return filteredProducts.reduce((acc, product) => {
-      const series = product.series || 'Other';
+    return filteredProducts.reduce((acc: any, product: any) => {
+      const series = (product as any).series || 'Other';
       if (!acc[series]) {
         acc[series] = [];
       }
@@ -192,13 +193,13 @@ export function ProductTable({
       <CardContent>
         {Object.keys(groupedProducts).length > 0 ? (
           <Accordion type="multiple" defaultValue={Object.keys(groupedProducts)} className="w-full space-y-4">
-            {Object.entries(groupedProducts).map(([series, products]) => (
+            {Object.entries(groupedProducts as Record<string, any[]>).map(([series, products]: [string, any[]]) => (
               <AccordionItem value={series} key={series} className="border-b-0">
                 <Card>
                 <AccordionTrigger className="p-4 hover:no-underline text-left">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold">{series} Series</h3>
-                    <Badge variant="secondary">{products.length} products</Badge>
+                    <Badge variant="secondary">{(products as any).length} products</Badge>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="p-0">
@@ -343,7 +344,7 @@ export function ProductTable({
 
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -363,21 +364,6 @@ interface Vendor {
   phone?: string;
   address?: string;
   status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
   organization_id?: string;
   created_at?: string;
   updated_at?: string;

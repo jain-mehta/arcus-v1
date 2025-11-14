@@ -25,7 +25,7 @@ type LogFormValues = z.infer<typeof formSchema>;
 
 interface CommunicationLogDialogProps {
   vendors: Vendor[];
-  onLogAdded: (newLog: CommunicationLog) => void;
+  onLogAdded: (newLog: any) => void;
 }
 
 export function CommunicationLogDialog({ vendors, onLogAdded }: CommunicationLogDialogProps) {
@@ -43,7 +43,7 @@ export function CommunicationLogDialog({ vendors, onLogAdded }: CommunicationLog
             try {
                 const result = await addCommunicationLog({
                     vendorId: values.vendorId,
-                    type: values.type as CommunicationLog['type'],
+                    type: values.type as any,
                     summary: values.summary,
                 });
 
@@ -141,7 +141,7 @@ export function CommunicationLogDialog({ vendors, onLogAdded }: CommunicationLog
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

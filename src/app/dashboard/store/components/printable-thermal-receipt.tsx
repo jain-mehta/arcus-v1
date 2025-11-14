@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/mock-data/types';
+import type { Order, Customer, Store } from '@/lib/types/domain';
 
 interface PrintableThermalReceiptProps {
     order: Order;
@@ -13,7 +13,8 @@ interface PrintableThermalReceiptProps {
 export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, PrintableThermalReceiptProps>(
     ({ order, customer, store }, ref) => {
 
-    const subtotal = order.lineItems.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+    const lineItems = order.lineItems || order.items || [];
+    const subtotal = lineItems.reduce((acc, item) => acc + (((item as any).unitPrice || (item as any).unit_price || 0) * ((item as any).quantity || 0)), 0);
     const discountAmount = subtotal * ((order.discountPercentage || 0) / 100);
 
     return (
@@ -33,10 +34,10 @@ export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, Printabl
             </div>
 
             <div className="space-y-1">
-                {order.lineItems.map(item => (
-                    <div key={item.productId} className="grid grid-cols-[1fr_auto]">
-                        <span>{item.name}</span>
-                        <span className="text-right">{item.unitPrice.toFixed(2)}</span>
+                {lineItems.map(item => (
+                    <div key={(item as any).productId || (item as any).product_id} className="grid grid-cols-[1fr_auto]">
+                        <span>{(item as any).name || (item as any).product_name || 'Item'}</span>
+                        <span className="text-right">{((item as any).unitPrice || (item as any).unit_price || 0).toFixed(2)}</span>
                     </div>
                 ))}
             </div>
@@ -53,7 +54,7 @@ export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, Printabl
             <div className="space-y-1 font-bold text-sm">
                 <div className='grid grid-cols-2'>
                     <span>BALANCE DUE</span>
-                    <span className="text-right">₹{order.totalAmount.toFixed(2)}</span>
+                    <span className="text-right">₹{(order.totalAmount || order.total_amount || subtotal).toFixed(2)}</span>
                 </div>
             </div>
 
@@ -61,7 +62,7 @@ export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, Printabl
 
              <div className="space-y-1">
                 <div className='grid grid-cols-2'>
-                    <span>Total number of items sold = {order.lineItems.length}</span>
+                    <span>Total number of items sold = {lineItems.length}</span>
                     <span className="text-right"></span>
                 </div>
                  {discountAmount > 0 && (
@@ -75,7 +76,7 @@ export const PrintableThermalReceipt = React.forwardRef<HTMLDivElement, Printabl
              <div className="border-t border-dashed border-black my-2" />
              
              <div className="text-center text-xs">
-                <p>C4207 #0113 {new Date(order.orderDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}  {new Date(order.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g,'')}</p>
+                <p>C4207 #0113 {new Date(order.orderDate || order.order_date || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}  {new Date(order.orderDate || order.order_date || '').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g,'')}</p>
                 <p>AMOUNT INCLUSIVE OF APPLICABLE TAXES</p>
                 <p>TIN (VAT)# : {store?.gstin || 'N/A'}</p>
                 <p>*Thank You* Please Visit again!</p>

@@ -45,6 +45,20 @@ const jobOpeningSchema = z.object({
 
 export type JobOpeningFormValues = z.infer<typeof jobOpeningSchema>;
 
+interface JobOpening {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  description: string;
+  responsibilities: string[];
+  qualifications: string[];
+  status: 'Open' | 'Closed' | 'Draft';
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+}
+
 interface JobDialogProps {
   mode: 'add' | 'edit';
   job?: JobOpening;
@@ -239,7 +253,7 @@ export function JobDetailDialog({ job, triggerButton }: JobDetailDialogProps) {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

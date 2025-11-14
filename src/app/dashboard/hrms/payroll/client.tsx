@@ -59,6 +59,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createSalaryStructure, runPayroll as runPayrollServerAction, updateSalaryStructure, deleteSalaryStructure } from './actions';
 import { PrintablePayslip } from './printable-payslip';
+import type { Payslip } from '@/lib/types/domain';
+
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  [key: string]: any;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
+interface SalaryStructure {
+  id: string;
+  name: string;
+  description?: string;
+  components?: any[];
+  [key: string]: any;
+}
 
 interface PayrollClientProps {
     initialUsers: User[];
@@ -110,14 +132,15 @@ export function PayrollClient({ initialUsers, initialSalaryStructures, store }: 
     startProcessing(async () => {
         try {
             const result = await runPayrollServerAction(selectedMonth);
-            if (result.success) {
-                setGeneratedPayslips(result.payslips);
+            if (result.success && (result as any).data?.payslips) {
+                const payslips = (result as any).data.payslips;
+                setGeneratedPayslips(payslips);
                 toast({
                     title: "Payroll Processed",
-                    description: `Payroll for ${selectedMonth} has been successfully processed for ${result.payslips.length} employees.`
+                    description: `Payroll for ${selectedMonth} has been successfully processed for ${payslips.length} employees.`
                 });
             } else {
-                throw new Error(result.message);
+                throw new Error((result as any).message || 'Failed to run payroll');
             }
         } catch(error: any) {
             toast({
@@ -195,10 +218,10 @@ export function PayrollClient({ initialUsers, initialSalaryStructures, store }: 
                         <TableBody>
                         {generatedPayslips.length > 0 ? generatedPayslips.map(slip => (
                             <TableRow key={slip.id}>
-                                <TableCell className="font-medium">{slip.staffName}</TableCell>
-                                <TableCell>{slip.grossSalary.toLocaleString('en-IN')}</TableCell>
-                                <TableCell>{slip.deductions.toLocaleString('en-IN')}</TableCell>
-                                <TableCell className="font-semibold">{slip.netSalary.toLocaleString('en-IN')}</TableCell>
+                                <TableCell className="font-medium">{slip.staffName || 'N/A'}</TableCell>
+                                <TableCell>{(slip.grossSalary || slip.gross_salary || 0).toLocaleString('en-IN')}</TableCell>
+                                <TableCell>{(slip.deductions || 0).toLocaleString('en-IN')}</TableCell>
+                                <TableCell className="font-semibold">{(slip.netSalary || slip.net_salary || 0).toLocaleString('en-IN')}</TableCell>
                                 <TableCell><Badge>{slip.status}</Badge></TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <PayslipViewDialog payslip={slip} salaryStructure={salaryStructures.find(s => s.id === 'struct-standard')!} store={store} />
@@ -344,21 +367,21 @@ function SalaryStructureDialog({ mode, structure, onSave, trigger }: { mode: 'ad
                 let result;
                 if (mode === 'add') {
                     result = await createSalaryStructure(values);
-                    if (result.success && result.newStructure) {
-                        onSave(result.newStructure);
+                    if (result.success && (result as any).data) {
+                        onSave((result as any).data);
                         toast({ title: 'Structure Created' });
-                    } else throw new Error();
+                    } else throw new Error((result as any).message || 'Failed to create');
                 } else if (structure) {
                     result = await updateSalaryStructure(structure.id, values);
-                    if (result.success && result.updatedStructure) {
-                        onSave(result.updatedStructure);
+                    if (result.success && (result as any).data) {
+                        onSave((result as any).data);
                         toast({ title: 'Structure Updated' });
-                    } else throw new Error();
+                    } else throw new Error((result as any).message || 'Failed to update');
                 }
                 setOpen(false);
                 if (mode === 'add') form.reset();
-            } catch (error) {
-                toast({ variant: 'destructive', title: "Error", description: "Could not save the salary structure." });
+            } catch (error: any) {
+                toast({ variant: 'destructive', title: "Error", description: error.message || "Could not save the salary structure." });
             }
         });
     };
@@ -432,7 +455,7 @@ function DeleteStructureDialog({ structureId, structureName, onDelete }: { struc
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

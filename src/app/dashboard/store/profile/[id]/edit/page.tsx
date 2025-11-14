@@ -73,8 +73,8 @@ export default function EditStoreProfilePage() {
                     notFound();
                     return;
                 }
-                setStoreData(data.store);
-                setStoreManagers(data.managers);
+                setStoreData(data.store as any);
+                setStoreManagers(data.managers as any);
                 form.reset({
                     name: data.store.name,
                     address: data.store.address,
@@ -178,7 +178,7 @@ export default function EditStoreProfilePage() {
                               <SelectContent>
                                   <SelectItem value="unassigned">None</SelectItem>
                                   {storeManagers.map(manager => (
-                                      <SelectItem key={manager.id} value={manager.id}>{manager.name}</SelectItem>
+                                      <SelectItem key={manager.id} value={manager.id}>{(manager as any).name || (manager as any).full_name}</SelectItem>
                                   ))}
                               </SelectContent>
                           </Select>
@@ -338,7 +338,7 @@ function EditStoreProfileSkeleton() {
 }
 
     
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -407,12 +407,17 @@ interface Employee {
   created_at?: string;
   updated_at?: string;
 }
-
 interface Store {
   id: string;
   name: string;
   location?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  region?: string;
+  managerId?: string;
+  cashAlertThreshold?: number;
   manager_id?: string;
   organization_id?: string;
   created_at?: string;

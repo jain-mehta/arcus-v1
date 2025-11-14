@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { History, Phone, Mail, Users } from "lucide-react";
 import { CommunicationLogDialog } from './communication-log-dialog';
 
-interface LogWithVendorName extends CommunicationLog {
+interface LogWithVendorName extends Record<string, any> {
     vendorName: string;
 }
 
@@ -124,7 +124,7 @@ export function CommunicationLogClient({ initialLogs, vendors }: CommunicationLo
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

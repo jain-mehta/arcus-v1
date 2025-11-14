@@ -25,6 +25,40 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 
+interface Store {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  region?: string;
+  cashInHand?: number;
+  cashAlertThreshold?: number;
+  contact?: string;
+  email?: string;
+  gstin?: string;
+  receiptHeader?: string;
+  receiptFooter?: string;
+  [key: string]: any;
+}
+
+interface Order {
+  id: string;
+  ownerId?: string;
+  orderNumber: string;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  orderDate?: string;
+  totalAmount: number;
+  discountPercentage?: number;
+  lineItems?: any[];
+  [key: string]: any;
+}
+
 const formSchema = z.object({
   invoiceTemplate: z.enum(['A4', 'thermal', 'Packing Slip', 'Delivery Challan']),
   
@@ -92,7 +126,7 @@ function InvoiceFormatEditor() {
       setLoading(true);
       try {
         const fetchedStores = await getStores();
-        setStores(fetchedStores);
+        setStores(fetchedStores as any);
         
         const storeToSelect = storeParam || MASTER_FORMAT_ID;
         setSelectedStoreId(storeToSelect);
@@ -208,14 +242,14 @@ function InvoiceFormatEditor() {
 
     switch (currentTemplate) {
       case 'thermal':
-        return <PrintableThermalReceipt order={mockOrder} customer={mockCustomer} store={previewStoreData} />;
+        return <PrintableThermalReceipt order={mockOrder as any} customer={mockCustomer} store={previewStoreData} />;
       case 'Packing Slip':
-        return <PrintablePackingSlip order={mockOrder} customer={mockCustomer} store={previewStoreData} />;
+        return <PrintablePackingSlip order={mockOrder as any} customer={mockCustomer} store={previewStoreData} />;
       case 'Delivery Challan':
-        return <PrintableDeliveryChallan order={mockOrder} customer={mockCustomer} store={previewStoreData} />;
+        return <PrintableDeliveryChallan order={mockOrder as any} customer={mockCustomer} store={previewStoreData} />;
       case 'A4':
       default:
-        return <PrintableInvoice order={mockOrder} customer={mockCustomer} store={previewStoreData} />;
+        return <PrintableInvoice order={mockOrder as any} customer={mockCustomer} store={previewStoreData} />;
     }
   };
 
@@ -362,7 +396,7 @@ export default function InvoiceFormatEditorPage() {
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

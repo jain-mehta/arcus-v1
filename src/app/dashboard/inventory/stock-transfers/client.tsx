@@ -248,7 +248,7 @@ export function StockTransfersClient({ products: initialProducts, stores }: Stoc
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -286,6 +286,9 @@ interface Product {
   organization_id?: string;
   created_at?: string;
   updated_at?: string;
+  inventoryType?: 'Factory' | 'Store';
+  storeId?: string;
+  [key: string]: any;
 }
 
 interface PurchaseOrder {

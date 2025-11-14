@@ -18,7 +18,8 @@ function PageSkeleton() {
 }
 
 export default async function QrCodeGeneratorPage() {
-    const products = await getProductsForBarcode();
+    const response = await getProductsForBarcode();
+    const products = (response?.success && Array.isArray(response.data)) ? response.data : [];
     
     return (
         <Suspense fallback={<PageSkeleton />}>

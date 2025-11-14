@@ -17,7 +17,8 @@ import { replicatePayslipFormat, savePayrollFormat, getPayrollFormats, deletePay
 import type { PayslipLayout } from './actions';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MOCK_MASTER_STORE } from '@/lib/placeholder-store'; 
+// TODO: Implement store management
+const MOCK_MASTER_STORE: any = { id: 'master', name: 'Master Store' }; 
 import { PrintablePayslip } from '../printable-payslip';
 import { X } from 'lucide-react';
 
@@ -336,4 +337,4 @@ function GeneratedPayslipPreview({ layout }: { layout: PayslipLayout }) {
     );
 }
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
+import { getSupabaseServerClient } from '@/lib/supabase/client';

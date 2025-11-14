@@ -11,7 +11,7 @@ export default async function StockTransfersPage() {
     ]);
 
     return (
-        <StockTransfersClient products={products} stores={stores} />
+        <StockTransfersClient products={products} stores={stores as any} />
     );
 }
 

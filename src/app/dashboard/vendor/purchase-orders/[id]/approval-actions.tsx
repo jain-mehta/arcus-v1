@@ -10,7 +10,7 @@ export function ApprovalActions({ poId }: { poId: string }) {
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
 
-    const handleUpdateStatus = (status: PurchaseOrder['status']) => {
+    const handleUpdateStatus = (status: any) => {
         startTransition(async () => {
             try {
                 await updatePurchaseOrderStatus(poId, status);
@@ -30,18 +30,18 @@ export function ApprovalActions({ poId }: { poId: string }) {
 
     return (
         <div className="flex gap-2">
-            <Button variant="destructive" onClick={() => handleUpdateStatus('Canceled')} disabled={isPending}>
+            <Button variant="destructive" onClick={() => handleUpdateStatus('draft')} disabled={isPending}>
                 {isPending ? <Loader2 className="animate-spin" /> : <X className="mr-2 h-4 w-4" />}
                 Reject
             </Button>
-            <Button variant="default" onClick={() => handleUpdateStatus('Approved')} disabled={isPending}>
+            <Button variant="default" onClick={() => handleUpdateStatus('approved')} disabled={isPending}>
                  {isPending ? <Loader2 className="animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
                 Approve
             </Button>
         </div>
     )
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

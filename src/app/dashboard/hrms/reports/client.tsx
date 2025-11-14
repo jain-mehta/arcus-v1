@@ -35,6 +35,21 @@ const iconMap: { [key: string]: React.ElementType } = {
     TrendingUp,
 };
 
+interface Opportunity {
+    id: string;
+    name: string;
+    value?: number;
+    status?: string;
+    [key: string]: any;
+}
+
+interface SalesSnapshot {
+    id: string;
+    date?: string;
+    period?: string;
+    kpiData?: any[];
+    [key: string]: any;
+}
 
 interface SalesReportData {
     kpiData: {
@@ -66,22 +81,22 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
   const { toast } = useToast();
   const [snapshots, setSnapshots] = useState(initialSnapshots);
   const [isGenerating, startGeneration] = useTransition();
-  const [selectedKpi, setSelectedKpi] = useState<keyof Omit<SalesSnapshot, 'id' | 'period' | 'createdAt'>>('winRate');
+  const [selectedKpi, setSelectedKpi] = useState<string>('winRate');
 
   const handleGenerateSnapshot = () => {
     startGeneration(async () => {
         try {
             const result = await generateMonthlySnapshot();
-            if (result.success && result.newSnapshot) {
+            if (result.success && result.data) {
                 setSnapshots((prev: SalesSnapshot[]) => {
-                    const existing = prev.find((s) => s.id === result.newSnapshot!.id);
+                    const existing = prev.find((s) => s.id === result.data!.id);
                     if (existing) return prev;
 
-                    const newSnapshots: SalesSnapshot[] = [...prev, result.newSnapshot!];
-                    newSnapshots.sort((a, b) => a.period.localeCompare(b.period));
+                    const newSnapshots: SalesSnapshot[] = [...prev, result.data!];
+                    newSnapshots.sort((a, b) => (a as any).period.localeCompare((b as any).period));
                     return newSnapshots;
                 });
-                toast({ title: 'Snapshot Generated', description: `Historical data for ${result.newSnapshot.period} has been saved.`});
+                toast({ title: 'Snapshot Generated', description: `Historical data for ${(result.data as any).period} has been saved.`});
             } else {
                  toast({ variant: 'destructive', title: 'Error', description: result.message });
             }
@@ -235,9 +250,9 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
                             <TableRow key={opp.id}>
                                 <TableCell className="font-medium">{opp.title}</TableCell>
                                 <TableCell>{opp.customerName}</TableCell>
-                                <TableCell><Badge variant="secondary">{opp.stage}</Badge></TableCell>
-                                <TableCell>{opp.closeDate}</TableCell>
-                                <TableCell className="text-right font-semibold">{opp.value.toLocaleString('en-IN')}</TableCell>
+                                <TableCell><Badge variant="secondary">{(opp as any).stage}</Badge></TableCell>
+                                <TableCell>{(opp as any).closeDate}</TableCell>
+                                <TableCell className="text-right font-semibold">{(opp.value || 0).toLocaleString('en-IN')}</TableCell>
                             </TableRow>
                         )) : (
                             <TableRow>
@@ -254,7 +269,7 @@ export function SalesReportsClient({ reportData, snapshots: initialSnapshots }: 
 
     
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

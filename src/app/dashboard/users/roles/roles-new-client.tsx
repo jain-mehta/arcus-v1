@@ -36,7 +36,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface RolesNewClientProps {
-  initialRoles: Role[];
+  initialRoles: any[];
   allUsers: User[];
 }
 
@@ -475,15 +475,15 @@ const MODULE_PERMISSIONS = {
 };
 
 export function RolesNewClient({ initialRoles, allUsers }: RolesNewClientProps) {
-  const [roles, setRoles] = useState<Role[]>(initialRoles);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [roles, setRoles] = useState<any[]>(initialRoles);
+  const [selectedRole, setSelectedRole] = useState<any | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const userCountsByRole = useMemo(() => {
     const counts = new Map<string, number>();
     allUsers.forEach(user => {
-      user.roleIds.forEach(roleId => {
+      ((user as any).roleIds || []).forEach((roleId: string) => {
         counts.set(roleId, (counts.get(roleId) || 0) + 1);
       });
     });
@@ -495,12 +495,12 @@ export function RolesNewClient({ initialRoles, allUsers }: RolesNewClientProps) 
     setIsDialogOpen(true);
   };
 
-  const handleEditRole = (role: Role) => {
+  const handleEditRole = (role: any) => {
     setSelectedRole(role);
     setIsDialogOpen(true);
   };
 
-  const handleRoleSaved = (savedRole: Role) => {
+  const handleRoleSaved = (savedRole: any) => {
     const existing = roles.find((r) => r.id === savedRole.id);
     if (existing) {
       setRoles(roles.map((r) => (r.id === savedRole.id ? savedRole : r)));
@@ -600,10 +600,10 @@ export function RolesNewClient({ initialRoles, allUsers }: RolesNewClientProps) 
 }
 
 interface RoleEditorDialogProps {
-  role: Role | null;
+  role: any | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRoleSaved: (role: Role) => void;
+  onRoleSaved: (role: any) => void;
 }
 
 function RoleEditorDialog({ role, open, onOpenChange, onRoleSaved }: RoleEditorDialogProps) {
@@ -931,7 +931,7 @@ function RoleEditorDialog({ role, open, onOpenChange, onRoleSaved }: RoleEditorD
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

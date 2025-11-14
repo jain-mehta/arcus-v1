@@ -10,6 +10,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { addStaffMember, updateStaffMember } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 
+interface User {
+    id: string;
+    email: string;
+    name?: string;
+    full_name?: string;
+    phone?: string;
+    is_active?: boolean;
+    org_id?: string;
+    role_id?: string;
+    designation?: string;
+    storeId?: string;
+    status?: string;
+    created_at?: string;
+    updated_at?: string;
+    [key: string]: any;
+}
+
+interface Store {
+    id: string;
+    name: string;
+    [key: string]: any;
+}
+
+interface Role {
+    id: string;
+    name?: string;
+    [key: string]: any;
+}
+
 type EmployeesClientProps = {
     initialStaff: User[];
     allStores: Store[];
@@ -43,9 +72,9 @@ export function EmployeesClient(props: EmployeesClientProps) {
             toast({ variant: 'destructive', title: 'Permission denied' });
             return;
         }
-        const res = await addStaffMember({ name, designation, email, phone, storeId: storeId || undefined, reportsTo: reportsTo || undefined });
-        if (res.success && res.newUser) {
-            setStaff(prev => [res.newUser as User, ...prev]);
+        const res = await addStaffMember({ name, designation, email, phone, storeId: storeId || undefined, reportsTo: reportsTo || undefined } as any);
+        if (res.success && (res as any).newUser) {
+            setStaff(prev => [(res as any).newUser as User, ...prev]);
             toast({ title: 'Staff added' });
             setName(''); setEmail(''); setPhone(''); setDesignation('');
         } else {
@@ -56,9 +85,9 @@ export function EmployeesClient(props: EmployeesClientProps) {
     async function handleQuickStatusToggle(user: User) {
         if (!isAdmin) return;
         const newStatus: any = (user as any).status === 'Clocked In' ? 'Clocked Out' : 'Clocked In';
-        const res = await updateStaffMember(user.id, { status: newStatus });
-        if (res.success && res.updatedUser) {
-            setStaff(prev => prev.map(s => s.id === user.id ? (res.updatedUser as User) : s));
+        const res = await updateStaffMember(user.id, { status: newStatus } as any);
+        if (res.success && (res as any).updatedUser) {
+            setStaff(prev => prev.map(s => s.id === user.id ? ((res as any).updatedUser as User) : s));
         }
     }
 
@@ -148,7 +177,7 @@ export function EmployeesClient(props: EmployeesClientProps) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {allRoles.map(r => (
-                                            <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
+                                            <SelectItem key={r.id} value={r.name || ''}>{r.name || 'Unknown'}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -195,7 +224,6 @@ export function EmployeesClient(props: EmployeesClientProps) {
 
 
 
-\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

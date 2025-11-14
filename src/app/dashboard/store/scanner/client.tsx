@@ -80,7 +80,7 @@ const uploadFormSchema = z.object({
 type UploadFormValues = z.infer<typeof uploadFormSchema>;
 
 const getStatus = (
-  doc: VendorDocument
+  doc: any
 ): {
   text: 'Active' | 'Expires Soon' | 'Expired';
   variant: 'default' | 'secondary' | 'destructive';
@@ -103,7 +103,7 @@ const getStatus = (
 
 interface DocumentManagementClientProps {
   vendors: Vendor[];
-  initialDocuments: VendorDocument[];
+  initialDocuments: any[];
 }
 
 export function DocumentManagementClient({
@@ -113,7 +113,7 @@ export function DocumentManagementClient({
   const [selectedVendor, setSelectedVendor] = useState<string>(
     vendors[0]?.id || ''
   );
-  const [documents, setDocuments] = useState<VendorDocument[]>(initialDocuments);
+  const [documents, setDocuments] = useState<any[]>(initialDocuments);
   const [loading, setLoading] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
   const { toast } = useToast();
@@ -128,7 +128,8 @@ export function DocumentManagementClient({
     async function fetchDocuments() {
       setLoading(true);
       try {
-        const docs = await getDocumentsForVendor(selectedVendor);
+        const docsResult = await getDocumentsForVendor(selectedVendor);
+        const docs = docsResult.success ? docsResult.data || [] : [];
         setDocuments(docs);
       } catch (error) {
         toast({
@@ -144,7 +145,7 @@ export function DocumentManagementClient({
     fetchDocuments();
   }, [selectedVendor, toast]);
 
-  const onDocumentUploaded = (newDoc: VendorDocument) => {
+  const onDocumentUploaded = (newDoc: any) => {
     setDocuments((prev) =>
       [...prev, newDoc].sort(
         (a, b) =>
@@ -316,7 +317,7 @@ function UploadDocumentDialog({
   disabled,
 }: {
   vendorId: string;
-  onDocumentUploaded: (doc: VendorDocument) => void;
+  onDocumentUploaded: (doc: any) => void;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -517,7 +518,7 @@ function UploadDocumentDialog({
   );
 }
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

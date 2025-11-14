@@ -86,25 +86,25 @@ export function ProductFormDialog({
 }: ProductFormDialogProps) {
   const [open, setOpen] = useState(false);
   const isEditMode = !!product;
-  const [imagePreview, setImagePreview] = useState<string | null>(product?.imageUrl || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(((product as any)?.image_url || (product as any)?.imageUrl) || null);
 
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: product
       ? {
-          name: product.name,
-          sku: product.sku,
-          brand: product.brand,
-          series: product.series,
-          category: product.category,
-          subcategory: product.subcategory || '',
-          unit: product.unit,
-          price: product.price || 0,
-          imageUrl: product.imageUrl || '',
-          reorderLevel: product.reorderLevel || 0,
-          safetyStock: product.safetyStock || 0,
-          quantity: product.quantity || 0,
+          name: (product as any).name,
+          sku: (product as any).sku,
+          brand: (product as any).brand || 'Bobs',
+          series: (product as any).series || 'Solo',
+          category: (product as any).category,
+          subcategory: ((product as any).subcategory || ''),
+          unit: (product as any).unit,
+          price: ((product as any).price || 0),
+          imageUrl: (((product as any).image_url || (product as any).imageUrl) || ''),
+          reorderLevel: ((product as any).reorderLevel || 0),
+          safetyStock: ((product as any).safetyStock || 0),
+          quantity: ((product as any).quantity || 0),
         }
       : {
           name: '',
@@ -132,9 +132,9 @@ export function ProductFormDialog({
   };
 
   const onSubmit = async (values: ProductFormValues) => {
-    const dataToSave: Partial<Product> & { quantity?: number, imageFile?: { base64: string, type: string } } = {
+    const dataToSave: (Partial<Product> & { quantity?: number, imageFile?: { base64: string, type: string }, inventoryType?: string }) = {
       ...values,
-      inventoryType: product?.inventoryType || inventoryType,
+      inventoryType: ((product as any)?.inventoryType || inventoryType) as any,
     };
     await onSave(dataToSave);
     if (!isEditMode) { // Only reset for new products
@@ -367,7 +367,7 @@ export function ProductFormDialog({
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

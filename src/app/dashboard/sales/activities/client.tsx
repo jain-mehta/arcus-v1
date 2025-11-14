@@ -22,6 +22,17 @@ const getActivityIcon = (type: string) => {
     }
 }
 
+interface CommunicationLog {
+    id: string;
+    type: 'Call' | 'Email' | 'Meeting' | 'Other';
+    date: string;
+    description?: string;
+    outcome?: string;
+    relatedEntityId?: string;
+    createdAt?: string;
+    [key: string]: any;
+}
+
 interface SalesActivitiesClientProps {
     initialActivities: CommunicationLog[];
 }
@@ -157,7 +168,7 @@ export function SalesActivitiesClient({ initialActivities }: SalesActivitiesClie
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

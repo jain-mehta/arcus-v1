@@ -33,6 +33,28 @@ export default async function CustomerDetailPage({ params }: any) {
   );
 }
 
+// Stub implementations
+async function getCustomer(id: string): Promise<any> {
+  return null;
+}
+
+async function getOpportunitiesByCustomerId(customerId: string): Promise<any[]> {
+  return [];
+}
+
+async function getQuotationsByCustomerId(customerId: string): Promise<any[]> {
+  return [];
+}
+
+async function getOrdersByCustomerId(customerId: string): Promise<any[]> {
+  return [];
+}
+
+async function getCommunicationLogsByCustomerId(customerId: string): Promise<any[]> {
+  return [];
+}
+
+
 // Adding a metadata export is good practice and helps Next.js with page optimization.
 export async function generateMetadata({ params }: any): Promise<Metadata> {
   const customer = await getCustomer(params.id);
@@ -40,7 +62,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
     title: customer ? `Customer: ${customer.name}` : 'Customer Details',
   };
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

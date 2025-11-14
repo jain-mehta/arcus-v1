@@ -19,6 +19,21 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+
+interface Quotation {
+    id: string;
+    customerId: string;
+    status: string;
+    [key: string]: any;
+}
+
+interface Customer {
+    id: string;
+    name: string;
+    email?: string;
+    [key: string]: any;
+}
+
 export function QuotationDetailView({ 
     quotation, 
     customer,
@@ -105,7 +120,7 @@ export function QuotationDetailView({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {quotation.lineItems.map((item, index) => (
+                            {(quotation.lineItems || []).map((item: any, index: number) => (
                                 <TableRow key={index}>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell>{item.sku}</TableCell>
@@ -138,7 +153,7 @@ export function QuotationDetailView({
         </>
     )
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

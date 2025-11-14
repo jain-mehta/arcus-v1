@@ -72,10 +72,10 @@ export function ClientWrapper({ vendorData, storeManagers }: { vendorData: Vendo
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
                 {vendorData.name}
                 <Badge
-                variant={vendorData.status === 'Active' ? 'default' : 'destructive'}
+                variant={(vendorData as any).status === 'active' ? 'default' : 'destructive'}
                 className="text-base"
                 >
-                {vendorData.status}
+                {(vendorData as any).status}
                 </Badge>
             </h1>
             <p className="text-muted-foreground">Vendor ID: {vendorData.id}</p>
@@ -89,11 +89,11 @@ export function ClientWrapper({ vendorData, storeManagers }: { vendorData: Vendo
                 <AlertDialogTrigger asChild>
                     <Button
                         variant="outline"
-                        disabled={vendorData.status === 'Inactive' || isDeactivating}
+                        disabled={(vendorData as any).status === 'inactive' || isDeactivating}
                     >
                         {isDeactivating ? (
                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : vendorData.status === 'Active' ? 'Deactivate' : 'Inactive'}
+                        ) : (vendorData as any).status === 'active' ? 'Deactivate' : 'Inactive'}
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -143,7 +143,7 @@ export function ClientWrapper({ vendorData, storeManagers }: { vendorData: Vendo
     </div>
   )
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

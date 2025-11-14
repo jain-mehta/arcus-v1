@@ -277,7 +277,7 @@ const defaultPolicies: {
 };
 
 async function seedPolicies(organizationId: string) {
-  console.log(`\n🌱 Seeding Casbin policies for organization: ${organizationId}\n`);
+  console.log(`🌱 Seeding Casbin policies for organization: ${organizationId}`);
 
   const policiesWithOrgId = {
     ...defaultPolicies,
@@ -287,16 +287,16 @@ async function seedPolicies(organizationId: string) {
   try {
     await loadPoliciesFromJSON(policiesWithOrgId);
     
-    console.log('\n✅ Successfully seeded policies!\n');
+    console.log('✅ Successfully seeded policies!');
     console.log('Roles created:');
     Object.keys(defaultPolicies.roles).forEach((role, idx) => {
       const permCount = (defaultPolicies.roles as any)[role].permissions.length;
       console.log(`  ${idx + 1}. ${role.padEnd(20)} (${permCount} permissions)`);
     });
     
-    console.log(`\nTotal: ${Object.keys(defaultPolicies.roles).length} roles\n`);
+    console.log(`Total: ${Object.keys(defaultPolicies.roles).length} roles`);
   } catch (error) {
-    console.error('\n❌ Failed to seed policies:', error);
+    console.error('❌ Failed to seed policies:', error);
     process.exit(1);
   }
 }

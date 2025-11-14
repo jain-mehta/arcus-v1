@@ -6,9 +6,10 @@ import { OrdersClient } from './client';
 export const dynamic = 'force-dynamic';
 
 export default async function SalesOrdersPage() {
-    const { orders } = await getOrders();
-    const { customers } = await getSalesCustomers();
+    const [ordersResp, customersResp] = await Promise.all([getOrders(), getSalesCustomers()]);
+    const orders = (ordersResp?.success && Array.isArray(ordersResp.data)) ? ordersResp.data : [];
+    const customers = (customersResp?.success && Array.isArray(customersResp.data)) ? customersResp.data : [];
     
-    return <OrdersClient initialOrders={orders} customerList={customers} />
+    return <OrdersClient initialOrders={orders as any} customerList={customers as any} />
 }
 

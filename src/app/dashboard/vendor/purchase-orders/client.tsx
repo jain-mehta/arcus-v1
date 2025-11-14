@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select';
 import { PlusCircle, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { PurchaseOrder, Vendor } from '@/lib/mock-data/types';
+import type { PurchaseOrder, Vendor } from '@/lib/types/domain';
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -65,9 +65,9 @@ export function PurchaseOrderClient({ initialPurchaseOrders, vendors }: Purchase
   const filteredPurchaseOrders = useMemo(() => {
     return purchaseOrders.filter(
       (po) =>
-        (po.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          getVendorName(po.vendorId).toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (vendorFilter === 'all' || po.vendorId === vendorFilter) &&
+        ((po.poNumber || po.order_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          getVendorName(po.vendorId || po.vendor_id || '').toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (vendorFilter === 'all' || (po.vendorId || po.vendor_id) === vendorFilter) &&
         (statusFilter === 'all' || po.status === statusFilter)
     );
   }, [purchaseOrders, searchTerm, vendorFilter, statusFilter]);
@@ -147,12 +147,12 @@ export function PurchaseOrderClient({ initialPurchaseOrders, vendors }: Purchase
                                 <TableRow key={po.id}>
                                 <TableCell className="font-medium">
                                     <Link href={`/dashboard/vendor/purchase-orders/${po.id}`} className="hover:underline">
-                                        {po.poNumber}
+                                        {po.poNumber || po.order_number}
                                     </Link>
                                 </TableCell>
-                                <TableCell>{getVendorName(po.vendorId)}</TableCell>
-                                <TableCell>{new Date(po.orderDate).toLocaleDateString()}</TableCell>
-                                <TableCell>{po.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                <TableCell>{getVendorName(po.vendorId || po.vendor_id || '')}</TableCell>
+                                <TableCell>{new Date(po.orderDate || po.order_date || '').toLocaleDateString()}</TableCell>
+                                <TableCell>{(po.totalAmount || po.total_amount || 0).toLocaleString('en-IN')}</TableCell>
                                 <TableCell>
                                     <Badge variant={getStatusBadgeVariant(po.status)}>{po.status}</Badge>
                                 </TableCell>

@@ -27,7 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Download, Printer, View } from 'lucide-react';
 import Link from 'next/link';
-import type { Order, Customer, Store } from '@/lib/mock-data/types';
+import type { Order, Customer, Store } from '@/lib/types/domain';
 import { PrintableInvoice } from '../../components/printable-invoice';
 import { PrintableThermalReceipt } from '../../components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '../../components/printable-packing-slip';
@@ -131,10 +131,10 @@ export function RecentSalesClient({ recentSales, store }: RecentSalesClientProps
                     <TableBody>
                     {recentSales.length > 0 ? recentSales.map(order => (
                         <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.orderNumber}</TableCell>
+                            <TableCell className="font-medium">{order.orderNumber || order.order_number}</TableCell>
                             <TableCell>{order.customerDetails?.name || 'Walk-in'}</TableCell>
-                            <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                            <TableCell className="text-right">₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                            <TableCell>{new Date(order.orderDate || order.order_date || '').toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right">₹{(order.totalAmount || order.total_amount || 0).toLocaleString('en-IN')}</TableCell>
                             <TableCell>
                                 <div className="flex justify-center gap-2">
                                      <Tooltip>

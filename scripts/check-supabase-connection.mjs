@@ -122,13 +122,13 @@ async function checkRestPing() {
 }
 
 async function runChecks() {
-  console.log('\nSupabase Connection Check\n-------------------------');
-  console.log(`SUPABASE_URL: ${SUPABASE_URL || '(not set)'}\n`);
+  console.log('Supabase Connection Check-------------------------');
+  console.log(`SUPABASE_URL: ${SUPABASE_URL || '(not set)'}`);
 
   const authResult = await checkAuthAdmin();
   const restResult = await checkRestPing();
 
-  console.log('\nSummary:\n');
+  console.log('Summary:');
   if (authResult.ok) {
     console.log('✔ Auth admin check: OK');
   } else {
@@ -142,11 +142,11 @@ async function runChecks() {
   }
 
   if (authResult.ok && restResult.ok) {
-    console.log('\n🎉 SUPABASE CONNECTION OK - both auth and REST endpoints reachable.');
+    console.log('🎉 SUPABASE CONNECTION OK - both auth and REST endpoints reachable.');
     process.exit(0);
   }
 
-  console.log('\nNext steps / Troubleshooting:');
+  console.log('Next steps / Troubleshooting:');
   console.log('- Ensure SUPABASE_URL is correct (looks like https://<project>.supabase.co)');
   console.log('- Ensure SUPABASE_SERVICE_ROLE_KEY is copied correctly from Supabase Dashboard (Project -> Settings -> API -> Service role key)');
   console.log('- If you are behind a corporate proxy, ensure node can reach external URLs');

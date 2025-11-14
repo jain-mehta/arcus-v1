@@ -47,7 +47,7 @@ export interface NavItem {
 
 interface DashboardClientLayoutProps {
   children: React.ReactNode;
-  navConfig: NavConfig;
+  navConfig: any;
   userPermissions: PermissionMap | null;
   loading: boolean;
   currentUser: {
@@ -95,7 +95,13 @@ export function DashboardClientLayout({
   }
 
   // Filter main nav items based on user permissions using new PermissionMap structure
-  const accessibleNavItems = filterNavItems(navConfig.main, userPermissions);
+  const filteredAccessibleNavItems = filterNavItems(navConfig.main, userPermissions);
+  const accessibleNavItems = filteredAccessibleNavItems.map((it: any) => ({
+    href: it.href || '#',
+    label: it.label,
+    icon: (it.icon && (it.icon as keyof typeof Icons)) || undefined,
+    permission: it.permission,
+  }));
   
   // Log filtered items on client side
   if (typeof window !== 'undefined') {
@@ -118,8 +124,8 @@ export function DashboardClientLayout({
 
   // Map the sub-nav items to the local NavItem type, coercing the icon string to a valid Icons key
   // when possible. This ensures the prop types match and avoids widening string types.
-  const sidebarNavItems: NavItem[] = accessibleSubNavItems.map((it) => ({
-    href: it.href,
+  const sidebarNavItems: any[] = accessibleSubNavItems.map((it: any) => ({
+    href: it.href || '#',
     label: it.label,
     // Coerce to 'keyof typeof Icons'. If the icon is not present in Icons, leave undefined.
     icon: (it.icon && (it.icon as keyof typeof Icons)) || undefined,
@@ -194,7 +200,7 @@ export function DashboardClientLayout({
   );
 }
 
-function UniversalSidebar({ navItems }: { navItems: NavItem[] }) {
+function UniversalSidebar({ navItems }: { navItems: any[] }) {
     const { state: sidebarState, toggleSidebar } = useSidebar();
     const isCollapsed = sidebarState === 'collapsed';
     const pathname = usePathname();
@@ -226,7 +232,7 @@ function UniversalSidebar({ navItems }: { navItems: NavItem[] }) {
             <SidebarContent className="flex-1">
                 <SidebarMenu className="grid items-start px-2 py-4 text-sm font-medium lg:px-4">
                     {navItems.map((item) => {
-                        const IconComponent = item.icon ? Icons[item.icon] : null;
+                        const IconComponent = item.icon ? Icons[item.icon as keyof typeof Icons] : null;
                         return IconComponent && (
                             <SidebarMenuItem key={item.href + item.label}>
                                 <Link href={item.href}>
@@ -309,7 +315,6 @@ function UserNav({ user }: { user: DashboardClientLayoutProps['currentUser'] }) 
 }
 
 
-\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

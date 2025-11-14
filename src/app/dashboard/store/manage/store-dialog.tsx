@@ -27,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Edit, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Store, User } from '@/lib/mock-data/types';
+import type { Store, User } from '@/lib/types/domain';
 import { addStore, updateStore } from './actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';

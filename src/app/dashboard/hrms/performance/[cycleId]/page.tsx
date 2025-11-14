@@ -8,6 +8,34 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+// Type definitions
+interface PerformanceCycle {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+}
+
+interface EmployeeReview {
+    id: string;
+    employeeId: string;
+    employeeName: string;
+    status: string;
+    [key: string]: any;
+}
+
+// Stub implementations for missing functions
+async function getPerformanceCycle(cycleId: string): Promise<PerformanceCycle | null> {
+    // TODO: Fetch actual performance cycle from database
+    return null;
+}
+
+async function getEmployeeReviewsForCycle(cycleId: string): Promise<EmployeeReview[]> {
+    // TODO: Fetch actual employee reviews from database
+    return [];
+}
+
 export default async function PerformanceCycleDetailPage({ params }: any) {
     const cycleId = params.cycleId;
     const [cycle, employeeReviews] = await Promise.all([
@@ -71,7 +99,7 @@ export default async function PerformanceCycleDetailPage({ params }: any) {
         </div>
     );
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

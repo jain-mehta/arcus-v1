@@ -14,6 +14,7 @@ import { Truck, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { addStock } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Product } from '@/lib/types';
 
 const grnFormSchema = z.object({
     productId: z.string().min(1, 'Please select a product.'),
@@ -48,7 +49,7 @@ export function GoodsInwardClient({ products: initialProducts }: GoodsInwardClie
             if (result.success) {
                 toast({ title: 'Success', description: 'Stock added successfully.' });
                 // Optimistically update the product quantity in the local state
-                setProducts(prev => prev.map(p => p.id === values.productId ? { ...p, quantity: p.quantity + values.quantity } : p));
+                setProducts(prev => prev.map(p => p.id === values.productId ? { ...p, stock_quantity: (p.stock_quantity || 0) + values.quantity, quantity: (p.quantity || 0) + values.quantity } : p));
                 form.reset();
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: (result as any).message || 'Failed to add stock.' });
@@ -90,7 +91,7 @@ export function GoodsInwardClient({ products: initialProducts }: GoodsInwardClie
                                                 <SelectContent>
                                                     {products.map(p => (
                                                         <SelectItem key={p.id} value={p.id}>
-                                                            {p.name} (SKU: {p.sku}) - Stock: {p.quantity}
+                                                            {p.name} (SKU: {p.sku}) - Stock: {p.stock_quantity || p.quantity || 0}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -125,7 +126,7 @@ export function GoodsInwardClient({ products: initialProducts }: GoodsInwardClie
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -145,21 +146,6 @@ interface Vendor {
   phone?: string;
   address?: string;
   status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
   organization_id?: string;
   created_at?: string;
   updated_at?: string;

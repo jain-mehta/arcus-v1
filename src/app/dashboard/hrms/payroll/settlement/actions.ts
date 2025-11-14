@@ -6,15 +6,19 @@ export async function getPageData(): Promise<{
     staffList: User[];
     stores: Store[];
 }> {
-    const [staffList, stores] = await Promise.all([
+    const [staffResp, storesResp] = await Promise.all([
         getStaffFromHrmsActions(),
         getAllStores(),
     ]);
+    
+    const staffList = (staffResp?.success && Array.isArray(staffResp.data)) ? staffResp.data : [];
+    const stores = (storesResp?.success && Array.isArray(storesResp.data)) ? storesResp.data : [];
+    
     return { staffList, stores };
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

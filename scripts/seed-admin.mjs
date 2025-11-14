@@ -36,7 +36,7 @@ const ADMIN_PERMISSIONS = {
 };
 
 async function seedAdmin() {
-  console.log('🌱 Seeding admin user via Supabase Auth...\n');
+  console.log('🌱 Seeding admin user via Supabase Auth...');
 
   try {
     // Validate environment variables
@@ -88,7 +88,7 @@ async function seedAdmin() {
       console.log(`   🔐 Password: ${ADMIN_PASSWORD}`);
     }
 
-    console.log('\n2️⃣  Creating admin profile in application database...');
+    console.log('2️⃣  Creating admin profile in application database...');
     
     // Get admin user ID from Supabase Auth
     const { data: { users: allUsers }, error: listError } = await supabase.auth.admin.listUsers();
@@ -156,21 +156,21 @@ async function seedAdmin() {
     console.log(`   ✅ Admin credentials and profile synced`);
 
     // Print summary
-    console.log('\n' + '='.repeat(75));
-    console.log('✅ Admin Seeding Completed Successfully!\n');
+    console.log('' + '='.repeat(75));
+    console.log('✅ Admin Seeding Completed Successfully!');
     
     console.log('📋 ARCHITECTURE:');
     console.log('📋 ARCHITECTURE:');
     console.log('   Authentication Layer: Supabase Auth (auth.users table)');
     console.log('   User Profile Layer: PostgreSQL (public.users table)');
-    console.log('   Sync: Automatic on login via /api/auth/login\n');
+    console.log('   Sync: Automatic on login via /api/auth/login');
 
     console.log('📋 ADMIN ACCOUNT DETAILS:');;
     console.log(`   Email:        ${ADMIN_EMAIL}`);
     console.log(`   Password:     ${ADMIN_PASSWORD}`);
     console.log(`   Full Name:    System Administrator`);
     console.log(`   Role:         System Administrator`);
-    console.log(`   Status:       Active & Email Verified\n`);
+    console.log(`   Status:       Active & Email Verified`);
     
     console.log('🔐 GRANTED PERMISSIONS (All modules, all actions):');
     Object.entries(ADMIN_PERMISSIONS).forEach(([module, perms]) => {
@@ -178,7 +178,7 @@ async function seedAdmin() {
       console.log(`   ✅ ${module.padEnd(15)} → ${actions.join(', ')}`);
     });
 
-    console.log('\n🎯 FUNCTIONALITY ACCESS:');
+    console.log('🎯 FUNCTIONALITY ACCESS:');
     console.log('   ✅ Dashboard View & Management');
     console.log('   ✅ User Management (Create, Edit, Delete)');
     console.log('   ✅ Role Management (Create, Edit, Delete)');
@@ -192,11 +192,11 @@ async function seedAdmin() {
     console.log('   ✅ Audit Logs & Monitoring');
     console.log('   ✅ Admin Functions');
 
-    console.log('\n🚀 NEXT STEPS:');
+    console.log('🚀 NEXT STEPS:');
     console.log('   1. Start dev server: npm run dev');
     console.log('   2. Go to: http://localhost:3000/login');
     console.log(`   3. Login with: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
-    console.log('   4. Access full dashboard with admin privileges\n');
+    console.log('   4. Access full dashboard with admin privileges');
     
     console.log('⚠️  IMPORTANT SECURITY NOTES:');
     console.log('   • Change this password in production immediately');
@@ -207,8 +207,8 @@ async function seedAdmin() {
 
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Seed Failed:', error.message || error);
-    console.error('\nTroubleshooting:');
+    console.error('❌ Seed Failed:', error.message || error);
+    console.error('Troubleshooting:');
     console.error('1. Verify SUPABASE_URL is set correctly');
     console.error('2. Verify SUPABASE_SERVICE_ROLE_KEY is set correctly');
     console.error('3. Check Supabase connection and credentials');

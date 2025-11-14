@@ -34,6 +34,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 
+interface Opportunity {
+    id: string;
+    title: string;
+    value: number;
+    stage: string;
+    customerId: string;
+    [key: string]: any;
+}
+
+interface Customer {
+    id: string;
+    name: string;
+    email: string;
+    [key: string]: any;
+}
+
 
 const pipelineStages = [
     { id: 'Qualification', title: 'Qualification' },
@@ -71,9 +87,10 @@ export default function OpportunitiesPage() {
     const refetchData = async () => {
         setLoading(true);
         try {
-            const { opportunities: opps, customers: custs } = await getKanbanData();
-            setAllOpportunities(opps);
-            setSalesCustomers(custs);
+            const response = await getKanbanData();
+            const data = (response?.success && response.data) ? response.data : { opportunities: [], customers: [] };
+            setAllOpportunities(data.opportunities || []);
+            setSalesCustomers(data.customers || []);
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to load pipeline data.'});
         } finally {
@@ -145,7 +162,8 @@ export default function OpportunitiesPage() {
                 });
                 setAllOpportunities(finalOpps);
                 
-                await updateOpportunityPriority(updates);
+                // Update priorities for all items in the column
+                await Promise.all(updates.map(u => updateOpportunityPriority(u.id, String(u.priority))));
             } else {
                 // Moving to a different column
                 const startColUpdates = startColOpps.map((opp, index) => ({ id: opp.id, priority: index }));
@@ -165,9 +183,10 @@ export default function OpportunitiesPage() {
                 });
                 setAllOpportunities(finalOpps);
 
+                const allUpdates = [...startColUpdates, ...endColUpdates];
                 await Promise.all([
                     updateOpportunity(draggableId, { stage: endColId as any }),
-                    updateOpportunityPriority([...startColUpdates, ...endColUpdates])
+                    ...allUpdates.map(u => updateOpportunityPriority(u.id, String(u.priority)))
                 ]);
             }
             toast({ title: 'Opportunity Updated' });
@@ -593,7 +612,7 @@ function CommunicationLogDialog({ customerId, associatedWith }: { customerId: st
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -25,7 +25,7 @@ export async function generateQuotation(input: any): Promise<ActionResponse<Gene
     } catch (error: any) {
         return createErrorResponse(`Failed to generate quotation: ${error.message}`);
     }
-}\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+}import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

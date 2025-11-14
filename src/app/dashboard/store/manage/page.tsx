@@ -5,6 +5,8 @@ import { getStores, getStoreManagers } from "./actions";
 import { StoreList } from "./store-list";
 import { StoreDialog } from "./store-dialog";
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/app/dashboard/sales/actions";
+import { getUserPermissions } from "@/lib/auth";
 
 
 export default async function ManageStoresPage() {
@@ -29,16 +31,16 @@ export default async function ManageStoresPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Manage Stores</h1>
                     <p className="text-muted-foreground">Add, edit, and manage all your retail store locations.</p>
                 </div>
-                <StoreDialog mode="add" storeManagers={storeManagers} />
+                <StoreDialog mode="add" storeManagers={storeManagers as any} />
             </div>
             
-            <StoreList initialStores={stores} storeManagers={storeManagers} />
+            <StoreList initialStores={stores as any} storeManagers={storeManagers as any} />
             
         </div>
     )
 }
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

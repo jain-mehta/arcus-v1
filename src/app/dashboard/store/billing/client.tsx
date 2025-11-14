@@ -111,7 +111,7 @@ function ProductSearch({ products, onProductSelect }: { products: Product[], onP
                         onSelect={(currentValue) => {
                             handleSelect(currentValue);
                         }}
-                        disabled={product.quantity === 0}
+                        disabled={(product.quantity || product.stock_quantity || 0) === 0}
                     >
                     <Check
                         className={cn(
@@ -186,7 +186,8 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
 
     if (existingItemIndex > -1) {
       const currentItem = fields[existingItemIndex];
-      if (currentItem.quantity < product.quantity) {
+      const availableQuantity = product.quantity || product.stock_quantity || 0;
+      if (currentItem.quantity < availableQuantity) {
         update(existingItemIndex, {
           ...currentItem,
           quantity: currentItem.quantity + 1,
@@ -199,13 +200,14 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
         });
       }
     } else {
-      if (product.quantity > 0) {
+      const availableQuantity = product.quantity || product.stock_quantity || 0;
+      if (availableQuantity > 0) {
         append({
           productId: product.id,
           name: product.name,
-          sku: product.sku,
+          sku: product.sku || '',
           quantity: 1,
-          unitPrice: product.price,
+          unitPrice: product.price || 0,
         });
       } else {
         toast({
@@ -219,9 +221,10 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
 
   const handleQuantityChange = (index: number, newQuantity: number) => {
     const product = products.find(p => p.id === fields[index].productId);
-    if (product && newQuantity > product.quantity) {
+    const availableQuantity = product ? (product.quantity || product.stock_quantity || 0) : 0;
+    if (product && newQuantity > availableQuantity) {
         toast({ variant: 'destructive', title: 'Stock limit reached' });
-        update(index, { ...fields[index], quantity: product.quantity });
+        update(index, { ...fields[index], quantity: availableQuantity });
     } else if (newQuantity < 1) {
         remove(index);
     } else {
@@ -253,12 +256,12 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
 
         const result = await createOrder(orderPayload);
 
-        if (result.success && result.orderId) {
+        if (result.success && result.data?.id) {
             toast({
                 title: 'Bill Finalized',
-                description: `Order ${result.orderId} created. Redirecting to print preview...`,
+                description: `Order ${result.data.id} created. Redirecting to print preview...`,
             });
-            router.push(`/dashboard/sales/orders/${result.orderId}`);
+            router.push(`/dashboard/sales/orders/${result.data.id}`);
         } else {
             throw new Error(result.message || "Failed to create order.");
         }
@@ -427,7 +430,7 @@ export function BillingClient({ products, customers }: { products: Product[]; cu
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -455,13 +458,26 @@ interface Vendor {
 interface Product {
   id: string;
   name: string;
-  sku: string;
+  sku?: string;
   description?: string;
   category?: string;
   price?: number;
   cost?: number;
   unit?: string;
   image_url?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  quantity?: number;
+  stock_quantity?: number;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
   organization_id?: string;
   created_at?: string;
   updated_at?: string;

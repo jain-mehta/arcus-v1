@@ -7,10 +7,12 @@ import { CreateQuotationClient } from './client';
 export const dynamic = 'force-dynamic';
 
 export default async function CreateQuotationPage() {
-    const [products, { customers }] = await Promise.all([
+    const [products, customersResult] = await Promise.all([
         getProducts(),
         getSalesCustomers()
     ]);
+
+    const customers = customersResult.success ? customersResult.data || [] : [];
 
     return <CreateQuotationClient products={products} customers={customers} />;
 }

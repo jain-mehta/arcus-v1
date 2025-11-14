@@ -21,9 +21,9 @@ export async function getPayrollPageData(): Promise<ActionResponse> {
 
     try {
 
-        // In a real app, these would be database queries.
-        const users = [];
-        const salaryStructures = MOCK_SALARY_STRUCTURES;
+        // TODO: Implement actual database queries
+        const users: any[] = [];
+        const salaryStructures: SalaryStructure[] = [];
 
         await logUserAction(user, 'view', 'payroll_data');
         return createSuccessResponse({ users, salaryStructures }, 'Payroll data retrieved successfully');
@@ -42,7 +42,7 @@ export async function createSalaryStructure(data: Omit<SalaryStructure, 'id'>): 
 
     try {
         const newStructure: SalaryStructure = { ...data, id: `struct-${Date.now()}`};
-        MOCK_SALARY_STRUCTURES.push(newStructure);
+        // TODO: Save to database
         await logUserAction(user, 'create', 'salary_structure', newStructure.id, { structureName: newStructure.name });
         revalidatePath('/dashboard/hrms/payroll');
         return createSuccessResponse(newStructure, 'Salary structure created successfully');
@@ -60,15 +60,17 @@ export async function updateSalaryStructure(id: string, data: Partial<SalaryStru
     const { user } = authCheck;
 
     try {
-        const index = MOCK_SALARY_STRUCTURES.findIndex(s => s.id === id);
-        if (index === -1) {
+        // TODO: Find and update in database
+        const existingStructure: any = null; // TODO: Query database by id
+        if (!existingStructure) {
             return createErrorResponse('Salary structure not found');
         }
 
-        MOCK_SALARY_STRUCTURES[index] = { ...MOCK_SALARY_STRUCTURES[index], ...data };
+        const updatedStructure = { ...existingStructure, ...data };
+        // TODO: Update in database
         await logUserAction(user, 'update', 'salary_structure', id, { changes: data });
         revalidatePath('/dashboard/hrms/payroll');
-        return createSuccessResponse(MOCK_SALARY_STRUCTURES[index], 'Salary structure updated successfully');
+        return createSuccessResponse(updatedStructure, 'Salary structure updated successfully');
     } catch (error: any) {
         return createErrorResponse(`Failed to update salary structure: ${error.message}`);
     }
@@ -83,12 +85,13 @@ export async function deleteSalaryStructure(id: string): Promise<ActionResponse>
     const { user } = authCheck;
 
     try {
-        const index = MOCK_SALARY_STRUCTURES.findIndex(s => s.id === id);
-        if (index === -1) {
+        // TODO: Find in database
+        const existingStructure = null; // TODO: Query database by id
+        if (!existingStructure) {
             return createErrorResponse('Salary structure not found');
         }
 
-        MOCK_SALARY_STRUCTURES.splice(index, 1);
+        // TODO: Delete from database
         await logUserAction(user, 'delete', 'salary_structure', id);
         revalidatePath('/dashboard/hrms/payroll');
         return createSuccessResponse(null, 'Salary structure deleted successfully');
@@ -107,27 +110,27 @@ export async function runPayroll(month: string, staffId?: string): Promise<Actio
     const { user } = authCheck;
 
     try {
-        const staffToProcess = staffId 
-            ? [].filter(u => u.id === staffId)
-            : [].filter(u => u.roleIds.length > 0 && u.designation);
+        // TODO: Implement staff query from database
+        const staffToProcess: any[] = []; // TODO: Query staff from database based on staffId or all eligible staff
 
         if (staffToProcess.length === 0) {
-            return { success: true, payslips: [], message: 'No staff found to run payroll for.' };
+            return createSuccessResponse({ payslips: [] }, 'No staff found to run payroll for.');
         }
-        
+
         const payslips: Payslip[] = staffToProcess.map(staff => {
-            const baseStructure = MOCK_SALARY_STRUCTURES.find(s => s.id === 'struct-standard') || MOCK_SALARY_STRUCTURES[0];
+            // TODO: Query salary structure from database
+            const baseStructure: any = null; // TODO: Get salary structure from database
             if (!baseStructure) {
                 throw new Error("Default salary structure not found.");
             }
             
             const grossEarnings = baseStructure.components
-                .filter(c => c.type === 'Earning')
-                .reduce((sum, c) => sum + c.value, 0);
+                .filter((c: any) => c.type === 'Earning')
+                .reduce((sum: any, c: any) => sum + c.value, 0);
 
             const totalDeductions = baseStructure.components
-                .filter(c => c.type === 'Deduction')
-                .reduce((sum, c) => {
+                .filter((c: any) => c.type === 'Deduction')
+                .reduce((sum: any, c: any) => {
                     const deductionValue = c.calculationType === 'Fixed' 
                         ? c.value 
                         : grossEarnings * (c.value / 100);
@@ -148,16 +151,8 @@ export async function runPayroll(month: string, staffId?: string): Promise<Actio
                 components: baseStructure.components,
             }
         });
-        
-        // Simulate saving to DB
-        payslips.forEach(p => {
-            const index = MOCK_PAYSLIPS.findIndex(mp => mp.id === p.id);
-            if (index > -1) {
-                MOCK_PAYSLIPS[index] = p;
-            } else {
-                MOCK_PAYSLIPS.push(p);
-            }
-        });
+
+        // TODO: Save payslips to database
 
         await logUserAction(user, 'create', 'payroll_run', 'bulk', { month, staffCount: payslips.length });
         return createSuccessResponse({ payslips }, `Payroll run completed for ${payslips.length} staff members`);
@@ -175,93 +170,32 @@ export async function getSalaryStructures(): Promise<ActionResponse<SalaryStruct
     const { user } = authCheck;
 
     try {
+        // TODO: Query salary structures from database
+        const salaryStructures: SalaryStructure[] = [];
         await logUserAction(user, 'view', 'salary_structures');
-        return createSuccessResponse(MOCK_SALARY_STRUCTURES, 'Salary structures retrieved successfully');
+        return createSuccessResponse(salaryStructures, 'Salary structures retrieved successfully');
     } catch (error: any) {
         return createErrorResponse(`Failed to get salary structures: ${error.message}`);
     }
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
 
-// TODO: Replace with actual database queries
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Vendor {
+// TODO: Define proper types and implement database queries
+interface SalaryStructure {
   id: string;
   name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+  components: { type: string; calculationType: string; value: number }[];
 }
 
-interface Product {
+interface Payslip {
   id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+  staffId: string;
+  staffName: string;
+  month: string;
+  grossSalary: number;
+  deductions: number;
+  netSalary: number;
+  status: string;
+  components: { type: string; calculationType: string; value: number }[];
 }

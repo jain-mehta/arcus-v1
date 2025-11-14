@@ -29,6 +29,34 @@ import { useToast } from '@/hooks/use-toast';
 import { updateStaffMember } from '../../../hrms/actions';
 import { getAllStores, getAllUsers, getAllRoles } from '../../../users/actions';
 
+interface User {
+    id: string;
+    email: string;
+    name?: string;
+    full_name?: string;
+    phone?: string;
+    is_active?: boolean;
+    org_id?: string;
+    role_id?: string;
+    designation?: string;
+    storeId?: string | null;
+    reportsTo?: string | null;
+    roleIds?: string[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+interface Store {
+    id: string;
+    name: string;
+    [key: string]: any;
+}
+
+interface Role {
+    id: string;
+    name?: string;
+    [key: string]: any;
+}
 
 const editStaffSchema = z.object({
   name: z.string().min(2, "Name is required."),
@@ -83,13 +111,13 @@ export default function EditStaffProfilePage() {
                 setAllRoles(roles);
 
                 form.reset({
-                    name: userToEdit.name,
-                    email: userToEdit.email,
-                    phone: userToEdit.phone || '',
-                    designation: userToEdit.designation || '',
-                    storeId: userToEdit.storeId || 'unassigned',
-                    reportsTo: userToEdit.reportsTo || 'none',
-                    roleIds: userToEdit.roleIds || [],
+                    name: (userToEdit as any).name,
+                    email: (userToEdit as any).email,
+                    phone: (userToEdit as any).phone || '',
+                    designation: (userToEdit as any).designation || '',
+                    storeId: (userToEdit as any).storeId || 'unassigned',
+                    reportsTo: (userToEdit as any).reportsTo || 'none',
+                    roleIds: (userToEdit as any).roleIds || [],
                 });
             } catch (error) {
                 console.error("Failed to fetch page data:", error);
@@ -112,7 +140,7 @@ export default function EditStaffProfilePage() {
               storeId: data.storeId === 'unassigned' ? undefined : data.storeId,
               reportsTo: data.reportsTo === 'none' ? undefined : data.reportsTo,
               roleIds: data.roleIds,
-            });
+            } as any);
             
             if (result.success) {
                 toast({
@@ -215,7 +243,7 @@ export default function EditStaffProfilePage() {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select a designation"/></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        {allRoles.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                                        {allRoles.map(d => <SelectItem key={d.id} value={d.name || ''}>{d.name || 'Unknown'}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             <FormMessage />
@@ -324,7 +352,6 @@ function EditStaffProfileSkeleton() {
 }
 
 
-\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -56,16 +56,16 @@ async function makeRequest(method, path, body = null) {
 }
 
 async function runTests() {
-  console.log('🧪 Testing Full Login Flow\n');
+  console.log('🧪 Testing Full Login Flow');
   
   for (const testCase of testCases) {
-    console.log(`\n📝 Test: ${testCase.name}`);
+    console.log(`📝 Test: ${testCase.name}`);
     console.log(`   Email: ${testCase.email}`);
     console.log(`   Password: ${testCase.password}`);
     
     try {
       // Step 1: Login
-      console.log('\n   Step 1: POST /api/auth/login');
+      console.log('   Step 1: POST /api/auth/login');
       const loginRes = await makeRequest('POST', '/api/auth/login', {
         email: testCase.email,
         password: testCase.password,
@@ -114,7 +114,7 @@ async function runTests() {
       console.log(`   ✓ Token length: ${cookieValue?.length || 0} chars`);
 
       // Step 2: Access dashboard (simulating authenticated request)
-      console.log(`\n   Step 2: GET /dashboard`);
+      console.log(`   Step 2: GET /dashboard`);
       const dashboardRes = await makeRequest('GET', '/dashboard');
       
       console.log(`   ✓ Status: ${dashboardRes.status}`);
@@ -139,7 +139,7 @@ async function runTests() {
     }
   }
   
-  console.log('\n✅ Tests completed\n');
+  console.log('✅ Tests completed');
 }
 
 // Run tests

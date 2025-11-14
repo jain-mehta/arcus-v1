@@ -38,6 +38,22 @@ import { PrintableDebitNote } from '../components/printable-debit-note';
 import { getSalesCustomers } from '../../sales/actions';
 import { getStores } from '../manage/actions';
 
+interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  [key: string]: any;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  address?: string;
+  [key: string]: any;
+}
+
 const debitNoteSchema = z.object({
     customerId: z.string().min(1, "Please select a customer."),
     originalOrderNumber: z.string().min(1, "Original order number is required."),
@@ -67,12 +83,12 @@ export default function DebitNotePage() {
       async function loadInitialData() {
         setLoading(true);
         try {
-            const [customerData, storeData] = await Promise.all([
+            const [customerDataResult, storeDataResult] = await Promise.all([
                 getSalesCustomers(),
                 getStores(),
             ]);
-            setCustomers(customerData.customers);
-            setStores(storeData);
+            setCustomers(customerDataResult.success ? customerDataResult.data || [] : []);
+            setStores((storeDataResult || []) as any);
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to load initial data.' });
         } finally {
@@ -227,7 +243,7 @@ export default function DebitNotePage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

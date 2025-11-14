@@ -54,8 +54,10 @@ export default function MyProfilePage() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const currentUser = await getUserProfile();
-        setUser(currentUser);
+        const result = await getUserProfile();
+        if (result.success && result.data) {
+          setUser(result.data);
+        }
       } catch (error) {
         console.error("Failed to fetch user profile", error);
       } finally {
@@ -98,10 +100,10 @@ export default function MyProfilePage() {
             <div className='flex items-center gap-4'>
                  <Avatar className="h-20 w-20">
                     <AvatarImage src={`https://picsum.photos/seed/${user.id}/80/80`} data-ai-hint="person" />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{(user.name || 'U').charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-2xl">{user.name}</CardTitle>
+                    <CardTitle className="text-2xl">{user.name || 'User'}</CardTitle>
                     <CardDescription>{user.email}</CardDescription>
                 </div>
             </div>
@@ -114,7 +116,7 @@ export default function MyProfilePage() {
                     <Briefcase className="h-5 w-5 text-muted-foreground" />
                     <div>
                         <p className="text-muted-foreground">Role</p>
-                        <p className="font-medium">{user.roleIds.join(', ')}</p>
+                        <p className="font-medium">{(user.roleIds || []).join(', ')}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -152,8 +154,8 @@ function UserSessionsPanel() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getActiveSessionsForCurrentUser();
-        setSessions(data || []);
+        const result = await getActiveSessionsForCurrentUser();
+        setSessions((result.success && result.data) || []);
       } catch (e) {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to load sessions' });
         setSessions([]);
@@ -168,8 +170,8 @@ function UserSessionsPanel() {
       const res = await revokeSessionById(pendingRevokeId);
       if (!res.success) throw new Error(res.message || 'Failed');
       toast({ title: 'Session revoked' });
-      const data = await getActiveSessionsForCurrentUser();
-      setSessions(data || []);
+      const result = await getActiveSessionsForCurrentUser();
+      setSessions((result.success && result.data) || []);
     } catch (e) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to revoke session' });
     } finally {
@@ -324,15 +326,17 @@ function ProfileSkeleton() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
   email: string;
   full_name?: string;
+  name?: string;
   phone?: string;
   is_active?: boolean;
   organization_id?: string;
+  roleIds?: string[];
   created_at?: string;
   updated_at?: string;
 }

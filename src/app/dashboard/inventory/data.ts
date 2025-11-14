@@ -1,6 +1,237 @@
-import { getSupabaseServerClient } from '@/lib/supabase/client';\n
-
 'use server';
+
+import { getSupabaseServerClient } from '@/lib/supabase/client';
+import { getCurrentUserFromSession } from '@/lib/session';
+import { getSessionClaims } from '@/lib/session';
+import type { UserContext } from '@/lib/types';
+
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  org_id?: string;
+  role_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  org_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  cost?: number;
+  unit?: string;
+  image_url?: string;
+  org_id?: string;
+  quantity?: number;
+  reorderLevel?: number;
+  inventoryType?: 'Factory' | 'Store';
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string;
+  vendor_name?: string;
+  po_date: string;
+  delivery_date?: string;
+  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
+  total_amount: number;
+  org_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Employee {
+  id: string;
+  employee_id?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  hire_date?: string;
+  status: 'active' | 'inactive';
+  org_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  org_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * Get current user from session
+ */
+async function getCurrentUser(): Promise<User | null> {
+  try {
+    const sessionClaims = await getSessionClaims();
+    if (!sessionClaims) return null;
+
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return null;
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', sessionClaims.uid)
+      .single();
+
+    if (error || !user) {
+      console.warn('[getCurrentUser] User not found:', error);
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error('[getCurrentUser] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get user by ID
+ */
+async function getUser(userId: string): Promise<User | null> {
+  try {
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return null;
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error || !user) {
+      console.warn('[getUser] User not found:', error);
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error('[getUser] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get user permissions
+ */
+async function getUserPermissions(userId: string): Promise<string[]> {
+  try {
+    const user = await getUser(userId);
+    if (!user) return [];
+
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return [];
+
+    // Get role and its permissions
+    const { data: role, error: roleError } = await supabase
+      .from('roles')
+      .select('permissions')
+      .eq('id', user.role_id)
+      .single();
+
+    if (roleError || !role) {
+      console.warn('[getUserPermissions] Role not found:', roleError);
+      return [];
+    }
+
+    // permissions could be an array or a string (JSON)
+    const permissions = Array.isArray(role.permissions) 
+      ? role.permissions 
+      : (typeof role.permissions === 'string' ? JSON.parse(role.permissions) : []);
+    
+    return permissions || [];
+  } catch (error) {
+    console.error('[getUserPermissions] Error:', error);
+    return [];
+  }
+}
+
+/**
+ * Get subordinates of a user
+ */
+async function getSubordinates(userId: string): Promise<User[]> {
+  try {
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return [];
+
+    const { data: subordinates, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('manager_id', userId);
+
+    if (error || !subordinates) {
+      console.warn('[getSubordinates] Subordinates not found:', error);
+      return [];
+    }
+
+    return subordinates || [];
+  } catch (error) {
+    console.error('[getSubordinates] Error:', error);
+    return [];
+  }
+}
+
+/**
+ * Get products from database
+ */
+async function getProductsFromDb(userContext: UserContext): Promise<Product[]> {
+  try {
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return [];
+
+    // Admin sees all products, others see only their org's products
+    let query = supabase.from('products').select('*');
+
+    if (!userContext.user.role_id?.includes('admin')) {
+      query = query.eq('org_id', userContext.orgId);
+    }
+
+    const { data: products, error } = await query;
+
+    if (error) {
+      console.warn('[getProductsFromDb] Products not found:', error);
+      return [];
+    }
+
+    return products || [];
+  } catch (error) {
+    console.error('[getProductsFromDb] Error:', error);
+    return [];
+  }
+}
 
 async function getCurrentUserId(): Promise<string | null> {
     const user = await getCurrentUser();
@@ -27,7 +258,7 @@ async function buildUserContext(userId: string | null): Promise<UserContext | nu
         user,
         permissions,
         subordinates,
-        orgId: user.orgId,
+        orgId: user.org_id || 'default-org',
     };
 }
 
@@ -71,18 +302,19 @@ export async function getInventoryDashboardData() {
     const products = await getProducts(userContext);
 
     const totalProducts = products.length;
-    const totalStockValue = products.reduce((acc, p) => acc + (p.price * p.quantity), 0);
+    const totalStockValue = products.reduce((acc, p) => acc + ((p.price ?? 0) * (p.quantity ?? 0)), 0);
     
-    const lowStockItems = products.filter(p => p.reorderLevel && p.quantity <= p.reorderLevel);
+    const lowStockItems = products.filter(p => (typeof p.reorderLevel === 'number') && ((p.quantity ?? 0) <= p.reorderLevel));
     const lowStockItemsCount = lowStockItems.length;
 
     const inventoryByCategory = products.reduce((acc, p) => {
         let categoryEntry = acc.find(entry => entry.category === p.category);
         if (!categoryEntry) {
-            categoryEntry = { category: p.category, Factory: 0, Store: 0 };
+            categoryEntry = { category: p.category ?? 'Uncategorized', Factory: 0, Store: 0 };
             acc.push(categoryEntry);
         }
-        categoryEntry[p.inventoryType] += p.quantity;
+        const invType: 'Factory' | 'Store' = p.inventoryType ?? 'Store';
+        categoryEntry[invType] += (p.quantity ?? 0);
         return acc;
     }, [] as { category: string; Factory: number; Store: number }[]);
 
@@ -99,83 +331,5 @@ export async function getInventoryDashboardData() {
 
 
 
-\n\n
+
 // Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}

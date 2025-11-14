@@ -29,6 +29,18 @@ const customerSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
+interface Customer {
+    id: string;
+    name: string;
+    contact?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    industry?: string;
+    createdAt?: string;
+    [key: string]: any;
+}
+
 interface CustomersClientProps {
     initialCustomers: Customer[];
 }
@@ -46,8 +58,8 @@ export function CustomersClient({ initialCustomers }: CustomersClientProps) {
     if (!searchTerm) return customers;
     return customers.filter(c =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (c.contact || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [customers, searchTerm]);
 
@@ -196,7 +208,7 @@ export function CustomersClient({ initialCustomers }: CustomersClientProps) {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

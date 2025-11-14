@@ -325,7 +325,7 @@ async function verifySetup() {
 
 async function main() {
   try {
-    console.log('🚀 Starting Arcus V1 Admin Setup...\n');
+    console.log('🚀 Starting Arcus V1 Admin Setup...');
 
     await setupDatabase();
     await createDefaultRoles();
@@ -333,15 +333,15 @@ async function main() {
     await setupCasbinPolicies();
     await verifySetup();
 
-    console.log('\n🎉 Admin setup completed successfully!');
-    console.log('\n📋 Next steps:');
+    console.log('🎉 Admin setup completed successfully!');
+    console.log('📋 Next steps:');
     console.log('1. Start your application: npm run dev');
     console.log('2. Login with:', ADMIN_EMAIL, '/', ADMIN_PASSWORD);
     console.log('3. Navigate to: /dashboard/users to manage users');
     console.log('4. Navigate to: /dashboard/users/roles to manage roles');
 
   } catch (error) {
-    console.error('\n❌ Setup failed:', error.message);
+    console.error('❌ Setup failed:', error.message);
     process.exit(1);
   }
 }

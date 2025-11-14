@@ -5,6 +5,8 @@ import { ProductReceivingClient } from './client';
 import { getStores } from '../manage/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Box } from 'lucide-react';
+import { getCurrentUser } from '@/app/dashboard/sales/actions';
+import { getUserPermissions } from '@/lib/auth';
 
 
 export default async function ProductReceivingPage() {
@@ -18,7 +20,7 @@ export default async function ProductReceivingPage() {
   const isAdmin = permissions.includes('manage-stores');
 
   // If user is not an admin and doesn't have a storeId, they can't access this page.
-  if (!isAdmin && !user.storeId) {
+  if (!isAdmin && !(user as any).storeId) {
     return (
         <div className="flex justify-center items-start pt-16 h-full">
             <Card className="w-full max-w-md text-center">
@@ -41,22 +43,23 @@ export default async function ProductReceivingPage() {
 
   // Fetch all stores for the admin dropdown, or just the user's store
   const allStores = await getStores();
-  const storeIdForShipments = isAdmin ? (allStores[0]?.id || '') : user.storeId;
+  const storeIdForShipments = isAdmin ? ((allStores as any)[0]?.id || '') : (user as any).storeId;
   
-  const shipments = storeIdForShipments ? await getStoreShipments(storeIdForShipments) : [];
+  const shipmentsResult = storeIdForShipments ? await getStoreShipments(storeIdForShipments) : { success: true, data: [] };
+  const shipments = shipmentsResult.success ? shipmentsResult.data || [] : [];
   
   return (
     <ProductReceivingClient 
-        initialShipments={shipments} 
+        initialShipments={shipments as any}
         isAdmin={isAdmin}
-        allStores={allStores}
-        userStoreId={user.storeId || ''}
+        allStores={allStores as any}
+        userStoreId={(user as any).storeId || ''}
     />
   );
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

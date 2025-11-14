@@ -206,7 +206,7 @@ export function QrCodeGeneratorClient({ products: initialProducts }: QrCodeGener
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -244,6 +244,8 @@ interface Product {
   organization_id?: string;
   created_at?: string;
   updated_at?: string;
+  series?: string;
+  [key: string]: any;
 }
 
 interface PurchaseOrder {

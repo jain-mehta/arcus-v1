@@ -41,13 +41,15 @@ function StoreNotFound() {
 }
 
 export default async function StoreProfilePage({ params }: any) {
-  const { store, inventory, kpis, topProducts, recentSales, manager } = await getStoreDetails(params.id);
+  const storeDetailsResult = await getStoreDetails(params.id);
   
-  if (!store) {
+  if (!storeDetailsResult.success || !storeDetailsResult.data) {
     return <StoreNotFound />;
   }
-
-  const storeManagers = await getStoreManagers();
+  
+  const { store, inventory = [], kpis = { totalSales: 0, totalStockUnits: 0, totalStockValue: 0 }, topProducts = [], recentSales = [], manager } = (storeDetailsResult.data as any);
+  const storeManagersResult = await getStoreManagers();
+  const storeManagers = storeManagersResult.success ? storeManagersResult.data || [] : [];
 
   const kpiData = [
     { title: 'Total Sales (All Time)', value: `>₹${kpis.totalSales.toLocaleString('en-IN')}`, icon: DollarSign },
@@ -106,7 +108,7 @@ export default async function StoreProfilePage({ params }: any) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {topProducts.length > 0 ? topProducts.map(item => (
+                        {topProducts.length > 0 ? topProducts.map((item: any) => (
                             <TableRow key={item.name}>
                             <TableCell>{item.name}</TableCell>
                             <TableCell className="text-right">{item.unitsSold}</TableCell>
@@ -138,7 +140,7 @@ export default async function StoreProfilePage({ params }: any) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {inventory.length > 0 ? inventory.map(item => (
+                        {inventory.length > 0 ? inventory.map((item: any) => (
                             <TableRow key={item.id}>
                                 <TableCell className="font-medium">{item.name}</TableCell>
                                 <TableCell>{item.sku}</TableCell>
@@ -194,7 +196,7 @@ function InfoCard({
 function DocumentRepository({
   documents,
 }: {
-  documents: VendorDocument[];
+  documents: any[];
 }) {
   return (
     <Card>
@@ -226,7 +228,7 @@ function DocumentRepository({
 function CommunicationLog({
   log,
 }: {
-  log: CommunicationLog[];
+  log: any[];
 }) {
   return (
     <Card>
@@ -256,7 +258,7 @@ function CommunicationLog({
     </Card>
   );
 }
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

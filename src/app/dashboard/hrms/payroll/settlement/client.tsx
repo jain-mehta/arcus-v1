@@ -140,7 +140,7 @@ export function SettlementClient({ stores, staffList }: SettlementClientProps) {
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl><SelectTrigger><SelectValue placeholder="Select an employee..." /></SelectTrigger></FormControl>
                                                 <SelectContent>
-                                                    {staffList.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                                    {staffList.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name || c.email}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -227,7 +227,7 @@ export function SettlementClient({ stores, staffList }: SettlementClientProps) {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

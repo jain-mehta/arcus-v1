@@ -163,10 +163,11 @@ export default function AiCatalogAssistantPage() {
         description: data.description,
       });
 
-      const formattedResult = result.map(p => ({...p, inventoryType: 'Factory' as const }));
+      const products = (result?.success && Array.isArray(result.data)) ? result.data : [];
+      const formattedResult = products.map(p => ({...p, inventoryType: 'Factory' as const }));
       replace(formattedResult);
 
-      if (result.length === 0) {
+      if (products.length === 0) {
         toast({
           title: 'No Products Found',
           description: 'The AI could not identify any products from the provided catalog data. Try a clearer image or add a description.',
@@ -197,10 +198,10 @@ export default function AiCatalogAssistantPage() {
 
     const result = await addMultipleProducts(productsToAdd as any);
 
-        if (result.success) {
+        if (result.success && result.data) {
              toast({
                 title: 'Products Saved!',
-                description: `${result.count} products have been "added" to the product master.`,
+                description: `${result.data.count} products have been "added" to the product master.`,
             });
             replace([]);
             clearImage();
@@ -394,9 +395,10 @@ function SuggestionItemContent({ index, catalogImageDataUri }: { index: number, 
                 photoDataUri: catalogImageDataUri,
             });
 
-            if (result && result.imageFile) {
-                const fullDataUri = `data:${result.imageFile.type};base64,${result.imageFile.base64}`;
-                const updatedItem = { ...item, imageFile: { base64: fullDataUri, type: result.imageFile.type } };
+            if (result && result.success && result.data && (result.data as any).imageFile) {
+                const imageFile = (result.data as any).imageFile;
+                const fullDataUri = `data:${imageFile.type};base64,${imageFile.base64}`;
+                const updatedItem = { ...item, imageFile: { base64: fullDataUri, type: imageFile.type } };
                 update(index, updatedItem);
                 toast({ title: "Image Extracted!", description: `An image for ${productName} has been extracted.`});
             } else {

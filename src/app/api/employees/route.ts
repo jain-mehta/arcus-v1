@@ -1,139 +1,61 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { protectedApiHandler, apiSuccess, apiError, validateRequired } from '@/lib/api-helpers';
+import { NextRequest } from 'next/server';
+import { protectedApiHandler } from '@/lib/api-helpers';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+);
 
 export async function GET(request: NextRequest) {
   return protectedApiHandler(request, async (context) => {
-    const { tenantId, query } = context;
-    
-    const limit = parseInt(((query?.limit) as string) || '10');
-    const offset = parseInt(((query?.offset) as string) || '0');
-    const department = (query?.department) as string;
+    try {
+      const { tenantId, query } = context;
+      
+      const limit = parseInt(((query?.limit) as string) || '10');
+      const offset = parseInt(((query?.offset) as string) || '0');
+      const department = (query?.department) as string;
 
-    // Mock employees data - will be replaced with real DB query in Phase 2A
-    const mockEmployees = [
-      {
-        id: 'emp-001',
-        tenant_id: tenantId,
-        name: 'Rajesh Kumar',
-        email: 'rajesh@arcus.local',
-        phone: '+91-9876543210',
-        department: 'Operations',
-        role: 'Senior Manager',
-        status: 'active',
-        joining_date: '2024-01-15',
-        salary: 850000,
-      },
-      {
-        id: 'emp-002',
-        tenant_id: tenantId,
-        name: 'Priya Singh',
-        email: 'priya@arcus.local',
-        phone: '+91-9123456789',
-        department: 'Sales',
-        role: 'Sales Executive',
-        status: 'active',
-        joining_date: '2024-03-20',
-        salary: 450000,
-      },
-      {
-        id: 'emp-003',
-        tenant_id: tenantId,
-        name: 'Amit Patel',
-        email: 'amit@arcus.local',
-        phone: '+91-8765432109',
-        department: 'Operations',
-        role: 'Warehouse Manager',
-        status: 'active',
-        joining_date: '2023-11-10',
-        salary: 650000,
-      },
-      {
-        id: 'emp-004',
-        tenant_id: tenantId,
-        name: 'Neha Gupta',
-        email: 'neha@arcus.local',
-        phone: '+91-7654321098',
-        department: 'Finance',
-        role: 'Accountant',
-        status: 'active',
-        joining_date: '2024-02-01',
-        salary: 500000,
-      },
-    ];
+      // Query real employees from database
+      let employeeQuery = supabase
+        .from('employees')
+        .select('*', { count: 'exact' })
+        .eq('tenant_id', tenantId)
+        .eq('status', 'active')
+        .order('name', { ascending: true });
 
-    // Filter by department if provided
-    let filtered = mockEmployees;
-    if (department) {
-      filtered = filtered.filter((e) => e.department.toLowerCase() === department.toLowerCase());
-    }
+      // Add department filter if provided
+      if (department) {
+        employeeQuery = employeeQuery.eq('department', department);
+      }
 
-    // Apply pagination
-    const paginated = filtered.slice(offset, offset + limit);
+      // Add pagination
+      const { data: employees, error, count } = await employeeQuery.range(
+        offset,
+        offset + limit - 1
+      );
 
-    return {
-      data: {
-        employees: paginated,
-        pagination: {
-          limit,
-          offset,
-          total: filtered.length,
-          department: department || 'all',
-        },
-      },
-    };
-  });
-}
+      if (error) {
+        console.error('[API] Error fetching employees:', error);
+        return { error: `Failed to fetch employees: ${error.message}` };
+      }
 
-export async function POST(request: NextRequest) {
-  return protectedApiHandler(request, async (context) => {
-    const { tenantId, body } = context;
-
-    // Validate required fields
-    const required = ['name', 'email', 'department', 'role', 'salary'];
-    const missing = validateRequired(body, required);
-    if (missing && missing.length > 0) {
       return {
-        error: `Missing required fields: ${missing.join(', ')}`,
+        data: {
+          employees: employees || [],
+          pagination: {
+            limit,
+            offset,
+            total: count || 0
+          }
+        }
+      };
+    } catch (error) {
+      console.error('[API] Exception fetching employees:', error);
+      return {
+        error: error instanceof Error ? error.message : 'Failed to fetch employees'
       };
     }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.email)) {
-      return {
-        error: 'Invalid email format',
-      };
-    }
-
-    // Validate salary is a positive number
-    if (body.salary <= 0) {
-      return {
-        error: 'Salary must be greater than 0',
-      };
-    }
-
-    // Create new employee (mock)
-    const newEmployee = {
-      id: `emp-${Date.now()}`,
-      tenant_id: tenantId,
-      name: body.name,
-      email: body.email,
-      phone: body.phone || null,
-      department: body.department,
-      role: body.role,
-      status: body.status || 'active',
-      joining_date: body.joining_date || new Date().toISOString().split('T')[0],
-      salary: body.salary,
-      created_at: new Date().toISOString(),
-    };
-
-    // In Phase 2A: Save to database
-    // const repository = context.dataSource.getRepository(Employee);
-    // const saved = await repository.save(newEmployee);
-
-    return {
-      data: newEmployee,
-    };
   });
 }
 

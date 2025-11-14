@@ -18,8 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AddDiscountDialog } from './components/add-discount-dialog';
 
-type EditableMaterialMapping = MaterialMapping & { isDirty?: boolean };
-type EditableVolumeDiscount = VolumeDiscount & { isDirty?: boolean };
+type EditableMaterialMapping = any & { isDirty?: boolean };
+type EditableVolumeDiscount = any & { isDirty?: boolean };
 
 interface MaterialMappingClientProps {
     vendors: Vendor[];
@@ -45,11 +45,12 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
             const fetchMappings = async () => {
                 setLoadingMappings(true);
                 try {
-                    const mappingData = await getMaterialMappings(selectedVendor);
+                    const mappingResult = await getMaterialMappings(selectedVendor);
+                    const mappingData = mappingResult.success ? ((mappingResult.data as any) || []) : [];
                     setMappings(mappingData);
                     setInitialMappingsState(mappingData);
-                    if (mappingData.length > 0) {
-                        setSelectedMappingId(mappingData[0].id);
+                    if ((mappingData as any).length > 0) {
+                        setSelectedMappingId((mappingData as any)[0].id);
                     } else {
                         setSelectedMappingId(null);
                     }
@@ -72,7 +73,8 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
             const fetchDiscounts = async () => {
                 setLoadingDiscounts(true);
                 try {
-                    const discountData = await getVolumeDiscounts(selectedMappingId);
+                    const discountResult = await getVolumeDiscounts(selectedMappingId);
+                    const discountData = discountResult.success ? ((discountResult.data as any) || []) : [];
                     setDiscounts(discountData);
                     setInitialDiscountsState(discountData);
                 } catch (error) {
@@ -88,7 +90,7 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
         }
     }, [selectedMappingId, toast]);
 
-    const handleMappingFieldChange = (mappingId: string, field: keyof MaterialMapping, value: any) => {
+    const handleMappingFieldChange = (mappingId: string, field: string, value: any) => {
         setMappings(prev =>
             prev.map(m => {
                 if (m.id === mappingId) {
@@ -102,7 +104,7 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
         );
     };
 
-    const handleDiscountFieldChange = (discountId: string, field: keyof VolumeDiscount, value: any) => {
+    const handleDiscountFieldChange = (discountId: string, field: string, value: any) => {
         setDiscounts(prev =>
             prev.map(d => {
                 if (d.id === discountId) {
@@ -166,7 +168,7 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
         });
     };
     
-    const handleAddMapping = async (data: Omit<MaterialMapping, 'id' | 'vendorId' | 'active'>) => {
+    const handleAddMapping = async (data: any) => {
         if (!selectedVendor) return false;
         try {
             const newMappingId = await addMaterialMapping(selectedVendor, data);
@@ -182,11 +184,11 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
         }
     };
     
-    const handleAddDiscount = async (data: Omit<VolumeDiscount, 'id' | 'mappingId'>) => {
+    const handleAddDiscount = async (data: any) => {
         if (!selectedMappingId) return false;
         try {
-            const newDiscountId = await addVolumeDiscount({ ...data, mappingId: selectedMappingId });
-            const newDiscount = { ...data, id: newDiscountId, mappingId: selectedMappingId };
+            const newDiscountId = await addVolumeDiscount({ ...data, mapping_id: selectedMappingId });
+            const newDiscount = { ...data, id: newDiscountId, mapping_id: selectedMappingId };
             setDiscounts(prev => [...prev, newDiscount]);
             setInitialDiscountsState(prev => [...prev, newDiscount]);
             toast({ title: 'Success', description: 'New volume discount added.' });
@@ -386,7 +388,7 @@ export function MaterialMappingClient({ vendors, initialMappings, initialDiscoun
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

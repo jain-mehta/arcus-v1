@@ -2,6 +2,35 @@
 'use client';
 
 import React from 'react';
+
+interface Order {
+  id: string;
+  order_number: string;
+  order_date?: string;
+  total_amount: number;
+  discountPercentage?: number;
+  [key: string]: any;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  [key: string]: any;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  [key: string]: any;
+}
+
 interface PrintableDeliveryChallanProps {
     order: Order;
     customer?: Partial<Customer> | null;
@@ -49,7 +78,7 @@ export const PrintableDeliveryChallan = React.forwardRef<HTMLDivElement, Printab
                         </tr>
                     </thead>
                     <tbody>
-                        {order.lineItems.map((item, index) => (
+                        {order.lineItems?.map((item: any, index: number) => (
                             <tr key={index} className="border-b">
                                 <td className="p-3">{item.sku}</td>
                                 <td className="p-3 font-medium">{item.name}</td>
@@ -78,7 +107,7 @@ export const PrintableDeliveryChallan = React.forwardRef<HTMLDivElement, Printab
 PrintableDeliveryChallan.displayName = 'PrintableDeliveryChallan';
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

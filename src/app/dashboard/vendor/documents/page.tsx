@@ -1,18 +1,20 @@
 
-import { getDocumentsForVendor } from './actions';
+import { getDocumentsForVendor, getVendors } from './actions';
 import { DocumentManagementClient } from './client';
 
 export default async function DocumentManagementPage() {
-    const vendors = await getVendors();
+    const vendorsResult = await getVendors();
+    const vendors = vendorsResult.success ? ((vendorsResult.data as any) || []) : [];
     const initialDocuments = vendors.length > 0 ? await getDocumentsForVendor(vendors[0].id) : [];
+    const docs = (initialDocuments as any).success ? ((initialDocuments as any).data as any) || [] : [];
     
     return (
-        <DocumentManagementClient vendors={vendors} initialDocuments={initialDocuments} />
+        <DocumentManagementClient vendors={vendors} initialDocuments={docs} />
     );
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

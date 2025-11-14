@@ -29,12 +29,12 @@ const tenantIdArg = args.find((arg) => arg.startsWith('--tenant-id='));
 const tenantId = tenantIdArg ? tenantIdArg.split('=')[1] : null;
 
 if (!tenantId) {
-  console.error('❌ Missing --tenant-id flag\n');
+  console.error('❌ Missing --tenant-id flag');
   console.log('Usage: pnpm run migrate:domain -- --tenant-id="acme"');
   process.exit(1);
 }
 
-console.log(`\n🔄 Migrating domain tables for tenant: ${tenantId}\n`);
+console.log(`🔄 Migrating domain tables for tenant: ${tenantId}`);
 
 async function runMigration() {
   try {
@@ -78,7 +78,7 @@ async function runMigration() {
       successCount++;
     }
 
-    console.log(`✅ Applied ${successCount}/${statements.length} migration statements\n`);
+    console.log(`✅ Applied ${successCount}/${statements.length} migration statements`);
 
     // Optional: Seed sample data
     const seedArg = args.find((arg) => arg === '--seed');
@@ -87,7 +87,7 @@ async function runMigration() {
     }
 
     console.log('🎉 Domain migration completed successfully!');
-    console.log('\nNext steps:');
+    console.log('Next steps:');
     console.log(`  1. Verify tables created: SELECT * FROM pg_tables WHERE schemaname='public';`);
     console.log(`  2. Test data access: SELECT * FROM vendors LIMIT 1;`);
     console.log(`  3. Deploy application code`);
@@ -98,7 +98,7 @@ async function runMigration() {
 }
 
 async function seedDomainData(supabase, tenantId) {
-  console.log('\n🌱 Seeding sample domain data...');
+  console.log('🌱 Seeding sample domain data...');
 
   const seedSQL = `
     -- Sample Vendor

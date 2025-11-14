@@ -39,9 +39,10 @@ export function PriceComparisonClient({ materials, initialComparisonData, initia
         }
         startFetching(async () => {
             try {
-                const data = await fetchPriceComparisonData(material);
+                const result = await fetchPriceComparisonData(material);
                 // FIX: Set the fetched data into the component's state.
-                setComparisonData(data);
+                const data = result.success ? ((result.data as any) || []) : [];
+                setComparisonData(data as any);
             } catch (e) {
                 toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch comparison data.' });
             }

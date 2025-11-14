@@ -72,7 +72,7 @@ export function HrmsComplianceClient({ initialDocuments, isAdmin }: { initialDoc
 
     const handleDelete = async (docId: string, filePath: string) => {
         startDelete(async () => {
-            const result = await deleteComplianceDocument(docId, filePath);
+            const result = await deleteComplianceDocument(docId);
             if(result.success) {
                 setDocuments(prev => prev.filter(d => d.id !== docId));
                 toast({ title: "Document Deleted" });
@@ -245,16 +245,17 @@ function UploadDocumentDialog({ onDocumentUploaded }: { onDocumentUploaded: (doc
             try {
                 const fileBase64 = await toBase64(values.file);
                 const result = await uploadComplianceDocument(values, fileBase64);
-                if (result.success && result.newDoc) {
-                    onDocumentUploaded(result.newDoc);
+                // Use `data` from ActionResponse<any> which holds the uploaded document
+                if (result.success && result.data) {
+                    onDocumentUploaded(result.data);
                     toast({ title: "Document Uploaded" });
                     setOpen(false);
                     form.reset();
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Upload failed');
                 }
             } catch (error: any) {
-                 toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
+                 toast({ variant: 'destructive', title: 'Upload Failed', description: error?.message ?? String(error) });
             }
         });
     }

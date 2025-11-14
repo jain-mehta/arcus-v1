@@ -43,7 +43,7 @@ export function CommunicationLogDialog({ vendorId }: CommunicationLogDialogProps
         try {
             const result = await addCommunicationLog({
                 vendorId,
-                type: values.type as CommunicationLog['type'],
+                type: values.type as any,
                 summary: values.summary,
             });
 
@@ -120,7 +120,7 @@ export function CommunicationLogDialog({ vendorId }: CommunicationLogDialogProps
         </Dialog>
     );
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -21,7 +21,7 @@ export async function getReportData(): Promise<ActionResponse> {
     try {
 
   const [opportunities, { customers }, { orders }] = await Promise.all([
-    Promise.resolve([]),
+    getOpportunitiesFromDb(),
     getCustomersFromDb(),
     getOrdersDb(),
   ]);
@@ -242,86 +242,45 @@ export async function generateMonthlySnapshot(): Promise<ActionResponse<SalesSna
     }
 }
 
-
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
-
-// TODO: Replace with actual database queries
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+// ===== STUB FUNCTIONS FOR DATABASE OPERATIONS =====
+interface Customer {
+    id: string;
+    name: string;
+    source?: string;
+    [key: string]: any;
 }
 
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+interface Order {
+    customerId: string;
+    totalAmount: number;
+    [key: string]: any;
 }
 
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+interface Opportunity {
+    stage: string;
+    value: number;
+    customerId: string;
+    [key: string]: any;
 }
 
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+async function getCustomersFromDb(): Promise<{ customers: Customer[] }> {
+    return { customers: [] };
 }
 
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+async function getOrdersDb(): Promise<{ orders: Order[] }> {
+    return { orders: [] };
 }
 
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+async function getOpportunitiesFromDb(): Promise<Opportunity[]> {
+    return [];
+}
+
+async function getSalesSnapshots(): Promise<any[]> {
+    return [];
+}
+
+interface SalesSnapshot {
+    id: string;
+    period: string;
+    [key: string]: any;
 }

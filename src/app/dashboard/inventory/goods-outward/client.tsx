@@ -45,8 +45,8 @@ export function GoodsOutwardClient({ products: initialProducts }: GoodsOutwardCl
 
     const onSubmit = (values: DispatchFormValues) => {
         const product = products.find(p => p.id === values.productId);
-        if (product && values.quantity > product.quantity) {
-            form.setError("quantity", { type: "manual", message: `Cannot dispatch more than available stock (${product.quantity}).` });
+        if (product && values.quantity > (product.quantity || 0)) {
+            form.setError("quantity", { type: "manual", message: `Cannot dispatch more than available stock (${product.quantity || 0}).` });
             return;
         }
 
@@ -55,7 +55,7 @@ export function GoodsOutwardClient({ products: initialProducts }: GoodsOutwardCl
             if(result.success) {
                 toast({ title: 'Success', description: `${values.quantity} units dispatched successfully.` });
                 // Optimistically update the product quantity in the local state
-                setProducts(prev => prev.map(p => p.id === values.productId ? { ...p, quantity: p.quantity - values.quantity } : p));
+                setProducts(prev => prev.map(p => p.id === values.productId ? { ...p, quantity: (p.quantity || 0) - values.quantity } : p));
                 form.reset();
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: result.message || 'Failed to dispatch stock.' });
@@ -145,7 +145,7 @@ export function GoodsOutwardClient({ products: initialProducts }: GoodsOutwardCl
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -183,6 +183,7 @@ interface Product {
   organization_id?: string;
   created_at?: string;
   updated_at?: string;
+  quantity?: number;
 }
 
 interface PurchaseOrder {

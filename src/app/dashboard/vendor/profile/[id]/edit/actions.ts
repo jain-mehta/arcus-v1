@@ -2,7 +2,7 @@
 'use server';
 
 import { getVendor as getVendorFromDb, getStoreManagers as getStoreManagersFromDb, updateVendor as updateVendorInDb } from '../actions';
-import type { Vendor } from '@/lib/mock-data/types';
+import type { Vendor } from '@/lib/types/domain';
 import {
   checkActionPermission,
   createSuccessResponse,

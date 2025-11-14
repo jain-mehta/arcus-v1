@@ -39,14 +39,72 @@ export async function getActiveSessionsForCurrentUser(): Promise<ActionResponse>
         if (!currentUser) {
             return createErrorResponse('Current user not found');
         }
-        const { getSessionsForUser } = await import('@/lib/mock-sessions');
-        const sessions = await getSessionsForUser(currentUser.id);
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return createErrorResponse('Database connection failed');
+
+        const { data: sessions, error } = await supabase
+            .from('user_sessions')
+            .select('*')
+            .eq('user_id', currentUser.id);
+
+        if (error) return createErrorResponse('Failed to retrieve sessions');
+
         await logUserAction(user, 'view', 'active_sessions');
-        return createSuccessResponse(sessions, 'Active sessions retrieved successfully');
+        return createSuccessResponse(sessions ?? [], 'Active sessions retrieved successfully');
     } catch (error: any) {
         return createErrorResponse(`Failed to get active sessions: ${error.message}`);
     }
-}\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+}
+
+export async function revokeSessionById(sessionId: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('settings', 'profile', 'update');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return createErrorResponse('Database connection failed');
+        
+        const { error } = await supabase.from('user_sessions').delete().eq('id', sessionId);
+        if (error) return createErrorResponse('Failed to revoke session');
+        
+        await logUserAction(user, 'delete', 'session', sessionId, {});
+        return createSuccessResponse(null, 'Session revoked successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to revoke session: ${error.message}`);
+    }
+}
+
+export async function updateCurrentUserProfile(data: Partial<User>): Promise<ActionResponse<User>> {
+    const authCheck = await checkActionPermission('settings', 'profile', 'update');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return createErrorResponse('Database connection failed');
+        
+        const { data: updatedUser, error } = await supabase.from('users').update(data).eq('id', user.id).select().single();
+        if (error) return createErrorResponse('Failed to update profile');
+        
+        await logUserAction(user, 'update', 'user_profile', user.id, { changes: data });
+        revalidatePath('/dashboard/settings/profile');
+        return createSuccessResponse(updatedUser as User, 'Profile updated successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to update profile: ${error.message}`);
+    }
+}
+
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;
@@ -126,3 +184,22 @@ interface Store {
   created_at?: string;
   updated_at?: string;
 }
+
+async function getCurrentUser(): Promise<User | null> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
+  
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return null;
+  
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', authUser.id)
+    .single();
+  
+  if (error) return null;
+  
+  return user as User;
+}
+

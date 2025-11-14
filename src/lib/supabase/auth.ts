@@ -343,4 +343,4 @@ export default {
   onAuthStateChange,
 };
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
+import { getSupabaseServerClient } from '@/lib/supabase/client';

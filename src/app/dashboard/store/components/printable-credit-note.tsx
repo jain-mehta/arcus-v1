@@ -2,6 +2,22 @@
 'use client';
 
 import React from 'react';
+
+interface Order {
+  id: string;
+  order_number: string;
+  order_date?: string;
+  total_amount: number;
+  discountPercentage?: number;
+  [key: string]: any;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
 interface PrintableCreditNoteProps {
     data: {
         order: Order;
@@ -92,7 +108,7 @@ export const PrintableCreditNote = React.forwardRef<HTMLDivElement, PrintableCre
 PrintableCreditNote.displayName = 'PrintableCreditNote';
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

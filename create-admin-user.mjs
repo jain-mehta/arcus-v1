@@ -16,9 +16,9 @@ const ADMIN_EMAIL = 'admin@arcus.local';
 const ADMIN_PASSWORD = 'Admin@123456';
 
 async function createAdmin() {
-  console.log('\n========================================');
+  console.log('========================================');
   console.log('🔐 Creating Admin User for Tests');
-  console.log('========================================\n');
+  console.log('========================================');
 
   try {
     // Create Supabase client with service role (admin access)
@@ -36,12 +36,12 @@ async function createAdmin() {
     const adminExists = allUsers?.users?.some(u => u.email === ADMIN_EMAIL);
 
     if (adminExists) {
-      console.log(`   ⏭️  Admin user already exists: ${ADMIN_EMAIL}\n`);
-      console.log('✅ Admin user is ready for testing\n');
+      console.log(`   ⏭️  Admin user already exists: ${ADMIN_EMAIL}`);
+      console.log('✅ Admin user is ready for testing');
       process.exit(0);
     }
 
-    console.log(`   ✓ User doesn't exist, creating...\n`);
+    console.log(`   ✓ User doesn't exist, creating...`);
 
     console.log('2️⃣  Creating user in Supabase Auth...');
     
@@ -63,7 +63,7 @@ async function createAdmin() {
     console.log(`   ✓ Created user in Supabase Auth`);
     console.log(`   📧 Email: ${ADMIN_EMAIL}`);
     console.log(`   🔑 Password: ${ADMIN_PASSWORD}`);
-    console.log(`   ✅ Email auto-confirmed\n`);
+    console.log(`   ✅ Email auto-confirmed`);
 
     console.log('3️⃣  Creating user profile in database...');
 
@@ -81,12 +81,12 @@ async function createAdmin() {
     } else if (insertError && insertError.message.includes('duplicate')) {
       console.log(`   ⏭️  Profile already exists`);
     } else {
-      console.log(`   ✓ Created user profile in database\n`);
+      console.log(`   ✓ Created user profile in database`);
     }
 
     console.log('========================================');
     console.log('✅ Admin User Created Successfully!');
-    console.log('========================================\n');
+    console.log('========================================');
     
     console.log('🎯 YOU CAN NOW:');
     console.log(`   1. Run: npm run dev`);
@@ -94,16 +94,16 @@ async function createAdmin() {
     console.log(`   3. Login with:`);
     console.log(`      📧 Email: ${ADMIN_EMAIL}`);
     console.log(`      🔑 Password: ${ADMIN_PASSWORD}`);
-    console.log(`   4. Run tests: npm run test:e2e\n`);
+    console.log(`   4. Run tests: npm run test:e2e`);
 
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Error creating admin user:', error.message);
-    console.error('\nTroubleshooting:');
+    console.error('❌ Error creating admin user:', error.message);
+    console.error('Troubleshooting:');
     console.error('  1. Check internet connection to Supabase');
     console.error('  2. Verify Supabase credentials in .env.local');
     console.error('  3. Check Supabase project is not deleted');
-    console.error('  4. Try again in a few seconds\n');
+    console.error('  4. Try again in a few seconds');
     process.exit(1);
   }
 }

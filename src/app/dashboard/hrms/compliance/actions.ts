@@ -45,92 +45,46 @@ export async function uploadComplianceDocument(
             fileUrl: fileBase64,
             filePath: `compliance/${docData.name}`
         };
-        [].push(newDoc);
+        
+        // Insert document into database
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return createErrorResponse('Database connection failed');
+        
+        const { error: insertError } = await supabase.from('compliance_documents').insert(newDoc);
+        if (insertError) return createErrorResponse('Failed to upload document');
+        
         await logUserAction(user, 'create', 'compliance_document', newDoc.id, { category: docData.category });
         revalidatePath('/dashboard/hrms/compliance');
         return createSuccessResponse(newDoc, 'Compliance document uploaded successfully');
     } catch (error: any) {
         return createErrorResponse(`Failed to upload compliance document: ${error.message}`);
     }
-}\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
-
-// TODO: Replace with actual database queries
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
 }
 
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
+export async function deleteComplianceDocument(documentId: string): Promise<ActionResponse> {
+    const authCheck = await checkActionPermission('hrms', 'compliance', 'delete');
+    if ('error' in authCheck) {
+        return createErrorResponse(authCheck.error);
+    }
+
+    const { user } = authCheck;
+
+    try {
+        // Delete from storage
+        const { getSupabaseServerClient } = await import('@/lib/supabase/client');
+        const supabase = getSupabaseServerClient();
+        if (!supabase) return createErrorResponse('Database connection failed');
+        
+const { error } = await supabase.from('compliance_documents').delete().eq('id', documentId);
+if (error) return createErrorResponse('Failed to delete document');
+
+await logUserAction(user, 'delete', 'compliance_document', documentId);
+revalidatePath('/dashboard/hrms/compliance');
+return createSuccessResponse(null, 'Compliance document deleted successfully');
+    } catch (error: any) {
+        return createErrorResponse(`Failed to delete compliance document: ${error.message}`);
+    }
 }
 
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { getSupabaseServerClient } from '@/lib/supabase/client';

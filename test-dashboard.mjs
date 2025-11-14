@@ -10,7 +10,7 @@ const BASE_URL = 'http://localhost:3000';
 
 async function testPermissionFlow() {
   try {
-    console.log('=== Testing Permission Visibility Flow ===\n');
+    console.log('=== Testing Permission Visibility Flow ===');
 
     // Step 1: Login
     console.log('Step 1: Logging in as admin@arcus.local...');
@@ -34,7 +34,7 @@ async function testPermissionFlow() {
     console.log('  Cookie:', setCookie ? setCookie.substring(0, 50) + '...' : 'Not set');
 
     // Step 2: Access dashboard with the session cookie
-    console.log('\nStep 2: Accessing /dashboard with session cookie...');
+    console.log('Step 2: Accessing /dashboard with session cookie...');
     const dashboardRes = await fetch(`${BASE_URL}/dashboard`, {
       method: 'GET',
       headers: {
@@ -53,7 +53,7 @@ async function testPermissionFlow() {
     console.log('✓ Dashboard loaded successfully');
 
     // Step 3: Check if navigation items are in the HTML
-    console.log('\nStep 3: Checking for navigation items in HTML...');
+    console.log('Step 3: Checking for navigation items in HTML...');
     const navItems = [
       'Dashboard',
       'Vendor',
@@ -74,7 +74,7 @@ async function testPermissionFlow() {
       }
     });
 
-    console.log(`\n✓ Navigation Test: ${foundCount}/${navItems.length} items found`);
+    console.log(`✓ Navigation Test: ${foundCount}/${navItems.length} items found`);
 
   } catch (error) {
     console.error('Error:', error);

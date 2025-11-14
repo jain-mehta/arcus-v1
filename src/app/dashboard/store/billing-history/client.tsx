@@ -21,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FileClock, Download } from 'lucide-react';
 import Link from 'next/link';
-import type { Order, Customer, Store } from '@/lib/mock-data/types';
+import type { Order, Customer, Store } from '@/lib/types/domain';
 import { PrintableInvoice } from '../components/printable-invoice';
 import { PrintableThermalReceipt } from '../components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '../components/printable-packing-slip';
@@ -68,7 +68,7 @@ export function BillingHistoryClient({ initialOrders, customers, store }: Billin
                 address: order.customerDetails.address
             } as Customer
         }
-        return customerMap.get(order.customerId) || null;
+        return customerMap.get(order.customerId || order.customer_id || '') || null;
     }
     
     const renderPrintableComponent = () => {
@@ -145,10 +145,10 @@ export function BillingHistoryClient({ initialOrders, customers, store }: Billin
                         <TableBody>
                             {orders.length > 0 ? orders.map(order => (
                                 <TableRow key={order.id}>
-                                    <TableCell className="font-medium">{order.orderNumber}</TableCell>
+                                    <TableCell className="font-medium">{order.orderNumber || order.order_number}</TableCell>
                                     <TableCell>{getCustomerForOrder(order)?.name || 'Walk-in'}</TableCell>
-                                    <TableCell>{new Date(order.orderDate).toLocaleString()}</TableCell>
-                                    <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell>{new Date(order.orderDate || order.order_date || '').toLocaleString()}</TableCell>
+                                    <TableCell>₹{(order.totalAmount || order.total_amount || 0).toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Button variant="outline" size="sm" asChild>
                                             <Link href={`/dashboard/sales/orders/${order.id}`}>

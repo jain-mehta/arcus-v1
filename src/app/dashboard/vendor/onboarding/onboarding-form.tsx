@@ -489,7 +489,7 @@ export function OnboardingForm() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

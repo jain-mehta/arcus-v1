@@ -26,9 +26,9 @@ type CreateUserFormValues = z.infer<typeof createUserSchema>;
 
 interface UsersClientProps {
   initialUsers: User[];
-  allRoles: Role[];
-  allPermissions: Permission[];
-  allStores: TStore[];
+  allRoles: any[];
+  allPermissions: any[];
+  allStores: any[];
 }
 
 export function UsersClient({ initialUsers, allRoles, allPermissions, allStores }: UsersClientProps) {
@@ -71,21 +71,21 @@ export function UsersClient({ initialUsers, allRoles, allPermissions, allStores 
             </TableHeader>
             <TableBody>
               {users.map((u) => (
-                <TableRow key={u.id} className={cn(u.status === 'Inactive' && 'text-muted-foreground opacity-70')}>
+                <TableRow key={u.id} className={cn((u as any).status === 'Inactive' && 'text-muted-foreground opacity-70')}>
                   <TableCell>
                     <Link href={`/dashboard/hrms/employees/${u.id}`} className="hover:underline">
-                      {u.name}
+                      {(u as any).name || (u as any).full_name}
                     </Link>
                   </TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
-                      {u.roleIds?.map((rid) => (
+                      {((u as any).roleIds || [])?.map((rid: string) => (
                         <Badge key={rid}>{roleMap.get(rid) ?? rid}</Badge>
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell>{u.storeId ? storeMap.get(u.storeId) ?? 'Unknown' : 'N/A'}</TableCell>
+                  <TableCell>{(u as any).storeId ? storeMap.get((u as any).storeId) ?? 'Unknown' : 'N/A'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -96,7 +96,7 @@ export function UsersClient({ initialUsers, allRoles, allPermissions, allStores 
   );
 }
 
-function CreateUserDialog({ allRoles, allStores, allPermissions, onUserCreated }: { allRoles: Role[]; allStores: TStore[]; allPermissions: Permission[]; onUserCreated: (user: User) => void }) {
+function CreateUserDialog({ allRoles, allStores, allPermissions, onUserCreated }: { allRoles: any[]; allStores: any[]; allPermissions: any[]; onUserCreated: (user: User) => void }) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmitting] = useTransition();
@@ -179,7 +179,7 @@ function CreateUserDialog({ allRoles, allStores, allPermissions, onUserCreated }
 export default UsersClient;
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

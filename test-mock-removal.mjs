@@ -141,7 +141,7 @@ async function testMockVariables() {
     const relativePath = path.relative(projectRoot, filePath);
 
     // Look for MOCK_ variable usage that's not in comments
-    const lines = content.split('\n');
+    const lines = content.split('');
     const mockUsages = [];
 
     lines.forEach((line, index) => {
@@ -259,12 +259,12 @@ async function testSyntaxValidation() {
     const issues = [];
 
     // Check for escaped newlines
-    if (content.includes('\\n')) {
+    if (content.includes('\')) {
       issues.push('Contains escaped newlines');
     }
 
     // Check for malformed imports
-    if (content.match(/import.*\n.*import/g)) {
+    if (content.match(/import.*.*import/g)) {
       issues.push('Possible malformed imports');
     }
 
@@ -441,7 +441,7 @@ async function testBuild() {
         } else {
           // Parse build errors to find mock-related issues
           const mockRelatedErrors = [];
-          const allErrors = (errorOutput + output).split('\n');
+          const allErrors = (errorOutput + output).split('');
 
           for (const line of allErrors) {
             if (line.includes('mock') || line.includes('MOCK_') || line.includes('Cannot resolve module')) {
@@ -475,7 +475,7 @@ async function testBuild() {
 
 // Generate detailed report
 async function generateReport() {
-  await log('\n📊 GENERATING COMPREHENSIVE TEST REPORT...', 'info');
+  await log('📊 GENERATING COMPREHENSIVE TEST REPORT...', 'info');
 
   const report = {
     timestamp: new Date().toISOString(),
@@ -493,7 +493,7 @@ async function generateReport() {
   await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
 
   // Console summary
-  console.log('\n' + '='.repeat(60));
+  console.log('' + '='.repeat(60));
   console.log('             MOCK DATA REMOVAL TEST RESULTS');
   console.log('='.repeat(60));
   console.log(`📊 Total Tests: ${report.summary.totalTests}`);
@@ -503,7 +503,7 @@ async function generateReport() {
   console.log('='.repeat(60));
 
   if (report.summary.failed > 0) {
-    console.log('\n❌ FAILED TESTS:');
+    console.log('❌ FAILED TESTS:');
     for (const failure of TEST_RESULTS.failed) {
       console.log(`   • ${failure.test}`);
       if (failure.issues) {
@@ -513,19 +513,19 @@ async function generateReport() {
   }
 
   if (report.summary.warnings > 0) {
-    console.log('\n⚠️  WARNINGS:');
+    console.log('⚠️  WARNINGS:');
     for (const warning of TEST_RESULTS.warnings) {
       console.log(`   • ${warning.test}: ${warning.message}`);
     }
   }
 
-  console.log(`\n📄 Detailed report saved to: ${reportPath}`);
+  console.log(`📄 Detailed report saved to: ${reportPath}`);
 
   const success = report.summary.failed === 0;
   const status = success ? 'PASSED' : 'FAILED';
   const icon = success ? '✅' : '❌';
 
-  console.log(`\n${icon} OVERALL STATUS: ${status}`);
+  console.log(`${icon} OVERALL STATUS: ${status}`);
 
   return success;
 }

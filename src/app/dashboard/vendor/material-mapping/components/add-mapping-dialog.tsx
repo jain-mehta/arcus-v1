@@ -23,7 +23,7 @@ const formSchema = z.object({
 type AddMappingFormValues = z.infer<typeof formSchema>;
 
 interface AddMappingDialogProps {
-    onAddMapping: (data: Omit<MaterialMapping, 'id' | 'vendorId' | 'active'>) => Promise<boolean>;
+    onAddMapping: (data: any) => Promise<boolean>;
     disabled: boolean;
 }
 
@@ -164,7 +164,7 @@ export function AddMappingDialog({ onAddMapping, disabled }: AddMappingDialogPro
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -6,6 +6,8 @@ import { useState, useTransition, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import type { Payslip } from '@/lib/types/domain';
+import type { PayslipLayout } from '../formats/actions';
 import {
   Card,
   CardContent,
@@ -35,12 +37,57 @@ import { Loader2, FileText, Printer } from 'lucide-react';
 import { PrintablePayslip } from '../printable-payslip';
 import { useReactToPrint } from 'react-to-print';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PayslipLayout } from '../formats/actions';
+
+// Type definitions
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  org_id?: string;
+  role_id?: string;
+  designation?: string;
+  storeId?: string;
+  reportsTo?: string;
+  roleIds?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  manager_id?: string;
+  organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface SalaryStructure {
+  id: string;
+  name: string;
+  store_id?: string;
+  base_salary?: number;
+  hra?: number;
+  da?: number;
+  other_allowances?: number;
+  pf_contribution?: number;
+  insurance?: number;
+  tax?: number;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: any;
+}
 
 const generatePayslipSchema = z.object({
   staffId: z.string().min(1, 'Please select a staff member.'),
   month: z.string().min(1, 'Please select a month.'),
 });
+
 
 type GeneratePayslipFormValues = z.infer<typeof generatePayslipSchema>;
 
@@ -96,13 +143,14 @@ export default function GeneratePayslipPage() {
             try {
                 // The `runPayroll` action is now overloaded to handle a single staffId
                 const result = await runPayroll(values.month, values.staffId);
-                const payslip = result.payslips.find(p => p.staffId === values.staffId);
+                const payslips = (result?.success && Array.isArray(result.data)) ? result.data : [];
+                const payslip = payslips.find(p => (p as any).staffId === values.staffId);
                 
                 if (payslip) {
                     setGeneratedPayslip(payslip);
                     toast({
                         title: 'Payslip Generated',
-                        description: `Payslip for ${payslip.staffName} for ${values.month} is ready.`,
+                        description: `Payslip for ${(payslip as any).staffName} for ${values.month} is ready.`,
                     });
                 } else {
                      throw new Error('Could not find the generated payslip.');
@@ -209,7 +257,7 @@ export default function GeneratePayslipPage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -33,14 +33,14 @@ const req = http.request(options, (res) => {
   });
 
   res.on('end', () => {
-    console.log('\n✅ Response received:');
+    console.log('✅ Response received:');
     console.log('Status:', res.statusCode);
     console.log('Headers:', res.headers);
     console.log('Body:', data);
 
     try {
       const parsed = JSON.parse(data);
-      console.log('\n📊 Parsed response:');
+      console.log('📊 Parsed response:');
       console.log(JSON.stringify(parsed, null, 2));
     } catch (e) {
       console.log('Raw:', data);

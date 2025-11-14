@@ -19,7 +19,8 @@ export default async function StaffDetailPage({ params }: any) {
         notFound();
     }
 
-    const store = [].find(s => s.id === staff.storeId);
+    // TODO: Implement store lookup
+    const store = null;
 
     return (
         <div className="space-y-8">
@@ -31,16 +32,16 @@ export default async function StaffDetailPage({ params }: any) {
                         </Link>
                     </Button>
                     <Avatar className="h-16 w-16">
-                        <AvatarImage src={`https://picsum.photos/seed/${staff.id}/64/64`} data-ai-hint="person" />
-                        <AvatarFallback>{staff.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={`https://picsum.photos/seed/${(staff as any).id}/64/64`} data-ai-hint="person" />
+                        <AvatarFallback>{(staff as any).name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">{staff.name}</h1>
-                        <p className="text-muted-foreground">{staff.designation || 'Employee'} at {store?.name || 'N/A'}</p>
+                        <h1 className="text-3xl font-bold tracking-tight">{(staff as any).name}</h1>
+                        <p className="text-muted-foreground">{(staff as any).designation || 'Employee'} at {(store as any)?.name || 'N/A'}</p>
                     </div>
                 </div>
                  <Button variant="outline" asChild>
-                    <Link href={`/dashboard/hrms/employees/${staff.id}/edit`}>
+                    <Link href={`/dashboard/hrms/employees/${(staff as any).id}/edit`}>
                         <Edit className="mr-2 h-4 w-4" /> Edit Profile
                     </Link>
                 </Button>
@@ -62,11 +63,11 @@ export default async function StaffDetailPage({ params }: any) {
                         <TableBody>
                             {shiftLogs.length > 0 ? (
                                 shiftLogs.map(log => (
-                                    <TableRow key={log.id}>
-                                        <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                                    <TableRow key={(log as any).id}>
+                                        <TableCell>{new Date((log as any).timestamp).toLocaleString()}</TableCell>
                                         <TableCell>
-                                            <Badge variant={log.type === 'Clock In' ? 'default' : log.type === 'Clock Out' ? 'destructive' : 'secondary'}>
-                                                {log.type}
+                                            <Badge variant={(log as any).type === 'Clock In' ? 'default' : (log as any).type === 'Clock Out' ? 'destructive' : 'secondary'}>
+                                                {(log as any).type}
                                             </Badge>
                                         </TableCell>
                                     </TableRow>
@@ -85,6 +86,12 @@ export default async function StaffDetailPage({ params }: any) {
         </div>
     );
 }
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
 
-// TODO: Replace with actual database queries
+// TODO: Implement getStaffMember and getShiftLogsForStaff functions
+async function getStaffMember(id: string): Promise<{id: string; name: string; designation?: string} | null> {
+  return null;
+}
+
+async function getShiftLogsForStaff(id: string): Promise<any[]> {
+  return [];
+}

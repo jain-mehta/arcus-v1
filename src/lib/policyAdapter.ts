@@ -96,7 +96,7 @@ export async function loadSchema(filePath?: string): Promise<string> {
  * Sync policies to Permify (schema + roles)
  */
 export async function syncPolicies(tenantId: string): Promise<boolean> {
-  console.log(`\n?? Syncing policies for tenant ${tenantId}...`);
+  console.log(`?? Syncing policies for tenant ${tenantId}...`);
 
   try {
     // 1. Load and sync schema
@@ -141,7 +141,7 @@ export async function syncPolicies(tenantId: string): Promise<boolean> {
     }
 
     console.log(
-      `\n? Policy sync complete: ${successCount}/${Object.keys(roles).length} roles synced`
+      `? Policy sync complete: ${successCount}/${Object.keys(roles).length} roles synced`
     );
     return true;
   } catch (error) {
@@ -233,7 +233,7 @@ export function describeRole(role: RoleDefinition): string {
     lines.push('');
   });
 
-  return lines.join('\n');
+  return lines.join('');
 }
 
 export function invalidateCache(key?: string) {

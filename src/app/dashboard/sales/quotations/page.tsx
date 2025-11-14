@@ -2,11 +2,14 @@ import { getQuotations, getSalesCustomers } from '../actions';
 import { QuotationsClient } from './client';
 
 export default async function QuotationsListPage() {
-    const [quotations, { customers: customerList }] = await Promise.all([
+    const [quotationsResp, customersResp] = await Promise.all([
         getQuotations(), 
         getSalesCustomers()
     ]);
     
-    return <QuotationsClient initialQuotations={quotations} allCustomers={customerList} />;
+    const quotations = (quotationsResp?.success && Array.isArray(quotationsResp.data)) ? quotationsResp.data : [];
+    const customerList = (customersResp?.success && Array.isArray(customersResp.data)) ? customersResp.data : [];
+    
+    return <QuotationsClient initialQuotations={quotations as any} allCustomers={customerList as any} />;
 }
 

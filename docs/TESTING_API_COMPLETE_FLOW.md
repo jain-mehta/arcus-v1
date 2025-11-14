@@ -291,7 +291,7 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}================================${NC}"
 echo -e "${BLUE}User Management API Testing${NC}"
-echo -e "${BLUE}================================${NC}\n"
+echo -e "${BLUE}================================${NC}"
 
 # Step 1: Login
 echo -e "${YELLOW}[1/5] Logging in as admin...${NC}"
@@ -303,7 +303,7 @@ LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/login \
   }')
 
 TOKEN=$(echo $LOGIN_RESPONSE | grep -o '"accessToken":"[^"]*' | cut -d'"' -f4)
-echo -e "${GREEN}✓ Got token: ${TOKEN:0:20}...${NC}\n"
+echo -e "${GREEN}✓ Got token: ${TOKEN:0:20}...${NC}"
 
 # Step 2: Create Role
 echo -e "${YELLOW}[2/5] Creating sales_manager role...${NC}"
@@ -320,7 +320,7 @@ ROLE_RESPONSE=$(curl -s -X POST http://localhost:3000/api/admin/roles \
   }')
 
 ROLE_ID=$(echo $ROLE_RESPONSE | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
-echo -e "${GREEN}✓ Created role: $ROLE_ID${NC}\n"
+echo -e "${GREEN}✓ Created role: $ROLE_ID${NC}"
 
 # Step 3: Create User
 echo -e "${YELLOW}[3/5] Creating user john.doe@example.com...${NC}"
@@ -335,13 +335,13 @@ USER_RESPONSE=$(curl -s -X POST http://localhost:3000/api/admin/users \
   }')
 
 USER_ID=$(echo $USER_RESPONSE | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
-echo -e "${GREEN}✓ Created user: $USER_ID${NC}\n"
+echo -e "${GREEN}✓ Created user: $USER_ID${NC}"
 
 # Step 4: List Users
 echo -e "${YELLOW}[4/5] Listing all users...${NC}"
 curl -s -X GET http://localhost:3000/api/admin/users \
   -H "Authorization: Bearer $TOKEN" | jq '.users[] | {id, email, fullName}'
-echo -e "${GREEN}✓ Listed users${NC}\n"
+echo -e "${GREEN}✓ Listed users${NC}"
 
 # Step 5: User Login
 echo -e "${YELLOW}[5/5] Testing user login...${NC}"
@@ -353,7 +353,7 @@ USER_LOGIN=$(curl -s -X POST http://localhost:3000/api/auth/login \
   }')
 
 USER_TOKEN=$(echo $USER_LOGIN | grep -o '"accessToken":"[^"]*' | cut -d'"' -f4)
-echo -e "${GREEN}✓ User login successful, got token: ${USER_TOKEN:0:20}...${NC}\n"
+echo -e "${GREEN}✓ User login successful, got token: ${USER_TOKEN:0:20}...${NC}"
 
 echo -e "${BLUE}================================${NC}"
 echo -e "${GREEN}✓ All tests passed!${NC}"

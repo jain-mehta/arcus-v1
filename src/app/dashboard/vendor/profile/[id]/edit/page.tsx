@@ -68,30 +68,31 @@ export default function EditVendorProfilePage({ params }: any) {
         async function fetchVendorData() {
             setLoading(true);
             try {
-                const data = await getVendor(params.id);
+                const result = await getVendor(params.id);
+                const data = result.success ? ((result.data as any) || null) : null;
                 if (!data) {
                     notFound();
                     return;
                 }
-                setVendorData(data);
+                setVendorData(data as any);
                 form.reset({
-                    businessName: data.name,
-                    vendorCategory: data.category,
-                    operationalRegion: data.operationalRegion,
-                    status: data.status,
-                    contactName: data.contact.name,
-                    contactEmail: data.contact.email,
-                    contactPhone: data.contact.phone,
-                    businessAddress: data.address,
-                    website: data.website || '',
-                    paymentTerms: data.paymentTerms,
-                    preferredPaymentMethod: data.preferredPaymentMethod,
-                    gstin: data.tax.gstin,
-                    panNumber: data.tax.panNumber,
-                    bankName: data.banking.bankName,
-                    accountHolderName: data.banking.accountHolderName,
-                    accountNumber: data.banking.accountNumber,
-                    ifscCode: data.banking.ifscCode,
+                    businessName: (data as any).name,
+                    vendorCategory: (data as any).category,
+                    operationalRegion: (data as any).operationalRegion,
+                    status: (data as any).status,
+                    contactName: (((data as any).contact || {}) as any).name,
+                    contactEmail: (((data as any).contact || {}) as any).email,
+                    contactPhone: (((data as any).contact || {}) as any).phone,
+                    businessAddress: (data as any).address,
+                    website: ((data as any).website || ''),
+                    paymentTerms: (data as any).paymentTerms,
+                    preferredPaymentMethod: (data as any).preferredPaymentMethod,
+                    gstin: (((data as any).tax || {}) as any).gstin,
+                    panNumber: (((data as any).tax || {}) as any).panNumber,
+                    bankName: (((data as any).banking || {}) as any).bankName,
+                    accountHolderName: (((data as any).banking || {}) as any).accountHolderName,
+                    accountNumber: (((data as any).banking || {}) as any).accountNumber,
+                    ifscCode: (((data as any).banking || {}) as any).ifscCode,
                 });
             } catch (error) {
                 console.error("Failed to fetch vendor data:", error);
@@ -132,10 +133,10 @@ export default function EditVendorProfilePage({ params }: any) {
         };
 
         try {
-            await updateVendor(params.id, submissionData as Partial<Vendor>);
+            await updateVendor(params.id, submissionData as any);
             toast({
                 title: 'Vendor Updated',
-                description: `${data.businessName}'s profile has been successfully updated.`,
+                description: `${(submissionData as any).businessName}'s profile has been successfully updated.`,
             });
             router.push(`/dashboard/vendor/profile/${params.id}`);
             router.refresh();
@@ -332,15 +333,15 @@ export default function EditVendorProfilePage({ params }: any) {
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormItem>
                         <FormLabel>On-Time Delivery (%)</FormLabel>
-                        <Input type="number" value={vendorData.onTimeDelivery} readOnly disabled />
+                        <Input type="number" value={(vendorData as any)?.onTimeDelivery || 0} readOnly disabled />
                     </FormItem>
                     <FormItem>
                         <FormLabel>Quality Score (/5)</FormLabel>
-                        <Input type="number" step="0.1" value={vendorData.qualityScore} readOnly disabled />
+                        <Input type="number" step="0.1" value={(vendorData as any)?.qualityScore || 0} readOnly disabled />
                     </FormItem>
                     <FormItem>
                         <FormLabel>Avg. Response Time</FormLabel>
-                        <Input value={vendorData.avgResponseTime} readOnly disabled />
+                        <Input value={(vendorData as any)?.avgResponseTime || 'N/A'} readOnly disabled />
                     </FormItem>
                 </CardContent>
             </Card>
@@ -540,7 +541,7 @@ function EditVendorProfileSkeleton() {
         </div>
     );
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

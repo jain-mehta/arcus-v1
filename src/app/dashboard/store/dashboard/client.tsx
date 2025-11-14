@@ -23,20 +23,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import type { getAdminStoreDashboardData, AdminDashboardFilter } from './actions';
+import type { AdminDashboardFilter } from './actions';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type DashboardData = Awaited<ReturnType<typeof getAdminStoreDashboardData>>;
+interface AdminStoreDashboardData {
+  totalStores: number;
+  totalSales: number;
+  totalItemsSold: number;
+  salesByStore?: any[];
+  topPerformingStore?: string;
+  topProducts?: any[];
+  allStores?: any[];
+}
 
 interface AdminStoreDashboardClientProps {
-    dashboardData: DashboardData;
+    dashboardData: AdminStoreDashboardData;
     activeFilter: AdminDashboardFilter;
 }
 
 
 export function AdminStoreDashboardClient({ dashboardData, activeFilter }: AdminStoreDashboardClientProps) {
-  const { totalStores, totalSales, totalItemsSold, salesByStore, topPerformingStore, topProducts, allStores } = dashboardData;
+  const { totalStores, totalSales, totalItemsSold, salesByStore = [], topPerformingStore = 'N/A', topProducts = [], allStores = [] } = dashboardData;
   const router = useRouter();
   
   const kpis = [
@@ -204,7 +212,7 @@ export function AdminStoreDashboardClient({ dashboardData, activeFilter }: Admin
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

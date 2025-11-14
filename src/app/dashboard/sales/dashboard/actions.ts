@@ -22,19 +22,23 @@ export async function getSalesDashboardData(): Promise<ActionResponse> {
 
     try {
 
-  const [{ orders }, { customers }] = await Promise.all([
+  const [ordersResp, customersResp] = await Promise.all([
     getOrders(),
     getSalesCustomers(),
   ]);
-  const customerMap = new Map(customers.map((c) => [c.id, c.name]));
+  
+  const orders = (ordersResp?.success && Array.isArray(ordersResp.data)) ? ordersResp.data : [];
+  const customers = (customersResp?.success && Array.isArray(customersResp.data)) ? customersResp.data : [];
+  
+  const customerMap = new Map(customers.map((c: any) => [c.id, c.name]));
 
-  const totalRevenue = orders.reduce((acc, order) => acc + order.totalAmount, 0);
+  const totalRevenue = orders.reduce((acc: any, order: any) => acc + (order.totalAmount || 0), 0);
   const totalSalesCount = customers.length;
   const averageOrderValue =
     orders.length > 0 ? totalRevenue / orders.length : 0;
   const totalProductsSold = orders.reduce(
-    (acc, order) =>
-      acc + order.lineItems.reduce((itemAcc, item) => itemAcc + item.quantity, 0),
+    (acc: any, order: any) =>
+      acc + (order.lineItems || []).reduce((itemAcc: any, item: any) => itemAcc + (item.quantity || 0), 0),
     0
   );
 
@@ -67,21 +71,21 @@ export async function getSalesDashboardData(): Promise<ActionResponse> {
     },
   ];
 
-  const recentSales = orders.slice(0, 5).map((order) => ({
+  const recentSales = orders.slice(0, 5).map((order: any) => ({
     name: customerMap.get(order.customerId) || 'Unknown Customer',
     email: `Order: ${order.orderNumber}`,
-    amount: `₹${order.totalAmount.toLocaleString('en-IN')}`,
+    amount: `₹${(order.totalAmount || 0).toLocaleString('en-IN')}`,
   }));
 
-  const salesChartData = [].reduce((acc, order) => {
-    const month = new Date(order.orderDate).toLocaleString('default', { month: 'short' });
-    const unitsSold = order.lineItems.reduce((sum, item) => sum + item.quantity, 0);
+  const salesChartData = orders.reduce((acc: any[], order: any) => {
+    const month = new Date(order.orderDate || new Date()).toLocaleString('default', { month: 'short' });
+    const unitsSold = (order.lineItems || []).reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
     const existing = acc.find(item => item.month === month);
     if (existing) {
-        existing.revenue += order.totalAmount;
+        existing.revenue += (order.totalAmount || 0);
         existing.unitsSold += unitsSold;
     } else {
-        acc.push({ month, revenue: order.totalAmount, unitsSold });
+        acc.push({ month, revenue: (order.totalAmount || 0), unitsSold });
     }
     return acc;
   }, [] as { month: string, revenue: number, unitsSold: number }[]);
@@ -99,8 +103,3 @@ export async function getSalesDashboardData(): Promise<ActionResponse> {
         return createErrorResponse(`Failed to get sales dashboard data: ${error.message}`);
     }
 }
-
-
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';
-
-// TODO: Replace with actual database queries

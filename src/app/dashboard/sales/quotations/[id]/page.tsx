@@ -2,7 +2,26 @@
 import { notFound } from 'next/navigation';
 import { QuotationDetailClient } from './client';
 import { QuotationDetailView } from './view';
-import { createOrderFromQuote } from '../../actions';
+import { createOrderFromQuote as createOrderFromQuoteAction } from '../../actions';
+
+async function getQuotation(id: string): Promise<any> {
+  // TODO: Implement getQuotation to fetch from database
+  return null;
+}
+
+async function getCustomer(id: string): Promise<any> {
+  // TODO: Implement getCustomer to fetch from database
+  return null;
+}
+
+async function handleCreateOrderFromQuote(quote: any): Promise<{ success: boolean; orderId?: string; message?: string; }> {
+  const result = await createOrderFromQuoteAction(quote.id);
+  return {
+    success: result?.success || false,
+    orderId: result?.data?.id,
+    message: result?.message,
+  };
+}
 
 export default async function QuotationDetailPage({ params }: any) {
   
@@ -14,12 +33,12 @@ export default async function QuotationDetailPage({ params }: any) {
   
   const customer = quotation.customerId ? await getCustomer(quotation.customerId) : null;
 
-  const subtotal = quotation.lineItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+  const subtotal = (quotation.lineItems || []).reduce((acc: number, item: any) => acc + ((item.quantity || 0) * (item.unitPrice || 0)), 0);
   const tax = subtotal * 0.18; // Assuming 18% GST
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-        <QuotationDetailClient quotation={quotation} createOrderFromQuote={createOrderFromQuote} />
+        <QuotationDetailClient quotation={quotation} createOrderFromQuote={handleCreateOrderFromQuote} />
         <QuotationDetailView 
             quotation={quotation} 
             customer={customer}
@@ -29,7 +48,7 @@ export default async function QuotationDetailPage({ params }: any) {
     </div>
   );
 }
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

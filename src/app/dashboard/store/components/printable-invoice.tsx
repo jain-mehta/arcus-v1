@@ -3,7 +3,7 @@
 'use client';
 
 import React from 'react';
-import type { Order, Customer, Store } from '@/lib/mock-data/types';
+import type { Order, Customer, Store } from '@/lib/types/domain';
 
 interface PrintableInvoiceProps {
     order: Order;
@@ -43,7 +43,8 @@ function numberToWords(num: number): string {
 export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoiceProps>(
     ({ order, customer, store }, ref) => {
 
-    const subtotal = order.lineItems.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+    const lineItems = order.lineItems || order.items || [];
+    const subtotal = lineItems.reduce((acc, item) => acc + (((item as any).unitPrice || (item as any).unit_price || 0) * ((item as any).quantity || 0)), 0);
     const discountAmount = subtotal * ((order.discountPercentage || 0) / 100);
     const subtotalAfterDiscount = subtotal - discountAmount;
     
@@ -53,7 +54,7 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
     const total = subtotalAfterDiscount + cgst + sgst;
     
     // Rounding difference
-    const roundOff = order.totalAmount - total;
+    const roundOff = (order.totalAmount || order.total_amount || subtotal) - total;
         
     return (
         <div ref={ref} className="p-2 bg-white text-black font-sans text-[10px]">
@@ -64,7 +65,7 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
                 <div>
                     <h1 className="font-bold text-sm">{store?.name || 'Bobs Bath Fittings'}</h1>
                     <p>{store?.address || 'X-18, UPSIDC-IA,'}</p>
-                    <p>{store ? `${store.city}, ${store.state} - ${store.pincode}`: 'G. T. ROAD, ETAH-207001'}</p>
+                    <p>{store ? `${store.city}, ${store.state} - ${store.pincode || store.pin_code}`: 'G. T. ROAD, ETAH-207001'}</p>
                     <p>GSTIN/UIN: {store?.gstin || '09ABKPJ5249B2ZO'}</p>
                     <p>State Name: {store?.state || 'Uttar Pradesh'}, Code: 09</p>
                     <p>Contact: {store?.contact || '+91-9810045456'}</p>
@@ -72,8 +73,8 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
                 </div>
                 <div className='border border-black p-1'>
                     <div className='flex'>
-                        <div className='w-1/2 border-r border-b border-black p-1'><strong>Invoice No.</strong><br/>{order.orderNumber.split('-').pop()}</div>
-                        <div className='w-1/2 border-b border-black p-1'><strong>Dated</strong><br/>{new Date(order.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</div>
+                        <div className='w-1/2 border-r border-b border-black p-1'><strong>Invoice No.</strong><br/>{(order.orderNumber || order.order_number || '').split('-').pop()}</div>
+                        <div className='w-1/2 border-b border-black p-1'><strong>Dated</strong><br/>{new Date(order.orderDate || order.order_date || '').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</div>
                     </div>
                     <div className='flex'>
                         <div className='w-full border-b border-black p-1'><strong>Delivery Note</strong></div>
@@ -123,19 +124,19 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
                     </tr>
                 </thead>
                 <tbody>
-                    {order.lineItems.length > 0 ? (
-                        order.lineItems.map((item, index) => (
-                            <tr key={item.productId} className="border-b border-black">
+                    {lineItems.length > 0 ? (
+                        lineItems.map((item, index) => (
+                            <tr key={(item as any).productId || (item as any).product_id || index} className="border-b border-black">
                                 <td className="border-r border-black p-1 text-center">{index + 1}</td>
-                                <td className="border-r border-black p-1">{item.name}</td>
+                                <td className="border-r border-black p-1">{(item as any).name || (item as any).product_name || 'Item'}</td>
                                 <td className="border-r border-black p-1"></td>
                                 <td className="border-r border-black p-1 text-center">18%</td>
-                                <td className="border-r border-black p-1 text-center">{item.quantity} Pcs</td>
-                                <td className="border-r border-black p-1 text-center">{item.quantity} Pcs</td>
-                                <td className="border-r border-black p-1 text-right">{item.unitPrice.toFixed(2)}</td>
+                                <td className="border-r border-black p-1 text-center">{(item as any).quantity || 0} Pcs</td>
+                                <td className="border-r border-black p-1 text-center">{(item as any).quantity || 0} Pcs</td>
+                                <td className="border-r border-black p-1 text-right">{((item as any).unitPrice || (item as any).unit_price || 0).toFixed(2)}</td>
                                 <td className="border-r border-black p-1 text-center">Pcs</td>
                                 <td className="border-r border-black p-1 text-center">{order.discountPercentage || 0}%</td>
-                                <td className="p-1 text-right">{(item.quantity * item.unitPrice * (1 - ((order.discountPercentage || 0) / 100))).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="p-1 text-right">{(((item as any).quantity || 0) * (((item as any).unitPrice || (item as any).unit_price || 0)) * (1 - ((order.discountPercentage || 0) / 100))).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             </tr>
                         ))
                     ) : (
@@ -179,11 +180,11 @@ export const PrintableInvoice = React.forwardRef<HTMLDivElement, PrintableInvoic
             <div className='grid grid-cols-[1fr_auto_auto_auto] border border-black mt-2 font-bold'>
                 <div className='p-1 border-r border-black'>Amount Chargeable (in words)</div>
                 <div className='p-1 border-r border-black text-center'>Total</div>
-                <div className='p-1 border-r border-black text-center'>{order.lineItems.reduce((acc, item) => acc + item.quantity, 0)} Pcs</div>
-                <div className='p-1 text-right'>₹ {order.totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                <div className='p-1 border-r border-black' style={{gridColumn: '1 / span 1'}}>{numberToWords(order.totalAmount)}</div>
+                <div className='p-1 border-r border-black text-center'>{lineItems.reduce((acc, item) => acc + ((item as any).quantity || 0), 0)} Pcs</div>
+                <div className='p-1 text-right'>₹ {(order.totalAmount || order.total_amount || subtotal).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <div className='p-1 border-r border-black' style={{gridColumn: '1 / span 1'}}>{numberToWords(order.totalAmount || order.total_amount || subtotal)}</div>
                 <div className='p-1 border-r border-black'></div>
-                <div className='p-1 border-r border-black text-center'>{order.lineItems.reduce((acc, item) => acc + item.quantity, 0)} Pcs</div>
+                <div className='p-1 border-r border-black text-center'>{lineItems.reduce((acc, item) => acc + ((item as any).quantity || 0), 0)} Pcs</div>
                 <div className='p-1 text-right'>E. & O.E</div>
             </div>
 

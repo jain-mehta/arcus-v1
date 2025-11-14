@@ -2,10 +2,13 @@
 
 import { PurchaseHistoryClient } from './client';
 import { getPurchaseHistoryForVendor } from '../actions';
+import { getVendors } from '../list/actions';
 
 export default async function PurchaseHistoryPage() {
-    const vendors = await getVendors();
-    const initialHistory = vendors.length > 0 ? await getPurchaseHistoryForVendor(vendors[0].id) : [];
+    const vendorsResult = await getVendors();
+    const vendors = vendorsResult.success ? ((vendorsResult.data as any) || []) : [];
+    const historyResult = vendors.length > 0 ? await getPurchaseHistoryForVendor(vendors[0].id) : { success: false, data: [] };
+    const initialHistory = historyResult.success ? ((historyResult.data as any) || []) : [];
 
     return (
         <PurchaseHistoryClient vendors={vendors} initialHistory={initialHistory} />
@@ -15,7 +18,7 @@ export default async function PurchaseHistoryPage() {
     
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -27,8 +27,8 @@ export async function getHrmsReportData() {
     await assertPermission(sessionClaims, 'hrms', 'attendance');
 
   // --- KPI Cards Data ---
-  const totalEmployees = [].length;
-  const departments = new Set([].map(r => r.name.replace(' Head', '').replace(' Executive', '').replace(' Supervisor', ''))).size;
+  const totalEmployees = 0;
+  const departments = 0;
   const monthlyAttrition = '1.2%'; // Mocked value as it requires historical data
 
   const kpis = [
@@ -39,25 +39,11 @@ export async function getHrmsReportData() {
 
   // --- Headcount by Department Chart ---
   const headcountByDept: Record<string, number> = {};
-  [].forEach(user => {
-    const roleId = user.roleIds[0];
-    const role = [].find(r => r.id === roleId);
-    const dept = role ? role.name.replace(' Head', '').replace(' Executive', '').replace(' Supervisor', '') : 'Unassigned';
-    headcountByDept[dept] = (headcountByDept[dept] || 0) + 1;
-  });
-
+  
   const headcountData = Object.entries(headcountByDept).map(([name, count]) => ({ name, count }));
 
   // --- Leave Consumption Chart ---
-  const leaveConsumption = [].reduce((acc, req) => {
-    if (req.status === 'Approved') {
-        const start = new Date(req.startDate);
-        const end = new Date(req.endDate);
-        const days = differenceInDays(end, start) + 1;
-        acc[req.type] = (acc[req.type] || 0) + days;
-    }
-    return acc;
-  }, {} as Record<LeaveType, number>);
+  const leaveConsumption = {} as Record<string, number>;
 
   const leaveData = Object.entries(leaveConsumption)
     .filter(([, value]) => value > 0)
@@ -79,22 +65,7 @@ export async function generateHrmsReport(
   switch (reportType) {
     case 'leave_report':
       headers = ['Employee Name', 'Leave Type', 'Start Date', 'End Date', 'Duration (Days)', 'Reason', 'Status', 'Applied On'];
-      
-      const filteredLeaves = [].filter(req => {
-        const reqDate = new Date(req.startDate);
-        return isWithinInterval(reqDate, { start: dateRange.from, end: dateRange.to });
-      });
-
-      rows = filteredLeaves.map(req => [
-        req.staffName,
-        req.type,
-        new Date(req.startDate).toLocaleDateString(),
-        new Date(req.endDate).toLocaleDateString(),
-        (differenceInDays(new Date(req.endDate), new Date(req.startDate)) + 1).toString(),
-        `"${req.reason.replace(/"/g, '""')}"`, // Escape quotes
-        req.status,
-        new Date(req.appliedOn).toLocaleDateString(),
-      ]);
+      rows = [];
       break;
     
     // Future cases for other reports (payroll, etc.) can be added here
@@ -103,87 +74,6 @@ export async function generateHrmsReport(
   }
 
   csvData = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-\n');
   return csvData;
 }
-
 

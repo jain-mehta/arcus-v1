@@ -40,7 +40,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
           </Suspense>
           {revenueFiguresData && revenueFiguresData.length > 0 && <KpiCharts data={revenueFiguresData} />}
           <Suspense fallback={<Skeleton className="h-96" />}>
-            <PendingVendorPayments payments={data.pendingPayments} />
+            <PendingVendorPayments payments={data.pendingPayments as any} />
           </Suspense>
           <CriticalAlerts alerts={data.criticalAlerts} />
         </div>

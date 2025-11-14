@@ -1,21 +1,20 @@
 
 import { InvoiceClient } from './client';
+import { getVendors } from '../list/actions';
 
 export default async function InvoiceManagementPage() {
-    const [vendors, allInvoices] = await Promise.all([
-        getVendors(),
-        getInvoices()
-    ]);
+    const vendorsResult = await getVendors();
+    const vendors = vendorsResult.success ? ((vendorsResult.data as any) || []) : [];
     
     return (
-       <InvoiceClient vendors={vendors} initialInvoices={allInvoices} />
+       <InvoiceClient vendors={vendors} initialInvoices={[]} />
     );
 }
 
     
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

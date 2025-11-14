@@ -45,13 +45,13 @@ interface ReturnsClientProps {
 export function ReturnsClient({ isAdmin, allStores, userStoreId }: ReturnsClientProps) {
     const { toast } = useToast();
     const [billNumber, setBillNumber] = useState('');
-    const [foundOrder, setFoundOrder] = useState<Order | null>(null);
+    const [foundOrder, setFoundOrder] = useState<any | null>(null);
     const [isSearching, startSearch] = useTransition();
     const [isProcessing, startProcessing] = useTransition();
     
-    const [selectedStoreId, setSelectedStoreId] = useState<string>(userStoreId || allStores[0]?.id || '');
+    const [selectedStoreId, setSelectedStoreId] = useState<string>(userStoreId || (allStores[0] as any)?.id || '');
 
-    const [processedReturnData, setProcessedReturnData] = useState<{order: Order, returnedItems: any[]} | null>(null);
+    const [processedReturnData, setProcessedReturnData] = useState<{order: any, returnedItems: any[]} | null>(null);
     const printRef = useRef<HTMLDivElement>(null);
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
@@ -84,7 +84,7 @@ export function ReturnsClient({ isAdmin, allStores, userStoreId }: ReturnsClient
             const order = await findOrderForReturn(billNumber, selectedStoreId);
             if (order) {
                 setFoundOrder(order);
-                const itemsForForm = order.lineItems.map(item => ({
+                const itemsForForm = (order.lineItems || []).map((item: any) => ({
                     ...item,
                     originalQuantity: item.quantity,
                     returnQuantity: 0,
@@ -302,7 +302,7 @@ export function ReturnsClient({ isAdmin, allStores, userStoreId }: ReturnsClient
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

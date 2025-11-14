@@ -28,8 +28,10 @@ import { Label } from "@/components/ui/label";
 
 const leadSchema = z.object({
     name: z.string().min(2, "Lead name is required."),
+    email: z.string().email("Valid email is required."),
     company: z.string().min(2, "Company name is required."),
-    stage: z.enum(['New', 'Contacted', 'Qualified', 'Lost']),
+    status: z.string().default('New'),
+    stage: z.enum(['New', 'Contacted', 'Qualified', 'Lost']).optional(),
     source: z.string().optional(),
 });
 
@@ -40,6 +42,29 @@ const convertLeadSchema = z.object({
     opportunityValue: z.coerce.number().optional(),
 });
 type ConvertLeadFormValues = z.infer<typeof convertLeadSchema>;
+
+interface Lead {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    company?: string;
+    status?: string;
+    source?: string;
+    assigned_to?: string;
+    owner_id?: string;
+    stage?: string;
+    assignedTo?: string;
+    leadScore?: number;
+    [key: string]: any;
+}
+
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    [key: string]: any;
+}
 
 interface LeadsClientProps {
     initialLeads: Lead[];
@@ -70,8 +95,12 @@ export function LeadsClient({ initialLeads, users }: LeadsClientProps) {
     router.refresh();
   }
   
-  const getScoreBadgeVariant = (score?: 'High' | 'Medium' | 'Low') => {
-    switch (score) {
+  const getScoreBadgeVariant = (score?: 'High' | 'Medium' | 'Low' | number) => {
+    let scoreStr = score;
+    if (typeof score === 'number') {
+        scoreStr = score >= 70 ? 'High' : score >= 40 ? 'Medium' : 'Low';
+    }
+    switch (scoreStr) {
         case 'High': return 'destructive';
         case 'Medium': return 'secondary';
         case 'Low':
@@ -242,11 +271,11 @@ function InlineStageUpdate({ lead, onLeadUpdated }: { lead: Lead; onLeadUpdated:
     const { toast } = useToast();
     const [isUpdating, startTransition] = useTransition();
 
-    const handleStageChange = (newStage: Lead['stage']) => {
+    const handleStageChange = (newStage: any) => {
         startTransition(async () => {
             const result = await updateLead(lead.id, { stage: newStage });
-            if (result.success && result.updatedLead) {
-                onLeadUpdated(result.updatedLead);
+            if (result.success && result.data) {
+                onLeadUpdated(result.data);
                 toast({ title: 'Stage Updated' });
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: result.message });
@@ -296,12 +325,12 @@ function AddLeadDialog({ onLeadAdded }: { onLeadAdded: (newLead: Lead) => void})
 
   const onSubmit = (values: LeadFormValues) => {
     startTransition(async () => {
-        const result = await addLead(values);
-        if (result.success && result.newLead) {
-            onLeadAdded(result.newLead);
+        const result = await addLead(values as any);
+        if (result.success && result.data) {
+            onLeadAdded(result.data);
             toast({
                 title: "Lead Added",
-                description: `${values.name} from ${values.company} has been assigned to ${result.newLead.assignedTo}.`,
+                description: `${values.name} from ${values.company} has been added.`,
             });
             setOpen(false);
             form.reset();
@@ -463,7 +492,7 @@ function ConvertLeadDialog({ lead, onLeadConverted }: { lead: Lead; onLeadConver
 
     const handleConvert = (values: ConvertLeadFormValues) => {
         startTransition(async () => {
-            const result = await convertLeadToCustomer(lead.id, values.createOpportunity ? values.opportunityValue || 0 : 0);
+            const result = await convertLeadToCustomer(lead.id);
 
             if (result.success) {
                 onLeadConverted(lead.id);
@@ -473,8 +502,7 @@ function ConvertLeadDialog({ lead, onLeadConverted }: { lead: Lead; onLeadConver
                         <div>
                             <p>{lead.name} is now a customer.</p>
                             <div className="mt-4 flex flex-col gap-2">
-                               {result.customerId && <Button variant="outline" size="sm" asChild><Link href={`/dashboard/sales/customers/${result.customerId}`}>View Customer <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
-                               {result.opportunityId && <Button variant="outline" size="sm" asChild><Link href={`/dashboard/sales/opportunities`}>View Opportunity <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
+                               {result.data?.id && <Button variant="outline" size="sm" asChild><Link href={`/dashboard/sales/customers/${result.data.id}`}>View Customer <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
                             </div>
                         </div>
                     )
@@ -562,17 +590,18 @@ function EditLeadDialog({ lead, onLeadUpdated }: { lead: Lead; onLeadUpdated: (l
     resolver: zodResolver(leadSchema),
     defaultValues: {
       name: lead.name,
-      company: lead.company,
-      stage: lead.stage,
+      email: lead.email || '',
+      company: lead.company || '',
+      status: lead.status || 'New',
       source: lead.source || 'Manual Entry',
     },
   });
 
   const onSubmit = (values: LeadFormValues) => {
     startTransition(async () => {
-      const result = await updateLead(lead.id, values);
-      if (result.success && result.updatedLead) {
-        onLeadUpdated(result.updatedLead);
+      const result = await updateLead(lead.id, values as any);
+      if (result.success && result.data) {
+        onLeadUpdated(result.data);
         toast({ title: 'Lead Updated' });
         setOpen(false);
       } else {
@@ -654,7 +683,7 @@ function EditLeadDialog({ lead, onLeadUpdated }: { lead: Lead; onLeadUpdated: (l
     
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

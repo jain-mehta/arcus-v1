@@ -21,6 +21,20 @@ import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
+interface Product {
+    id: string;
+    name: string;
+    sku: string;
+    price?: number;
+    [key: string]: any;
+}
+
+interface Customer {
+    id: string;
+    name: string;
+    email?: string;
+    [key: string]: any;
+}
 
 const lineItemSchema = z.object({
   productId: z.string().min(1, 'Product is required.'),
@@ -122,7 +136,25 @@ export function CreateQuotationClient({ products, customers }: CreateQuotationCl
 
     function onSubmit(data: QuotationFormValues) {
         startTransition(async () => {
-            const result = await addQuotation(data);
+            // Map camelCase to snake_case for API
+            const apiData = {
+                owner_id: data.ownerId,
+                customer_id: data.customerId,
+                quote_number: data.quoteNumber,
+                quote_date: data.quoteDate,
+                expiry_date: data.expiryDate,
+                total_amount: data.totalAmount,
+                status: data.status,
+                discount_percentage: data.discountPercentage,
+                line_items: data.lineItems.map(item => ({
+                    product_id: item.productId,
+                    name: item.name,
+                    sku: item.sku,
+                    quantity: item.quantity,
+                    unit_price: item.unitPrice,
+                })),
+            };
+            const result = await addQuotation(apiData as any);
             if (result.success) {
                 toast({
                     title: 'Quotation Submitted',
@@ -146,8 +178,8 @@ export function CreateQuotationClient({ products, customers }: CreateQuotationCl
                 ...lineItems[index],
                 productId: product.id,
                 name: product.name,
-                sku: product.sku,
-                unitPrice: product.price,
+                sku: product.sku || '',
+                unitPrice: product.price || 0,
             });
         }
     };
@@ -327,7 +359,10 @@ function AiAssistantDialog({ customerId, onGenerate, disabled }: { customerId: s
     const handleSubmit = async (values: AiAssistantFormValues) => {
         startGenerating(async () => {
             try {
-                const result = await generateQuotation(customerId, values.prompt);
+                const result = await generateQuotation({
+                    customerId,
+                    prompt: values.prompt
+                });
                 onGenerate(result);
                 toast({
                     title: "Quotation Generated!",
@@ -490,7 +525,7 @@ const PrintableQuotation = React.forwardRef<HTMLDivElement, PrintableQuotationPr
 PrintableQuotation.displayName = 'PrintableQuotation';
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

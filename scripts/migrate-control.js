@@ -20,8 +20,8 @@ dotenv.config({ path: join(__dirname, '../.env') });
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres123@localhost:5432/arcus_control';
 
 async function runMigrations() {
-  console.log('🔄 Running control-plane migrations...\n');
-  console.log(`Database: ${DATABASE_URL.replace(/:[^:@]+@/, ':****@')}\n`);
+  console.log('🔄 Running control-plane migrations...');
+  console.log(`Database: ${DATABASE_URL.replace(/:[^:@]+@/, ':****@')}`);
 
   const client = new pg.Client({
     connectionString: DATABASE_URL,
@@ -29,7 +29,7 @@ async function runMigrations() {
 
   try {
     await client.connect();
-    console.log('✅ Connected to database\n');
+    console.log('✅ Connected to database');
 
     // Create migrations tracking table if not exists
     await client.query(`
@@ -47,7 +47,7 @@ async function runMigrations() {
       .filter(f => f.endsWith('.sql'))
       .sort(); // Alphabetical order
 
-    console.log(`Found ${sqlFiles.length} migration files:\n`);
+    console.log(`Found ${sqlFiles.length} migration files:`);
 
     for (const file of sqlFiles) {
       const migrationName = file.replace('.sql', '');
@@ -81,7 +81,7 @@ async function runMigrations() {
         );
         
         await client.query('COMMIT');
-        console.log(`✅ ${migrationName} - Success\n`);
+        console.log(`✅ ${migrationName} - Success`);
       } catch (error) {
         await client.query('ROLLBACK');
         throw new Error(`Migration ${migrationName} failed: ${error.message}`);
@@ -90,7 +90,7 @@ async function runMigrations() {
 
     console.log('🎉 All migrations completed successfully!');
   } catch (error) {
-    console.error('\n❌ Migration failed:', error);
+    console.error('❌ Migration failed:', error);
     process.exit(1);
   } finally {
     await client.end();

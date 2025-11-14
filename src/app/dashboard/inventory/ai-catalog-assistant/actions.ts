@@ -23,7 +23,7 @@ export async function getProductSuggestionsFromCatalogTextOnly(
     try {
         const { suggestProductsFromCatalogTextOnly } = await import('@/ai/flows/suggest-products-from-catalog-text-only');
         const result = await suggestProductsFromCatalogTextOnly(input);
-        await logUserAction(user, 'use', 'ai_catalog_suggestions', 'catalog', { inputLength: input.catalogText?.length || 0 });
+        await logUserAction(user, 'use', 'ai_catalog_suggestions', 'catalog', { inputLength: (input as any).catalogText?.length || 0 });
         return createSuccessResponse(result, 'Product suggestions generated successfully');
     } catch (error: any) {
         return createErrorResponse(`Failed to generate product suggestions: ${error.message}`);
@@ -43,7 +43,7 @@ export async function extractProductImage(
     try {
         const { extractProductImageFromCatalog } = await import('@/ai/flows/extract-product-image-from-catalog');
         const result = await extractProductImageFromCatalog(input);
-        await logUserAction(user, 'use', 'ai_catalog_image_extract', 'catalog', { imageId: input.imageId });
+        await logUserAction(user, 'use', 'ai_catalog_image_extract', 'catalog', { imageId: (input as any).imageId });
         return createSuccessResponse(result, 'Product image extracted successfully');
     } catch (error: any) {
         return createErrorResponse(`Failed to extract product image: ${error.message}`);
@@ -51,7 +51,7 @@ export async function extractProductImage(
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

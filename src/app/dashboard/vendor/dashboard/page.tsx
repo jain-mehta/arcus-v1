@@ -26,19 +26,20 @@ import { VendorPerformanceChart } from './components/vendor-performance-chart';
 import { getVendorDashboardData } from '../actions';
 
 export default async function VendorDashboardPage() {
-  const data = await getVendorDashboardData();
+  const dataResult = await getVendorDashboardData();
+  const data = dataResult.success ? dataResult.data || {} : {};
 
   return (
     <div className="flex flex-col gap-8">
         <Suspense fallback={<KpiCardsSkeleton />}>
-          <KpiCards kpis={data.kpis} />
+          <KpiCards kpis={(data as any).kpis || []} />
         </Suspense>
         <div className="grid gap-4 md:gap-8">
              <Suspense fallback={<UpcomingPaymentsSkeleton />}>
-              <UpcomingPaymentsCard upcomingPayments={data.upcomingPayments} />
+              <UpcomingPaymentsCard upcomingPayments={(data as any).upcomingPayments || []} />
             </Suspense>
         </div>
-        <VendorPerformanceChart data={data.vendorPerformanceData} />
+        <VendorPerformanceChart data={(data as any).vendorPerformanceData || []} />
     </div>
   );
 }

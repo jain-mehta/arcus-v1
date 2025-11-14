@@ -35,7 +35,7 @@ const tenantId = flags['tenant-id'] || process.env.TENANT_ID || 'default';
 
 async function main() {
   try {
-    console.log('\n🔐 Policy Sync CLI\n');
+    console.log('🔐 Policy Sync CLI');
 
     // Validate environment
     if (!process.env.PERMIFY_URL && process.env.POLICY_ENGINE !== 'mock') {
@@ -71,7 +71,7 @@ async function main() {
     const success = await syncPolicies(tenantId);
 
     if (success) {
-      console.log('\n✅ Policy sync successful!');
+      console.log('✅ Policy sync successful!');
       console.log(`   Tenant: ${tenantId}`);
       console.log(`   Engine: ${process.env.POLICY_ENGINE || 'permify'}`);
       if (process.env.PERMIFY_URL) {
@@ -79,7 +79,7 @@ async function main() {
       }
       process.exit(0);
     } else {
-      console.error('\n❌ Policy sync failed');
+      console.error('❌ Policy sync failed');
       process.exit(1);
     }
   } catch (error) {

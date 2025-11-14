@@ -2,17 +2,29 @@
 import { SalesReportsClient } from './client';
 import { getReportData } from './actions';
 
+// Stub for getSalesSnapshots - returns empty array if not defined in actions
+async function getSalesSnapshots() {
+  return [];
+}
+
 export default async function SalesReportsPage() {
-  const [reportData, snapshots] = await Promise.all([
+  const [reportDataResult, snapshots] = await Promise.all([
     getReportData(),
     getSalesSnapshots(),
   ]);
+
+  const reportData = reportDataResult.success ? reportDataResult.data : {
+    kpiData: [],
+    funnelData: [],
+    topOpportunities: [],
+    sourceData: []
+  };
 
   return <SalesReportsClient reportData={reportData} snapshots={snapshots} />;
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

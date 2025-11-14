@@ -12,10 +12,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { FolderKanban, PlusCircle, Edit, UserPlus, GripVertical, View } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { JobOpening, Applicant, ApplicantStage } from '@/lib/mock-data/types';
+import type { JobOpening, Applicant, ApplicantStageName } from './actions';
 import { JobDialog, type JobOpeningFormValues, JobDetailDialog } from './job-dialog';
 import { useState, useEffect, useTransition, useCallback } from 'react';
-import { createJobOpening, getJobOpenings, updateJobOpening, getApplicants, addApplicant, updateApplicantStage } from '../actions';
+import { createJobOpening, getJobOpenings, updateJobOpening, getApplicants, addApplicant, updateApplicantStage } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,13 +30,19 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 
-const initialColumns: Record<ApplicantStage, { id: ApplicantStage; title: string; applicants: Applicant[] }> = {
+const initialColumns: Record<ApplicantStageName, { id: ApplicantStageName; title: string; applicants: Applicant[] }> = {
   Applied: { id: 'Applied', title: 'Applied', applicants: [] },
   Screening: { id: 'Screening', title: 'Screening', applicants: [] },
   Interview: { id: 'Interview', title: 'Interview', applicants: [] },
   Offer: { id: 'Offer', title: 'Offer', applicants: [] },
   Hired: { id: 'Hired', title: 'Hired', applicants: [] },
   Rejected: { id: 'Rejected', title: 'Rejected', applicants: [] },
+  applied: { id: 'applied', title: 'Applied', applicants: [] },
+  screening: { id: 'screening', title: 'Screening', applicants: [] },
+  interview: { id: 'interview', title: 'Interview', applicants: [] },
+  offer: { id: 'offer', title: 'Offer', applicants: [] },
+  hired: { id: 'hired', title: 'Hired', applicants: [] },
+  rejected: { id: 'rejected', title: 'Rejected', applicants: [] },
 };
 
 const pipelineStages = Object.values(initialColumns);
@@ -72,7 +78,8 @@ export default function HrmsRecruitmentPage() {
     async function fetchJobs() {
       setLoading(true);
       try {
-        const jobs = await getJobOpenings();
+        const response = await getJobOpenings();
+        const jobs = response.success && response.data ? response.data : [];
         setJobOpenings(jobs);
         if (jobs.length > 0 && !selectedJobId) {
             setSelectedJobId(jobs[0].id);
@@ -93,14 +100,15 @@ export default function HrmsRecruitmentPage() {
     }
     setLoadingApplicants(true);
     try {
-        const allApplicants = await getApplicants(selectedJobId);
-        const newColumns = JSON.parse(JSON.stringify(initialColumns));
-        allApplicants.forEach(applicant => {
-            if (newColumns[applicant.stage]) {
-                newColumns[applicant.stage].applicants.push(applicant);
+        const response = await getApplicants(selectedJobId);
+        const allApplicants = response.success && response.data ? response.data : [];
+        const newColumns: Record<string, { id: string; title: string; applicants: Applicant[] }> = JSON.parse(JSON.stringify(initialColumns));
+        allApplicants.forEach((applicant: Applicant) => {
+            if (applicant.stage && newColumns[applicant.stage.toLowerCase()]) {
+                newColumns[applicant.stage.toLowerCase()].applicants.push(applicant);
             }
         });
-        setColumns(newColumns);
+        setColumns(newColumns as typeof initialColumns);
     } catch (error) {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to load applicants.' });
     } finally {
@@ -122,8 +130,8 @@ export default function HrmsRecruitmentPage() {
 
       if (jobId) { // Edit mode
         const result = await updateJobOpening(jobId, transformedData);
-        if (result.success && result.updatedJob) {
-          setJobOpenings(prev => prev.map(job => job.id === jobId ? result.updatedJob! : job));
+        if (result.success && result.data) {
+          setJobOpenings(prev => prev.map(job => job.id === jobId ? result.data as JobOpening : job));
           toast({ title: 'Job Updated' });
           return true;
         } else {
@@ -131,8 +139,8 @@ export default function HrmsRecruitmentPage() {
         }
       } else { // Add mode
         const result = await createJobOpening(transformedData);
-        if (result.success && result.newJob) {
-          setJobOpenings(prev => [result.newJob!, ...prev]);
+        if (result.success && result.data) {
+          setJobOpenings(prev => [result.data as JobOpening, ...prev]);
           toast({ title: 'Job Posted' });
           return true;
         } else {
@@ -153,10 +161,12 @@ export default function HrmsRecruitmentPage() {
         return;
     }
     
-    const startColKey = source.droppableId as ApplicantStage;
-    const endColKey = destination.droppableId as ApplicantStage;
+    const startColKey = source.droppableId as unknown as ApplicantStageName;
+    const endColKey = destination.droppableId as unknown as ApplicantStageName;
     const startCol = columns[startColKey];
     const endCol = columns[endColKey];
+
+    if (!startCol || !endCol) return;
 
     const startApplicants = Array.from(startCol.applicants);
     const [movedApplicant] = startApplicants.splice(source.index, 1);
@@ -176,7 +186,7 @@ export default function HrmsRecruitmentPage() {
 
     // Update destination column
     const endApplicants = startCol.id === endCol.id ? startApplicants : Array.from(endCol.applicants);
-    endApplicants.splice(destination.index, 0, { ...movedApplicant, stage: endColKey });
+    endApplicants.splice(destination.index, 0, { ...movedApplicant, stage: endColKey.toLowerCase() });
     newColumnsState[endColKey] = {
       ...endCol,
       applicants: endApplicants
@@ -187,8 +197,8 @@ export default function HrmsRecruitmentPage() {
 
     startUpdating(async () => {
         try {
-            const result = await updateApplicantStage(draggableId, destination.droppableId as ApplicantStage);
-            if (!result.success) throw new Error(result.message);
+            const result = await updateApplicantStage(draggableId, destination.droppableId);
+            if (!result.success) throw new Error(result.error || 'Failed to update');
             toast({ title: `Moved ${movedApplicant.name} to ${destination.droppableId}` });
         } catch (error: any) {
             setColumns(originalColumns); // Revert to the state before the optimistic update
@@ -246,7 +256,7 @@ export default function HrmsRecruitmentPage() {
                              </div>
                              <div className="flex items-center">
                                 {selectedJobId === job.id && (
-                                     <JobDetailDialog job={job} triggerButton={
+                                     <JobDetailDialog job={job as any} triggerButton={
                                         <Button variant="ghost" size="icon" className='h-7 w-7' onClick={(e) => e.stopPropagation()}>
                                             <View className="h-4 w-4 text-muted-foreground" />
                                         </Button>
@@ -254,7 +264,7 @@ export default function HrmsRecruitmentPage() {
                                 )}
                                 <JobDialog 
                                     mode="edit"
-                                    job={job}
+                                    job={job as any}
                                     onSave={handleSaveJob}
                                     triggerButton={
                                         <Button variant="ghost" size="icon" className='h-7 w-7' onClick={(e) => e.stopPropagation()}>
@@ -265,7 +275,7 @@ export default function HrmsRecruitmentPage() {
                              </div>
                         </CardHeader>
                         <CardContent>
-                             <Badge variant={job.status === 'Open' ? 'default' : 'secondary'}>
+                             <Badge variant={job.status === 'open' || job.status === 'Open' ? 'default' : 'secondary'}>
                                 {job.status}
                             </Badge>
                         </CardContent>
@@ -277,7 +287,7 @@ export default function HrmsRecruitmentPage() {
             <ClientOnly>
                 <DragDropContext onDragEnd={onDragEnd}>
                   <div className="flex gap-4 overflow-x-auto p-2 border rounded-lg bg-muted/50 min-h-[400px]">
-                      {Object.values(columns).map(column => (
+                      {Object.values(columns).map((column: any) => (
                         <Droppable key={column.id} droppableId={column.id} isCombineEnabled={false} isDropDisabled={loadingApplicants || isUpdating}>
                           {(provided, snapshot) => (
                               <div
@@ -299,7 +309,7 @@ export default function HrmsRecruitmentPage() {
                                   </div>
                                   <div className="space-y-3">
                                       {loadingApplicants ? Array.from({length: 2}).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
-                                      : column.applicants.length > 0 ? column.applicants.map((applicant, index) => (
+                                      : column.applicants.length > 0 ? column.applicants.map((applicant: Applicant, index: number) => (
                                           <Draggable key={applicant.id} draggableId={applicant.id} index={index}>
                                             {(provided) => (
                                               <div
@@ -363,9 +373,11 @@ function AddApplicantDialog({ job, onApplicantAdded, triggerButton }: { job?: Jo
         if (!job) return;
         startSubmitting(async () => {
             try {
-                const result = await addApplicant({ ...values, jobId: job.id });
-                if (result.success && result.newApplicant) {
-                    onApplicantAdded(result.newApplicant);
+                // construct payload and cast to the expected param type to avoid excess property errors
+                const payload = { ...values, jobId: job.id } as unknown as Omit<Applicant, "id" | "organization_id" | "applied_at">;
+                const result = await addApplicant(payload);
+                if (result.success && result.data) {
+                    onApplicantAdded(result.data as Applicant);
                     toast({ title: "Applicant Added" });
                     setOpen(false);
                     form.reset();

@@ -64,19 +64,19 @@ export function VendorList({ initialVendors }: VendorListProps) {
 
   const filteredVendors = useMemo(() => {
     return vendors.filter(
-      (vendor) =>
+      (vendor: any) =>
         (vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          vendor.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
+          ((vendor as any).category || '').toLowerCase().includes(searchTerm.toLowerCase())) &&
         (statusFilter === 'all' || vendor.status === statusFilter)
     );
   }, [vendors, searchTerm, statusFilter]);
 
-  const handleStatusChange = (vendorId: string, newStatus: Vendor['status']) => {
+  const handleStatusChange = (vendorId: string, newStatus: any) => {
     startTransition(async () => {
       try {
-        if (newStatus === 'Active') {
+        if (newStatus === 'active') {
           await approveVendor(vendorId);
-        } else if (newStatus === 'Rejected') {
+        } else if (newStatus === 'rejected') {
           await rejectVendor(vendorId);
         }
         toast({ title: 'Success', description: 'Vendor status updated.' });
@@ -103,11 +103,11 @@ export function VendorList({ initialVendors }: VendorListProps) {
     });
   };
   
-  const getStatusIcon = (status: Vendor['status']) => {
+  const getStatusIcon = (status: any) => {
     switch (status) {
-      case 'Active': return <CheckCircle className="text-green-500" />;
-      case 'Pending Approval': return <Clock className="text-yellow-500" />;
-      case 'Rejected': case 'Inactive': return <XCircle className="text-red-500" />;
+      case 'active': return <CheckCircle className="text-green-500" />;
+      case 'pending': return <Clock className="text-yellow-500" />;
+      case 'rejected': case 'inactive': return <XCircle className="text-red-500" />;
       default: return null;
     }
   };
@@ -150,10 +150,10 @@ export function VendorList({ initialVendors }: VendorListProps) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                            <SelectItem value="Pending Approval">Pending Approval</SelectItem>
-                            <SelectItem value="Rejected">Rejected</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="rejected">Rejected</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -175,7 +175,7 @@ export function VendorList({ initialVendors }: VendorListProps) {
                                     </TableCell>
                                 </TableRow>
                              ) : filteredVendors.length > 0 ? (
-                            filteredVendors.map((vendor) => (
+                            filteredVendors.map((vendor: any) => (
                                 <TableRow key={vendor.id}>
                                 <TableCell className="font-medium">
                                     <Link href={`/dashboard/vendor/profile/${vendor.id}`} className="hover:underline flex items-center gap-2">
@@ -183,20 +183,20 @@ export function VendorList({ initialVendors }: VendorListProps) {
                                         {vendor.name}
                                     </Link>
                                 </TableCell>
-                                <TableCell>{vendor.category}</TableCell>
+                                <TableCell>{(vendor as any).category || 'N/A'}</TableCell>
                                 <TableCell>
-                                    <Badge variant={vendor.status === 'Active' ? 'default' : vendor.status === 'Pending Approval' ? 'secondary' : 'destructive'}>
+                                    <Badge variant={(vendor as any).status === 'active' ? 'default' : (vendor as any).status === 'pending' ? 'secondary' : 'destructive'}>
                                         <div className="flex items-center gap-2">
-                                            {getStatusIcon(vendor.status)}
-                                            {vendor.status}
+                                            {getStatusIcon((vendor as any).status)}
+                                            {(vendor as any).status}
                                         </div>
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    {vendor.status === 'Pending Approval' && (
+                                    {(vendor as any).status === 'pending' && (
                                         <div className="inline-flex gap-2 mr-2">
-                                            <Button variant="outline" size="sm" onClick={() => handleStatusChange(vendor.id, 'Active')} disabled={isPending}>Approve</Button>
-                                            <Button variant="destructive" size="sm" onClick={() => handleStatusChange(vendor.id, 'Rejected')} disabled={isPending}>Reject</Button>
+                                            <Button variant="outline" size="sm" onClick={() => handleStatusChange(vendor.id, 'active')} disabled={isPending}>Approve</Button>
+                                            <Button variant="destructive" size="sm" onClick={() => handleStatusChange(vendor.id, 'rejected')} disabled={isPending}>Reject</Button>
                                         </div>
                                     )}
                                     <DropdownMenu>
@@ -260,7 +260,7 @@ export function VendorList({ initialVendors }: VendorListProps) {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

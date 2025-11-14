@@ -55,12 +55,12 @@ const poSchema = z.object({
 type POFormValues = z.infer<typeof poSchema>;
 
 interface CreatePOFormProps {
-    vendors: Vendor[];
+    vendors: any[];
 }
 
 export function CreatePOForm({ vendors }: CreatePOFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [vendorMaterials, setVendorMaterials] = useState<MaterialMapping[]>([]);
+  const [vendorMaterials, setVendorMaterials] = useState<any[]>([]);
 
   const form = useForm<POFormValues>({
     resolver: zodResolver(poSchema),
@@ -85,7 +85,8 @@ export function CreatePOForm({ vendors }: CreatePOFormProps) {
   useEffect(() => {
     async function fetchVendorMaterials() {
         if (vendorId) {
-            const materials = await getMaterialMappings(vendorId);
+            const result = await getMaterialMappings(vendorId);
+            const materials = (result as any).success ? ((result as any).data as any) || [] : [];
             setVendorMaterials(materials);
         } else {
             setVendorMaterials([]);
@@ -123,13 +124,13 @@ export function CreatePOForm({ vendors }: CreatePOFormProps) {
   }
   
   const handleMaterialChange = (index: number, materialId: string) => {
-    const material = vendorMaterials.find(m => m.id === materialId);
+    const material = vendorMaterials.find((m: any) => (m as any).id === materialId);
     if (material) {
         update(index, {
             ...lineItems[index],
-            material: material.material,
-            sku: material.sku,
-            unitPrice: material.unitPrice,
+            material: (material as any).material,
+            sku: (material as any).sku,
+            unitPrice: (material as any).unitPrice,
         });
     }
   };
@@ -365,7 +366,7 @@ export function CreatePOForm({ vendors }: CreatePOFormProps) {
 
     
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

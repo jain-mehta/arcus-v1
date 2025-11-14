@@ -40,7 +40,7 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
         return stores.filter(store => {
             const regionMatch = regionFilter === 'all' || store.region === regionFilter;
             const stateMatch = stateFilter === 'all' || store.state === stateFilter;
-            const alertMatch = !showAlertsOnly || (store.cashAlertThreshold > 0 && store.cashInHand > store.cashAlertThreshold);
+            const alertMatch = !showAlertsOnly || ((store.cashAlertThreshold || 0) > 0 && (store.cashInHand || 0) > (store.cashAlertThreshold || 0));
             return regionMatch && stateMatch && alertMatch;
         });
     }, [stores, regionFilter, stateFilter, showAlertsOnly]);
@@ -71,7 +71,7 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
                             <SelectTrigger id="region-filter"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Regions</SelectItem>
-                                {uniqueRegions.map((region, index) => <SelectItem key={`${region}-${index}`} value={region}>{region}</SelectItem>)}
+                                {uniqueRegions.map((region, index) => <SelectItem key={`${region}-${index}`} value={region || 'unknown'}>{region || 'Unknown'}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -81,7 +81,7 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
                             <SelectTrigger id="state-filter"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All States</SelectItem>
-                                 {uniqueStates.map((state, index) => <SelectItem key={`${state}-${index}`} value={state}>{state}</SelectItem>)}
+                                 {uniqueStates.map((state, index) => <SelectItem key={`${state}-${index}`} value={state || 'unknown'}>{state || 'Unknown'}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -116,8 +116,8 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
                                 <TableCell>{store.region}</TableCell>
                                 <TableCell>{store.city}, {store.state}</TableCell>
                                 <TableCell className="text-right">
-                                    {store.cashInHand.toLocaleString('en-IN')}
-                                    {store.cashAlertThreshold > 0 && store.cashInHand > store.cashAlertThreshold && <Badge variant="destructive" className="ml-2">Alert</Badge>}
+                                    {(store.cashInHand || 0).toLocaleString('en-IN')}
+                                    {(store.cashAlertThreshold || 0) > 0 && (store.cashInHand || 0) > (store.cashAlertThreshold || 0) && <Badge variant="destructive" className="ml-2">Alert</Badge>}
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <div className="flex justify-center gap-2">
@@ -169,11 +169,12 @@ export function StoreList({ initialStores, storeManagers }: StoreListProps) {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;
-  email: string;
+  email?: string;
+  name?: string;
   full_name?: string;
   phone?: string;
   is_active?: boolean;
@@ -244,7 +245,13 @@ interface Store {
   name: string;
   location?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  region?: string;
+  managerId?: string;
   manager_id?: string;
+  cashInHand?: number;
+  cashAlertThreshold?: number;
   organization_id?: string;
   created_at?: string;
   updated_at?: string;

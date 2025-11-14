@@ -130,9 +130,9 @@ function CreateAnnouncementDialog({ onCreate }: { onCreate: (newAnnouncement: an
   const handleSubmit = async (values: AnnouncementFormValues) => {
     startSubmitting(async () => {
       const result = await createAnnouncement(values);
-      if (result.success && result.newAnnouncement) {
+      if (result.success && result.data) {
         toast({ title: "Announcement Posted" });
-        onCreate(result.newAnnouncement);
+        onCreate(result.data as any);
         setOpen(false);
         form.reset();
       } else {
@@ -180,10 +180,10 @@ function UploadPolicyDialog({ onUpload }: { onUpload: (newPolicy: any) => void }
 
     const handleSubmit = async (values: PolicyFormValues) => {
         startSubmitting(async () => {
-            const result = await uploadPolicy({ name: values.name, version: values.version }, values.file);
-            if (result.success && result.newPolicy) {
+            const result = await uploadPolicy({ name: values.name, version: values.version, file: values.file });
+            if (result.success && result.data) {
                 toast({ title: "Policy Uploaded" });
-                onUpload(result.newPolicy);
+                onUpload(result.data);
                 setOpen(false);
                 form.reset();
             } else {

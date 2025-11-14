@@ -2,17 +2,27 @@
 
 import { MaterialMappingClient } from './client';
 import { getMaterialMappings, getVolumeDiscounts } from './actions';
+import { getVendors } from '../list/actions';
 
 export default async function MaterialMappingPage() {
-    const vendors = await getVendors();
+    const vendorsResult = await getVendors();
+    const vendors = vendorsResult.success ? ((vendorsResult.data as any) || []) : [];
     
     // Fetch initial data for the first vendor to avoid client-side loading on first paint
     const initialVendorId = vendors[0]?.id || null;
-    const [initialMappings, initialDiscounts] = initialVendorId ? await Promise.all([
-        getMaterialMappings(initialVendorId),
-        // If there's a mapping, fetch discounts for the first one.
-        getMaterialMappings(initialVendorId).then(maps => maps.length > 0 ? getVolumeDiscounts(maps[0].id) : [])
-    ]) : [[], []];
+    let initialMappings: any[] = [];
+    let initialDiscounts: any[] = [];
+    
+    if (initialVendorId) {
+        const mappingsResult = await getMaterialMappings(initialVendorId);
+        const maps = mappingsResult.success ? ((mappingsResult.data as any) || []) : [];
+        initialMappings = maps;
+        
+        if ((maps as any).length > 0) {
+            const discountsResult = await getVolumeDiscounts((maps as any)[0].id);
+            initialDiscounts = discountsResult.success ? ((discountsResult.data as any) || []) : [];
+        }
+    }
 
     return (
         <MaterialMappingClient 
@@ -25,7 +35,7 @@ export default async function MaterialMappingPage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -38,7 +38,7 @@ import { PlusCircle, Users2, Loader2 } from "lucide-react";
 import { getStaff, addStaffMember, logShiftActivity } from "../../hrms/actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type { Store, User } from '@/lib/mock-data/types';
+import type { Store, User } from '@/lib/types/domain';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -62,7 +62,8 @@ export function StaffClient({ isAdmin, allStores, userStoreId, initialStaff, ini
         setStaff([]);
         startLoading(async () => {
             try {
-                const newStaff = await getStaff(storeId);
+                const response = await getStaff(storeId);
+                const newStaff = response.success ? (response.data || []) : [];
                 setStaff(newStaff);
             } catch (error) {
                 toast({
@@ -140,12 +141,12 @@ export function StaffClient({ isAdmin, allStores, userStoreId, initialStaff, ini
                             <TableRow key={member.id}>
                                 <TableCell className="flex items-center gap-3">
                                     <Avatar>
-                                        <AvatarImage src={`https://picsum.photos/seed/${member.id}/40/40`} alt={member.name} data-ai-hint="person" />
-                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                        <AvatarImage src={`https://picsum.photos/seed/${member.id}/40/40`} alt={member.name || ''} data-ai-hint="person" />
+                                        <AvatarFallback>{(member.name || 'U').charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <span>{member.name}</span>
+                                    <span>{member.name || 'Unnamed'}</span>
                                 </TableCell>
-                                <TableCell>{member.designation}</TableCell>
+                                <TableCell>{member.designation || 'N/A'}</TableCell>
                                 <TableCell>{member.status}</TableCell>
                                 <TableCell>
                                     <Button variant="outline" asChild>
@@ -221,14 +222,15 @@ function AddStaffDialog({ storeId, onStaffAdded }: { storeId: string; onStaffAdd
         return;
     }
     startSubmitting(async () => {
-        const result = await addStaffMember({ ...values, storeId });
-        if(result.success && result.newUser) {
-            onStaffAdded(result.newUser);
+        const result = await addStaffMember(values);
+        if(result.success) {
+            const newUser = result.data as User;
+            onStaffAdded(newUser);
             toast({ title: "Staff Member Added" });
             setOpen(false);
             form.reset();
         } else {
-            toast({ variant: 'destructive', title: result.message || "Error" });
+            toast({ variant: 'destructive', title: result.error || "Error" });
         }
     });
   }
@@ -305,7 +307,7 @@ function ShiftLogDialog({ staffMembers, disabled }: { staffMembers: User[], disa
 
     const handleSubmit = async (values: ShiftLogFormValues) => {
         startSubmitting(async () => {
-            const result = await logShiftActivity(values);
+            const result = await logShiftActivity(values.staffId, values.type);
             if (result.success) {
                 toast({ title: "Shift Activity Logged" });
                 router.refresh();

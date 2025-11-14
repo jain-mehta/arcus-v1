@@ -63,11 +63,15 @@ export async function getStoreReportData(storeIds?: string[], dateRange?: { from
     try {
         const supabase = getSupabaseServerClient();
 
+        if (!supabase) {
+            return createErrorResponse('Database connection failed');
+        }
+
         // Get stores from database
         let storesQuery = supabase
             .from('stores')
             .select('*')
-            .eq('organization_id', user.organization_id);
+            .eq('organization_id', (user as any).organization_id);
 
         if (storeIds && storeIds.length > 0) {
             storesQuery = storesQuery.in('id', storeIds);
@@ -81,7 +85,7 @@ export async function getStoreReportData(storeIds?: string[], dateRange?: { from
         let ordersQuery = supabase
             .from('orders')
             .select('*')
-            .eq('organization_id', user.organization_id)
+            .eq('organization_id', (user as any).organization_id)
             .eq('status', 'Delivered');
 
         if (dateRange?.from) {
@@ -103,7 +107,7 @@ export async function getStoreReportData(storeIds?: string[], dateRange?: { from
         const { data: products } = await supabase
             .from('products')
             .select('*')
-            .eq('organization_id', user.organization_id);
+            .eq('organization_id', (user as any).organization_id);
 
         const allProducts = products || [];
 
@@ -111,7 +115,7 @@ export async function getStoreReportData(storeIds?: string[], dateRange?: { from
         const { data: allStores } = await supabase
             .from('stores')
             .select('*')
-            .eq('organization_id', user.organization_id);
+            .eq('organization_id', (user as any).organization_id);
 
         // --- Chart Data: Sales by Store ---
         const salesByStoreMap = new Map<string, number>();
@@ -187,11 +191,7 @@ export async function getStoreReportData(storeIds?: string[], dateRange?: { from
             .sort((a,b) => b.totalUnitsSold - a.totalUnitsSold)
             .slice(0, 10);
 
-        await logUserAction(user.id, 'store-reports-viewed', {
-            storeIds,
-            dateRange,
-            recordCount: allSales.length
-        });
+        await logUserAction(user, 'view', 'store_reports');
 
         return createSuccessResponse({
             salesByStoreChartData,

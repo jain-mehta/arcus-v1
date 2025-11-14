@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Loader2 } from "lucide-react";
-import type { VolumeDiscount } from '@/lib/mock-data/types';
+import type { VolumeDiscount } from '@/lib/types/domain';
 
 const formSchema = z.object({
     minQuantity: z.coerce.number().int().min(1, "Minimum quantity must be at least 1."),
@@ -39,7 +39,12 @@ export function AddDiscountDialog({ onAdd, disabled }: AddDiscountDialogProps) {
 
     const onSubmit = async (values: AddDiscountFormValues) => {
         setIsSubmitting(true);
-        const success = await onAdd(values);
+        const discountData: Omit<VolumeDiscount, 'id' | 'mappingId'> = {
+            vendor_id: '', // Will be set by the parent component
+            min_quantity: values.minQuantity,
+            discount_percentage: values.discount,
+        };
+        const success = await onAdd(discountData);
         setIsSubmitting(false);
         if (success) {
             setOpen(false);

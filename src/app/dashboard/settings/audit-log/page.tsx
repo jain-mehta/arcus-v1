@@ -17,6 +17,20 @@ import {
 import { History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+interface AuditLog {
+  id: string;
+  userName: string;
+  action: string;
+  resource?: string;
+  timestamp?: string;
+  [key: string]: any;
+}
+
+// Stub function
+async function getAuditLogs(): Promise<AuditLog[]> {
+  return [];
+}
+
 export default async function AuditLogPage() {
   const auditLogs = await getAuditLogs();
 
@@ -64,7 +78,7 @@ export default async function AuditLogPage() {
                         : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
-                      {new Date(log.timestamp).toLocaleString()}
+                      {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))
@@ -84,7 +98,7 @@ export default async function AuditLogPage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

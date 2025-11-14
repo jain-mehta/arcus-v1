@@ -11,6 +11,26 @@ import { PrintableInvoice } from '@/app/dashboard/store/components/printable-inv
 import { PrintableThermalReceipt } from '@/app/dashboard/store/components/printable-thermal-receipt';
 import { PrintablePackingSlip } from '@/app/dashboard/store/components/printable-packing-slip';
 import { PrintableDeliveryChallan } from '@/app/dashboard/store/components/printable-delivery-challan';
+
+interface Store {
+    id: string;
+    name: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    region?: string;
+    cashInHand?: number;
+    cashAlertThreshold?: number;
+    contact?: string;
+    email?: string;
+    gstin?: string;
+    receiptHeader?: string;
+    receiptFooter?: string;
+    invoiceTemplate?: string;
+    [key: string]: any;
+}
+
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
         case 'Delivered':
@@ -44,6 +64,30 @@ const MASTER_STORE_FALLBACK: Store = {
     invoiceTemplate: 'A4',
 };
 
+async function getOrder(id: string): Promise<any> {
+    // TODO: Implement getOrder to fetch from database
+    return null;
+}
+
+async function getCustomer(id: string): Promise<any> {
+    // TODO: Implement getCustomer to fetch from database
+    return null;
+}
+
+interface Customer {
+    id: string;
+    name: string;
+    email?: string;
+    [key: string]: any;
+}
+
+interface SalesOrder {
+    id: string;
+    orderNumber: string;
+    status: string;
+    [key: string]: any;
+}
+
 export default async function SalesOrderDetailPage({ params }: any) {
   const order = await getOrder(params.id);
 
@@ -69,9 +113,9 @@ export default async function SalesOrderDetailPage({ params }: any) {
     customer = { id: 'walk-in-customer', name: 'Walk-in Customer' };
   }
 
-  const store = order.storeId ? [].find(s => s.id === order.storeId) : MASTER_STORE_FALLBACK;
+  const store: Store = order.storeId ? ([] as Store[]).find(s => s.id === order.storeId) || MASTER_STORE_FALLBACK : MASTER_STORE_FALLBACK;
 
-  const subtotal = order.lineItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+  const subtotal = (order.lineItems || []).reduce((acc: number, item: any) => acc + ((item.quantity || 0) * (item.unitPrice || 0)), 0);
   const discountAmount = subtotal * ((order.discountPercentage || 0) / 100);
   const subtotalAfterDiscount = subtotal - discountAmount;
   const tax = subtotalAfterDiscount * 0.18; // Assuming 18% GST
@@ -124,86 +168,4 @@ export default async function SalesOrderDetailPage({ params }: any) {
         </Card>
     </div>
   );
-}
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
-
-// TODO: Replace with actual database queries
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
 }

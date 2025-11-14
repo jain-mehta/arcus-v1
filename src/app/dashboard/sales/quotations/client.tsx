@@ -1,4 +1,6 @@
 
+
+
 'use client';
 
 import React, { useState, useTransition, useEffect } from 'react';
@@ -20,6 +22,18 @@ import { createOrderFromQuote, updateQuotationStatus } from '../actions';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface Quotation {
+    id: string;
+    customerId: string;
+    status: string;
+    [key: string]: any;
+}
+
+interface Customer {
+    id: string;
+    name: string;
+    [key: string]: any;
+}
 
 const getStatusVariant = (status: Quotation['status']) => {
     switch (status) {
@@ -30,9 +44,7 @@ const getStatusVariant = (status: Quotation['status']) => {
             return 'destructive';
         default: return 'outline';
     }
-};
-
-interface QuotationsClientProps {
+};interface QuotationsClientProps {
     initialQuotations: Quotation[];
     allCustomers: Customer[];
 }
@@ -74,12 +86,12 @@ export function QuotationsClient({ initialQuotations, allCustomers }: Quotations
         if (!quote.id) return;
         setLoadingStates(prev => ({ ...prev, [quote.id!]: { ...prev[quote.id!], convert: true }}));
         startTransition(async () => {
-            const result = await createOrderFromQuote(quote);
-            if (result.success && result.orderId) {
+            const result = await createOrderFromQuote(quote.id);
+            if (result.success && result.data?.id) {
                 toast({
                     title: "Order Created!",
                     description: `Order has been created from quotation ${quote.quoteNumber}.`,
-                    action: <Button asChild size="sm"><Link href={`/dashboard/sales/orders/${result.orderId}`}>View Order</Link></Button>
+                    action: <Button asChild size="sm"><Link href={`/dashboard/sales/orders/${result.data.id}`}>View Order</Link></Button>
                 });
                 router.push('/dashboard/sales/orders');
             } else {
@@ -207,7 +219,7 @@ export function QuotationsClient({ initialQuotations, allCustomers }: Quotations
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

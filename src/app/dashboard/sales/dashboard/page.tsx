@@ -21,7 +21,8 @@ import { getSalesDashboardData } from './actions';
 
 
 export default async function SalesDashboardPage() {
-  const { kpis, recentSales, salesChartData } = await getSalesDashboardData();
+  const response = await getSalesDashboardData();
+  const { kpis, recentSales, salesChartData } = (response?.success && response.data) ? response.data : { kpis: [], recentSales: [], salesChartData: [] };
 
   return (
     <div className="space-y-8">
@@ -33,7 +34,7 @@ export default async function SalesDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi) => {
+        {kpis.map((kpi: any) => {
           const KpiIcon = kpi.icon;
           return (
             <Card key={kpi.title}>
@@ -76,7 +77,7 @@ export default async function SalesDashboardPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {recentSales.map((sale, index) => (
+                    {recentSales.map((sale: any, index: number) => (
                     <TableRow key={index}>
                         <TableCell>
                         <div className="font-medium">{sale.name}</div>

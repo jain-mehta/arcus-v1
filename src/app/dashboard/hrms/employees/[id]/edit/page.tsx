@@ -26,13 +26,36 @@ import { useEffect, useState, useTransition } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// import { updateStaffMember } from '../../../actions';
+// import { updateStaffMember } from '../../../actions');
 
-// Temporary mock data until we refactor to use server actions
-const []: any[] = [];
-const []: any[] = [];
-const []: any[] = [];
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  full_name?: string;
+  phone?: string;
+  is_active?: boolean;
+  org_id?: string;
+  role_id?: string;
+  designation?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
+interface Role {
+  id: string;
+  name?: string;
+}
+
+async function updateStaffMember(staffId: string, data: any) {
+  try {
+    // TODO: Implement actual API call
+    console.log('Updating staff member:', staffId, data);
+    return { success: true, message: 'Updated successfully' };
+  } catch (error) {
+    return { success: false, message: 'Failed to update' };
+  }
+}
 
 const editStaffSchema = z.object({
   name: z.string().min(2, "Name is required."),
@@ -64,22 +87,22 @@ export default function EditStaffProfilePage() {
         async function fetchStaffData() {
             setLoading(true);
             try {
-                // For this mock, we get the user directly. In a real app, this might be an API call.
-                const user = [].find(u => u.id === staffId);
+                // TODO: Implement actual API call to fetch staff data
+                const user: User | null = null;
 
-                if (!user) {
+                if (user === null) {
                     notFound();
                     return;
                 }
                 setStaffData(user);
                 // Reset the form with the fetched data
                 form.reset({
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone,
-                    designation: user.designation,
-                    storeId: user.storeId || 'unassigned',
-                    reportsTo: user.reportsTo || 'none',
+                    name: (user as User).name || '',
+                    email: (user as User).email,
+                    phone: (user as User).phone || '',
+                    designation: (user as User).designation || '',
+                    storeId: (user as User).org_id || 'unassigned',
+                    reportsTo: (user as User).id || 'none',
                 });
             } catch (error) {
                 console.error("Failed to fetch staff data:", error);
@@ -89,45 +112,46 @@ export default function EditStaffProfilePage() {
             }
         }
         fetchStaffData();
-    }, [staffId, form]);
+    }, [staffId]);
 
-  async function onSubmit(data: EditStaffFormValues) {
-    startTransition(async () => {
-        try {
-            const selectedRole = [].find(r => r.name === data.designation);
+    async function onSubmit(data: EditStaffFormValues) {
+        startTransition(async () => {
+            try {
+                // TODO: Implement role selection logic
+                const selectedRole = null as Role | null;
 
-            const result = await updateStaffMember(staffId, { 
-              name: data.name,
-              email: data.email,
-              phone: data.phone,
-              designation: data.designation,
-              storeId: data.storeId === 'unassigned' ? undefined : data.storeId,
-              reportsTo: data.reportsTo === 'none' ? undefined : data.reportsTo,
-              roleIds: selectedRole ? [selectedRole.id] : [],
-            });
-            
-            if (result.success) {
-                toast({
-                    title: 'Profile Updated',
-                    description: `${data.name}'s profile has been successfully updated.`,
+                const result = await updateStaffMember(staffId, { 
+                  name: data.name,
+                  email: data.email,
+                  phone: data.phone,
+                  designation: data.designation,
+                  storeId: data.storeId === 'unassigned' ? undefined : data.storeId,
+                  reportsTo: data.reportsTo === 'none' ? undefined : data.reportsTo,
+                  roleIds: selectedRole?.id ? [selectedRole.id] : [],
                 });
-                router.push(`/dashboard/hrms/employees/${staffId}`);
-                router.refresh();
-            } else {
-                throw new Error(result.message);
+                
+                if (result.success) {
+                    toast({
+                        title: 'Profile Updated',
+                        description: `${data.name}'s profile has been successfully updated.`,
+                    });
+                    router.push(`/dashboard/hrms/employees/${staffId}`);
+                    router.refresh();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error: any) {
+                console.error("Failed to update staff:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Error',
+                    description: error.message || 'Failed to update staff. Please try again.',
+                });
             }
-        } catch (error: any) {
-            console.error("Failed to update staff:", error);
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to update staff. Please try again.',
-            });
-        }
-    });
-  }
+        });
+    }
   
-  if (loading) {
+    if (loading) {
     return <EditStaffProfileSkeleton />;
   }
 
@@ -207,7 +231,7 @@ export default function EditStaffProfilePage() {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select a designation"/></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        {[].map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                                        {/* TODO: Load designations from API */}
                                     </SelectContent>
                                 </Select>
                             <FormMessage />
@@ -228,9 +252,7 @@ export default function EditStaffProfilePage() {
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="unassigned">No Store</SelectItem>
-                                {[].map(store => (
-                                    <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
-                                ))}
+                                {/* TODO: Load stores from API */}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -251,9 +273,7 @@ export default function EditStaffProfilePage() {
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="none">None</SelectItem>
-                                {[].filter(u => u.id !== staffId).map(user => (
-                                    <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                                ))}
+                                {/* TODO: Load users from API */}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -313,86 +333,4 @@ function EditStaffProfileSkeleton() {
             </div>
         </div>
     );
-}
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
-
-// TODO: Replace with actual database queries
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
 }

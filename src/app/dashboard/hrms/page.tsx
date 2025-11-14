@@ -26,7 +26,8 @@ function DashboardSkeleton() {
 
 
 export default async function HrmsPage() {
-    const dashboardData = await getHrmsDashboardData();
+    const response = await getHrmsDashboardData();
+    const dashboardData = (response?.success && response?.data) ? response.data : { kpis: [], upcomingEvents: [] };
 
     return (
         <Suspense fallback={<DashboardSkeleton />}>

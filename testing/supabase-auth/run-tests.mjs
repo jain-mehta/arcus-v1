@@ -33,9 +33,9 @@ const runUnit = !args.includes('--integration');
 const runIntegration = !args.includes('--unit');
 const coverage = args.includes('--coverage');
 
-console.log('\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('\━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 console.log('  🧪 Supabase Auth Test Suite');
-console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\');
 
 let allTestsPassed = true;
 const testResults = {
@@ -48,7 +48,7 @@ if (runUnit) {
   console.log('📋 Running Unit Tests...');
   console.log('  - Session Management');
   console.log('  - Auth Module Validation');
-  console.log('  - Error Handling\\n');
+  console.log('  - Error Handling\');
 
   try {
     const unitTestFiles = [
@@ -63,11 +63,11 @@ if (runUnit) {
     });
 
     testResults.unit = 'PASSED';
-    console.log('✅ Unit tests passed\\n');
+    console.log('✅ Unit tests passed\');
   } catch (error) {
     testResults.unit = 'FAILED';
     allTestsPassed = false;
-    console.log('❌ Unit tests failed\\n');
+    console.log('❌ Unit tests failed\');
   }
 }
 
@@ -78,7 +78,7 @@ if (runIntegration) {
   console.log('  - Login Flow');
   console.log('  - Logout Flow');
   console.log('  - Session Management');
-  console.log('  - Edge Cases\\n');
+  console.log('  - Edge Cases\');
 
   try {
     const integrationTestFiles = [
@@ -92,18 +92,18 @@ if (runIntegration) {
     });
 
     testResults.integration = 'PASSED';
-    console.log('✅ Integration tests passed\\n');
+    console.log('✅ Integration tests passed\');
   } catch (error) {
     testResults.integration = 'FAILED';
     allTestsPassed = false;
-    console.log('❌ Integration tests failed\\n');
+    console.log('❌ Integration tests failed\');
   }
 }
 
 // Summary
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 console.log('  📊 Test Summary');
-console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\');
 
 if (testResults.unit) {
   const status = testResults.unit === 'PASSED' ? '✅' : '❌';
@@ -115,12 +115,12 @@ if (testResults.integration) {
   console.log(`  ${status} Integration Tests: ${testResults.integration}`);
 }
 
-console.log('\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n');
+console.log('\━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\');
 
 if (allTestsPassed) {
-  console.log('🎉 All tests passed!\\n');
+  console.log('🎉 All tests passed!\');
   process.exit(0);
 } else {
-  console.log('💥 Some tests failed. See details above.\\n');
+  console.log('💥 Some tests failed. See details above.\');
   process.exit(1);
 }

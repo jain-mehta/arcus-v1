@@ -40,12 +40,12 @@ type DiscrepancyFormValues = z.infer<typeof discrepancySchema>;
 
 interface InvoiceClientProps {
     vendors: Vendor[];
-    initialInvoices: Invoice[];
+    initialInvoices: any[];
 }
 
 export function InvoiceClient({ vendors, initialInvoices }: InvoiceClientProps) {
     const { toast } = useToast();
-    const [allInvoices, setAllInvoices] = useState<Invoice[]>(initialInvoices);
+    const [allInvoices, setAllInvoices] = useState<any[]>(initialInvoices);
     const [loading, setLoading] = useState(false); // Initial loading is now handled by server
     
     const [filterVendor, setFilterVendor] = useState<string>('all');
@@ -71,12 +71,12 @@ export function InvoiceClient({ vendors, initialInvoices }: InvoiceClientProps) 
         return vendors.find(v => v.id === vendorId)?.name || 'N/A';
     }
 
-    const onInvoiceUploaded = (newInvoice: Invoice) => {
-        setAllInvoices(prev => [newInvoice, ...prev].sort((a, b) => new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()));
+    const onInvoiceUploaded = (newInvoice: any) => {
+        setAllInvoices(prev => [newInvoice, ...prev].sort((a: any, b: any) => new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()));
     };
 
-    const onDiscrepancyLogged = (updatedInvoice: Invoice) => {
-        setAllInvoices(prev => prev.map(inv => inv.id === updatedInvoice.id ? updatedInvoice : inv));
+    const onDiscrepancyLogged = (updatedInvoice: any) => {
+        setAllInvoices(prev => prev.map((inv: any) => inv.id === updatedInvoice.id ? updatedInvoice : inv));
     }
 
     return (
@@ -183,11 +183,11 @@ export function InvoiceClient({ vendors, initialInvoices }: InvoiceClientProps) 
 }
 
 
-function UploadInvoiceDialog({ vendors, onInvoiceUploaded }: { vendors: Vendor[], onInvoiceUploaded: (newInvoice: Invoice) => void }) {
+function UploadInvoiceDialog({ vendors, onInvoiceUploaded }: { vendors: Vendor[], onInvoiceUploaded: (newInvoice: any) => void }) {
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+    const [purchaseOrders, setPurchaseOrders] = useState<any[]>([]);
     
     const form = useForm<UploadFormValues>({
         resolver: zodResolver(uploadFormSchema),
@@ -356,13 +356,13 @@ function UploadInvoiceDialog({ vendors, onInvoiceUploaded }: { vendors: Vendor[]
     );
 }
 
-function DiscrepancyDialog({ invoice, onDiscrepancyLogged }: { invoice: Invoice, onDiscrepancyLogged: (invoice: Invoice) => void }) {
+function DiscrepancyDialog({ invoice, onDiscrepancyLogged }: { invoice: any, onDiscrepancyLogged: (invoice: any) => void }) {
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const form = useForm<DiscrepancyFormValues>({
         resolver: zodResolver(discrepancySchema),
-        defaultValues: { discrepancy: invoice.discrepancy || '' },
+        defaultValues: { discrepancy: (invoice as any).discrepancy || '' },
     });
 
     async function onSubmit(data: DiscrepancyFormValues) {
@@ -419,7 +419,7 @@ function DiscrepancyDialog({ invoice, onDiscrepancyLogged }: { invoice: Invoice,
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

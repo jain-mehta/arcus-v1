@@ -35,7 +35,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 async function main() {
-  console.log('\n🚀 Tenant Provisioning CLI\n');
+  console.log('🚀 Tenant Provisioning CLI');
 
   try {
     // Get tenant ID and name
@@ -58,7 +58,7 @@ async function main() {
     console.log('📋 Configuration:');
     console.log(`   Tenant ID: ${tenantId}`);
     console.log(`   Tenant Name: ${tenantName}`);
-    console.log(`   Region: ${region}\n`);
+    console.log(`   Region: ${region}`);
 
     // Step 1: Create database
     console.log('Step 1️⃣ : Creating tenant database...');
@@ -68,7 +68,7 @@ async function main() {
       region,
     });
 
-    console.log(`✅ Database created with URL: ${tenantDb.databaseUrl}\n`);
+    console.log(`✅ Database created with URL: ${tenantDb.databaseUrl}`);
 
     // Step 2: Initialize control-plane database
     console.log('Step 2️⃣ : Initializing control-plane database...');
@@ -78,7 +78,7 @@ async function main() {
       throw new Error('Failed to initialize control-plane database');
     }
 
-    console.log('✅ Control-plane initialized\n');
+    console.log('✅ Control-plane initialized');
 
     // Step 3: Register tenant in control-plane
     console.log('Step 3️⃣ : Registering tenant in control-plane...');
@@ -89,7 +89,7 @@ async function main() {
     });
 
     if (existingTenant) {
-      console.warn(`⚠️  Tenant ${tenantId} already exists. Skipping registration.\n`);
+      console.warn(`⚠️  Tenant ${tenantId} already exists. Skipping registration.`);
     } else {
       const newTenant = tenantRepo.create({
         tenant_id: tenantId,
@@ -106,15 +106,15 @@ async function main() {
       });
 
       await tenantRepo.save(newTenant);
-      console.log(`✅ Tenant registered in control-plane\n`);
+      console.log(`✅ Tenant registered in control-plane`);
     }
 
     // Step 4: Success
-    console.log('🎉 Tenant provisioning complete!\n');
+    console.log('🎉 Tenant provisioning complete!');
     console.log('📝 Next steps:');
     console.log(`   1. Run migrations: pnpm run migrate:tenant --tenant-id=${tenantId}`);
     console.log(`   2. Seed demo data: pnpm run seed:tenant --tenant-id=${tenantId}`);
-    console.log(`   3. Create user: pnpm run add-user --tenant-id=${tenantId} --email=admin@${tenantId}.com\n`);
+    console.log(`   3. Create user: pnpm run add-user --tenant-id=${tenantId} --email=admin@${tenantId}.com`);
 
     await controlDataSource.destroy();
     process.exit(0);

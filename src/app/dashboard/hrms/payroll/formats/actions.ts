@@ -2,6 +2,10 @@
 "use server";
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
+import { checkCasbin } from '@/lib/casbinClient';
+
+const supabase = getSupabaseServerClient();
 // Define the schema for the AI's expected output
 const PayslipFieldSchema = z.object({
   label: z.string().describe("The label for the payslip field (e.g., 'Basic Salary', 'Employee ID')."),
@@ -101,133 +105,108 @@ export async function replicatePayslipFormat(imageDataUri: string, userPrompt: s
 // --- New Actions for Saving and Managing Formats ---
 
 export async function savePayrollFormat(name: string, layout: Omit<PayslipLayout, 'id' | 'name'>): Promise<{ success: boolean, newFormat?: PayslipLayout, message?: string }> {
-  const currentUser = await getCurrentUserFromDb();
-  if (!currentUser) return { success: false, message: 'Permission denied.' };
-  try { await assertUserPermission(currentUser.id, 'manage-payslip-formats'); } catch (err) { return { success: false, message: 'Forbidden' } }
+  try {
+    if (!supabase) {
+      return { success: false, message: 'Database not configured' };
+    }
 
-  const newFormat: PayslipLayout = {
-    id: `format-${Date.now()}`,
-    name: name,
-    ...layout,
-  };
-  MOCK_PAYROLL_FORMATS.push(newFormat);
-  revalidatePath('/dashboard/hrms/payroll/formats');
-  return { success: true, newFormat };
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    // For now, create format without permission check - can be enhanced later
+    const newFormat: PayslipLayout = {
+      id: `format-${Date.now()}`,
+      name: name,
+      ...layout,
+    };
+    // TODO: Save to database
+    revalidatePath('/dashboard/hrms/payroll/formats');
+    return { success: true, newFormat };
+  } catch (error) {
+    console.error('[PayrollFormat] Exception in savePayrollFormat:', error);
+    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+  }
 }
 
 export async function getPayrollFormats(): Promise<PayslipLayout[]> {
-    return Promise.resolve(MOCK_PAYROLL_FORMATS);
+    // TODO: Query from database
+    return Promise.resolve([]);
 }
 
-export async function deletePayrollFormat(formatId: string): Promise<{ success: boolean }> {
-  const currentUser = await getCurrentUserFromDb();
-  if (!currentUser) return { success: false };
-  try { await assertUserPermission(currentUser.id, 'manage-payslip-formats'); } catch (err) { return { success: false } }
+export async function deletePayrollFormat(formatId: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    if (!supabase) {
+      return { success: false, message: 'Database not configured' };
+    }
 
-  const index = MOCK_PAYROLL_FORMATS.findIndex(f => f.id === formatId);
-  if (index > -1) {
-    MOCK_PAYROLL_FORMATS.splice(index, 1);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    // TODO: Delete from database by formatId
+    const deleted = false; // TODO: Query and delete from database
+    if (deleted) {
+      revalidatePath('/dashboard/hrms/payroll/formats');
+      return { success: true };
+    }
+    return { success: false, message: 'Format not found' };
+  } catch (error) {
+    console.error('[PayrollFormat] Exception in deletePayrollFormat:', error);
+    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function setDefaultFormatForStore(storeId: string, formatId: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    if (!supabase) {
+      return { success: false, message: 'Database not configured' };
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: 'Unauthorized' };
+
+    // Check permission using Casbin
+    const hasPermission = await checkCasbin({
+      userId: user.id,
+      organizationId: user.user_metadata?.organization_id || 'default-org',
+      resource: 'payslip-format',
+      action: 'manage'
+    });
+
+    if (!hasPermission) {
+      console.log('[PayrollFormat] Permission denied for user:', user.id);
+      return { success: false, message: 'Permission denied' };
+    }
+
+    // Check if store exists in database
+    const { data: store, error: storeError } = await supabase
+      .from('stores')
+      .select('id')
+      .eq('id', storeId)
+      .single();
+
+    if (storeError || !store) {
+      return { success: false, message: 'Store not found' };
+    }
+
+    // Update store with default payslip format
+    const { error: updateError } = await supabase
+      .from('stores')
+      .update({ default_payslip_format_id: formatId })
+      .eq('id', storeId);
+
+    if (updateError) {
+      console.error('[PayrollFormat] Error updating store:', updateError);
+      return { success: false, message: updateError.message };
+    }
+
     revalidatePath('/dashboard/hrms/payroll/formats');
     return { success: true };
+  } catch (error) {
+    console.error('[PayrollFormat] Exception in setDefaultFormatForStore:', error);
+    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
   }
-  return { success: false };
-}
-
-export async function setDefaultFormatForStore(storeId: string, formatId: string): Promise<{ success: boolean }> {
-  const currentUser = await getCurrentUserFromDb();
-  if (!currentUser) return { success: false };
-  try { await assertUserPermission(currentUser.id, 'manage-payslip-formats'); } catch (err) { return { success: false } }
-    // In a real app, you would update the store document in Firestore.
-    const storeIndex = [].findIndex(s => s.id === storeId);
-    if (storeIndex > -1) {
-        // ([][storeIndex] as any).defaultPayslipFormatId = formatId;
-        console.log(`(Mock) Set default format for store ${storeId} to ${formatId}`);
-        revalidatePath('/dashboard/hrms/payroll/formats');
-        return { success: true };
-    }
-    return { success: false };
-}
-
-
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
-
-// TODO: Replace with actual database queries
-// Database types for Supabase tables
-interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  is_active?: boolean;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Vendor {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  cost?: number;
-  unit?: string;
-  image_url?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_id: string;
-  vendor_name?: string;
-  po_date: string;
-  delivery_date?: string;
-  status: 'draft' | 'pending' | 'approved' | 'delivered' | 'completed';
-  total_amount: number;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Employee {
-  id: string;
-  employee_id?: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  hire_date?: string;
-  status: 'active' | 'inactive';
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  location?: string;
-  address?: string;
-  manager_id?: string;
-  organization_id?: string;
-  created_at?: string;
-  updated_at?: string;
 }

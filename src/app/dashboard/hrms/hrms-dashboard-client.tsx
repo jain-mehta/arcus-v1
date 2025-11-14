@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import {
@@ -18,7 +16,6 @@ import {
     Sparkles
 } from 'lucide-react';
 import { HrmsAttendanceChart } from "./attendance-chart";
-import type { getHrmsDashboardData } from './actions';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const iconMap: { [key: string]: React.ElementType } = {
@@ -28,7 +25,10 @@ const iconMap: { [key: string]: React.ElementType } = {
     CalendarClock,
 };
 
-type DashboardData = Awaited<ReturnType<typeof getHrmsDashboardData>>;
+interface DashboardData {
+    kpis?: any[];
+    upcomingEvents?: any[];
+}
 
 interface HrmsDashboardClientProps {
     dashboardData: DashboardData;
@@ -47,7 +47,7 @@ export function HrmsDashboardClient({ dashboardData }: HrmsDashboardClientProps)
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi) => {
+        {(kpis || []).map((kpi) => {
           const KpiIcon = iconMap[kpi.icon as keyof typeof iconMap] || Users;
           return (
             <Card key={kpi.title}>

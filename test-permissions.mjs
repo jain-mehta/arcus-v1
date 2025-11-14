@@ -127,24 +127,24 @@ function hasOldPermission(permissions, permissionString) {
 }
 
 // Test the permission checking
-console.log('=== Permission Mapper Test ===\n');
-console.log('Testing permission strings from navigation config:\n');
+console.log('=== Permission Mapper Test ===');
+console.log('Testing permission strings from navigation config:');
 
 testPermissionStrings.forEach(permStr => {
   const hasPermission = hasOldPermission(mockPermissions, permStr);
   const result = hasPermission ? '✓ PASS' : '✗ FAIL';
-  console.log(`${result}: ${permStr}\n`);
+  console.log(`${result}: ${permStr}`);
 });
 
-console.log('\n=== Summary ===');
+console.log('=== Summary ===');
 const results = testPermissionStrings.map(p => hasOldPermission(mockPermissions, p));
 const passed = results.filter(r => r).length;
 console.log(`Passed: ${passed}/${testPermissionStrings.length}`);
 
 if (passed === testPermissionStrings.length) {
-  console.log('\n✓ All tests passed! Permission mapper is working correctly.');
+  console.log('✓ All tests passed! Permission mapper is working correctly.');
   process.exit(0);
 } else {
-  console.log('\n✗ Some tests failed. There are issues with permission mapping.');
+  console.log('✗ Some tests failed. There are issues with permission mapping.');
   process.exit(1);
 }

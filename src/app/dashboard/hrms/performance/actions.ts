@@ -4,6 +4,47 @@
 import { assertPermission } from '@/lib/rbac';
 import { getSessionClaims } from '@/lib/session';
 
+// Mock data
+const MOCK_EMPLOYEE_REVIEWS = [
+    {
+        id: 'review-1',
+        employeeId: 'emp-1',
+        employeeName: 'John Doe',
+        status: 'Self Assessment',
+        selfAssessment: null,
+        managerReview: null,
+    },
+    {
+        id: 'review-2',
+        employeeId: 'emp-2',
+        employeeName: 'Jane Smith',
+        status: 'Manager Review',
+        selfAssessment: null,
+        managerReview: null,
+    },
+];
+
+const MOCK_PERFORMANCE_CYCLES = [
+    {
+        id: 'cycle-1',
+        name: 'Annual Review 2024',
+        startDate: '2024-01-01',
+        endDate: '2024-12-31',
+        status: 'Active',
+        totalEmployees: 2,
+        completedReviews: 0,
+    },
+    {
+        id: 'cycle-2',
+        name: 'Mid-Year Review 2024',
+        startDate: '2024-06-01',
+        endDate: '2024-06-30',
+        status: 'Completed',
+        totalEmployees: 2,
+        completedReviews: 2,
+    },
+];
+
 export async function saveSelfAssessment(reviewId: string, data: { achievements: string; challenges: string }) {
     const sessionClaims = await getSessionClaims();
     if (!sessionClaims) {
@@ -63,7 +104,7 @@ export async function startNewPerformanceCycle(newCycle: any) {
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

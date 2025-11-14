@@ -57,6 +57,14 @@ const targetSchema = z.object({
 
 type TargetFormValues = z.infer<typeof targetSchema>;
 
+interface SalesTargetWithProgress {
+  id: string;
+  type: string;
+  value: number;
+  month: string;
+  progress?: number;
+  [key: string]: any;
+}
 
 export default function SalesSettingsPage() {
   const { toast } = useToast();
@@ -70,8 +78,10 @@ export default function SalesSettingsPage() {
     async function loadTargets() {
         setLoading(true);
         try {
-            const targetsWithProgress = await getSalesTargetsWithProgress();
-            setTargets(targetsWithProgress);
+            const result = await getSalesTargetsWithProgress();
+            if (result.success && result.data) {
+                setTargets(result.data);
+            }
         } catch (error) {
              toast({ variant: 'destructive', title: 'Error', description: 'Failed to load sales targets.' });
         } finally {
@@ -95,8 +105,10 @@ export default function SalesSettingsPage() {
     startFormTransition(async () => {
         try {
             await addSalesTarget(data);
-            const updatedTargets = await getSalesTargetsWithProgress();
-            setTargets(updatedTargets);
+            const result = await getSalesTargetsWithProgress();
+            if (result.success && result.data) {
+                setTargets(result.data);
+            }
             toast({
                 title: 'Target Set!',
                 description: `${data.type} target for ${data.month} has been set to ${data.value}.`,
@@ -201,9 +213,9 @@ export default function SalesSettingsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Progress value={target.progress} className="w-full" />
+                            <Progress value={target.progress || 0} className="w-full" />
                             <span className="text-xs text-muted-foreground">
-                              {target.progress.toFixed(0)}%
+                              {(target.progress || 0).toFixed(0)}%
                             </span>
                           </div>
                         </TableCell>
@@ -332,7 +344,7 @@ export default function SalesSettingsPage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

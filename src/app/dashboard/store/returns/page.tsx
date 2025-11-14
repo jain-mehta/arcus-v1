@@ -2,6 +2,8 @@
 
 import { getStores } from '../manage/actions';
 import { ReturnsClient } from './client';
+import { getCurrentUser } from '@/app/dashboard/sales/actions';
+import { getUserPermissions } from '@/lib/auth';
 
 export default async function ReturnsPage() {
     const user = await getCurrentUser();
@@ -21,14 +23,14 @@ export default async function ReturnsPage() {
     return (
         <ReturnsClient
             isAdmin={isAdmin}
-            allStores={allStores}
-            userStoreId={user.storeId}
+            allStores={allStores as any}
+            userStoreId={(user as any).storeId}
         />
     );
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
+import { getSupabaseServerClient } from '@/lib/supabase/client';
 // Database types for Supabase tables
 interface User {
   id: string;

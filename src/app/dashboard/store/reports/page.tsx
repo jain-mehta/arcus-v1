@@ -149,10 +149,11 @@ export default function StoreReportsPage() {
     const fetchReportData = useCallback(async (storeIds?: string[], date?: DateRange) => {
         setLoading(true);
         try {
-            const data = await getStoreReportData(storeIds, date ? { from: date.from, to: date.to } : undefined);
-            if (reportData === null) {
-                setAllStores(data.stores);
-                setSelectedStoreIds(data.stores.map(s => s.id));
+            const result = await getStoreReportData(storeIds, date ? { from: date.from, to: date.to } : undefined);
+            const data = result.success && result.data ? result.data : null;
+            if (reportData === null && data) {
+                setAllStores((data as any).stores || []);
+                setSelectedStoreIds(((data as any).stores || []).map((s: any) => s.id));
             }
             setReportData(data);
         } catch (error) {
@@ -298,7 +299,7 @@ export default function StoreReportsPage() {
                                     <TableHead>Brand & Series</TableHead>
                                     <TableHead className="text-center font-semibold">Overall</TableHead>
                                     {reportData.selectedStores.map(store => (
-                                        <TableHead key={store.id} className="text-center">{store.city}</TableHead>
+                                        <TableHead key={store.id} className="text-center">{(store as any).city || store.id}</TableHead>
                                     ))}
                                 </TableRow>
                             </TableHeader>
@@ -339,7 +340,7 @@ export default function StoreReportsPage() {
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

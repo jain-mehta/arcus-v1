@@ -3,6 +3,50 @@
 import { getStaff, getAllStores, getAllUsers } from '../actions';
 import { EmployeesClient } from './client';
 import { getAllRoles } from '../../users/roles/actions';
+import { getSupabaseServerClient } from '@/lib/supabase/client';
+import { getSessionClaims } from '@/lib/session';
+
+async function getCurrentUser() {
+    const claims = await getSessionClaims();
+    if (!claims?.uid) return null;
+    
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return null;
+    
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', claims.uid)
+        .single();
+    
+    return error ? null : data;
+}
+
+async function getUserPermissions(userId: string): Promise<string[]> {
+    const supabase = getSupabaseServerClient();
+    if (!supabase) return [];
+    
+    const { data: userRole, error } = await supabase
+        .from('user_roles')
+        .select('role_id')
+        .eq('user_id', userId)
+        .single();
+    
+    if (error || !userRole) return [];
+    
+    const { data: role } = await supabase
+        .from('roles')
+        .select('permissions')
+        .eq('id', userRole.role_id)
+        .single();
+    
+    if (!role || !role.permissions) return [];
+    
+    // Handle both array and JSON string formats
+    const perms = Array.isArray(role.permissions) ? role.permissions : 
+                  typeof role.permissions === 'string' ? JSON.parse(role.permissions) : [];
+    return perms;
+}
 
 export default async function HrmsEmployeesPage() {
     const user = await getCurrentUser();
@@ -15,12 +59,18 @@ export default async function HrmsEmployeesPage() {
 
     // For admins, we fetch all staff initially.
     // For non-admins, we only fetch staff for their specific store.
-    const [initialStaff, allStores, allUsers, allRoles] = await Promise.all([
+    const [staffResp, storesResp, usersResp, rolesResp] = await Promise.all([
         getStaff(isAdmin ? undefined : user.storeId),
         getAllStores(),
         getAllUsers(),
         getAllRoles(),
     ]);
+
+    // Unwrap ActionResponse results
+    const initialStaff = (staffResp?.success && Array.isArray(staffResp.data)) ? staffResp.data : [];
+    const allStores = (storesResp?.success && Array.isArray(storesResp.data)) ? storesResp.data : [];
+    const allUsers = (usersResp?.success && Array.isArray(usersResp.data)) ? usersResp.data : [];
+    const allRoles = (rolesResp?.success && Array.isArray(rolesResp.data)) ? rolesResp.data : [];
 
     return (
         <EmployeesClient 
@@ -35,7 +85,6 @@ export default async function HrmsEmployeesPage() {
 }
 
 
-\nimport { getSupabaseServerClient } from '@/lib/supabase/client';\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

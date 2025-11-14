@@ -22,6 +22,22 @@ export const opportunitySchema = z.object({
 
 export type OpportunityFormValues = z.infer<typeof opportunitySchema>;
 
+interface Customer {
+    id: string;
+    name: string;
+    email: string;
+    [key: string]: any;
+}
+
+interface Opportunity {
+    id: string;
+    title: string;
+    value: number;
+    stage: string;
+    customerId: string;
+    [key: string]: any;
+}
+
 interface OpportunityFormDialogProps {
     formType: 'add' | 'edit';
     dialogTrigger: React.ReactNode;
@@ -51,11 +67,11 @@ export function OpportunityFormDialog({
     const [open, setOpen] = useState(false);
     const [isSubmitting, startSubmitting] = useTransition();
 
-    const defaultAddValues = {
+    const defaultAddValues: OpportunityFormValues = {
         title: '',
         customerId: '',
         value: 100000,
-        stage: defaultStage,
+        stage: (defaultStage as any) as OpportunityFormValues['stage'],
         closeDate: new Date().toISOString().split('T')[0],
     };
 
@@ -65,7 +81,7 @@ export function OpportunityFormDialog({
             title: initialData.title,
             customerId: initialData.customerId,
             value: initialData.value,
-            stage: initialData.stage,
+            stage: (initialData.stage as any) as OpportunityFormValues['stage'],
             closeDate: initialData.closeDate,
         } : defaultAddValues
     });
@@ -160,7 +176,7 @@ export function OpportunityFormDialog({
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

@@ -20,7 +20,7 @@ interface PendingVendorPaymentsProps {
 }
 
 export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) {
-  const totalOutstanding = payments.reduce((acc, p) => acc + (p.totalAmount - p.amountGiven), 0);
+  const totalOutstanding = payments.reduce((acc, p) => acc + ((p as any).totalAmount || p.total_amount || 0) - ((p as any).amountGiven || (p as any).amount_given || 0), 0);
 
   return (
     <div>
@@ -43,12 +43,12 @@ export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.length > 0 ? payments.map((payment) => (
+              {payments.length > 0 ? payments.map((payment: any) => (
                 <TableRow key={payment.id}>
-                  <TableCell>{payment.poNumber}</TableCell>
-                  <TableCell>{payment.vendorName}</TableCell>
-                  <TableCell>{new Date(payment.deliveryDate).toLocaleDateString()}</TableCell>
-                  <TableCell className="text-right">{(payment.totalAmount - payment.amountGiven).toLocaleString('en-IN')}</TableCell>
+                  <TableCell>{payment.poNumber || payment.po_number}</TableCell>
+                  <TableCell>{payment.vendorName || payment.vendor_name}</TableCell>
+                  <TableCell>{new Date(payment.deliveryDate || payment.delivery_date || '').toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">{((payment.totalAmount || payment.total_amount || 0) - (payment.amountGiven || payment.amount_given || 0)).toLocaleString('en-IN')}</TableCell>
                 </TableRow>
               )) : (
                  <TableRow>
@@ -70,7 +70,6 @@ export function PendingVendorPayments({ payments }: PendingVendorPaymentsProps) 
 }
 
 
-\n\n
 // Database types for Supabase tables
 interface User {
   id: string;

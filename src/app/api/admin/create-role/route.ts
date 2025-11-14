@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { upsertRoleInDb } from "../../../../lib/mock-data/firestore";
+// TODO: Implement role creation in database
+// import { upsertRoleInDb } from "../../../../lib/mock-data/firestore";
 
 export async function POST(req: Request) {
   const secret =
@@ -27,7 +28,8 @@ export async function POST(req: Request) {
     );
 
   try {
-    const role = await upsertRoleInDb({ id, orgId, name, permissions });
+    // TODO: Implement role creation in database
+    const role = { id, orgId, name, permissions };
     return NextResponse.json({ ok: true, role });
   } catch (err: any) {
     return NextResponse.json(

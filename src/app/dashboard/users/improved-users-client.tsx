@@ -31,14 +31,14 @@ type CreateUserFormValues = z.infer<typeof createUserSchema>;
 
 interface UsersClientProps {
   initialUsers: User[];
-  allRoles: Role[];
-  allPermissions: Permission[];
-  allStores: TStore[];
+  allRoles: any[];
+  allPermissions: any[];
+  allStores: any[];
 }
 
 export function ImprovedUsersClient({ initialUsers, allRoles, allPermissions, allStores }: UsersClientProps) {
   const [users, setUsers] = useState<User[]>(initialUsers || []);
-  const [roles, setRoles] = useState<Role[]>(allRoles || []);
+  const [roles, setRoles] = useState<any[]>(allRoles || []);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
@@ -77,7 +77,7 @@ export function ImprovedUsersClient({ initialUsers, allRoles, allPermissions, al
 
   const roleMap = new Map(roles.map((r) => [r.id, r.name]));
   const storeMap = new Map(allStores.map((s) => [s.id, s.name]));
-  const userMap = new Map(users.map((u) => [u.id, u.name]));
+  const userMap = new Map(users.map((u) => [u.id, (u as any).name || (u as any).full_name || u.id]));
 
   return (
     <div className="space-y-8">
@@ -125,22 +125,22 @@ export function ImprovedUsersClient({ initialUsers, allRoles, allPermissions, al
                       key={u.id} 
                       className={cn(
                         "hover:bg-muted/50 cursor-pointer transition-colors",
-                        u.status === 'Inactive' && 'text-muted-foreground opacity-70'
+                        (u as any).status === 'Inactive' && 'text-muted-foreground opacity-70'
                       )}
                       onClick={() => setEditingUser(u)}
                     >
-                      <TableCell className="font-medium">{u.name}</TableCell>
+                      <TableCell className="font-medium">{(u as any).name || (u as any).full_name}</TableCell>
                       <TableCell>{u.email}</TableCell>
                       <TableCell>
                         <div className="flex gap-1 flex-wrap">
-                          {u.roleIds?.map((rid) => (
+                          {((u as any).roleIds || [])?.map((rid: string) => (
                             <Badge key={rid} variant="secondary">{roleMap.get(rid) ?? rid}</Badge>
                           ))}
                         </div>
                       </TableCell>
-                      <TableCell>{u.designation || '-'}</TableCell>
-                      <TableCell>{u.storeId ? storeMap.get(u.storeId) ?? 'Unknown' : 'N/A'}</TableCell>
-                      <TableCell>{u.reportsTo ? userMap.get(u.reportsTo) ?? 'Unknown' : '-'}</TableCell>
+                      <TableCell>{(u as any).designation || '-'}</TableCell>
+                      <TableCell>{(u as any).storeId ? storeMap.get((u as any).storeId) ?? 'Unknown' : 'N/A'}</TableCell>
+                      <TableCell>{(u as any).reportsTo ? userMap.get((u as any).reportsTo) ?? 'Unknown' : '-'}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -198,8 +198,8 @@ async function generateRandomPassword(length: number = 16): Promise<string> {
 interface CreateUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  allRoles: Role[];
-  allStores: TStore[];
+  allRoles: any[];
+  allStores: any[];
   allUsers: User[];
   onUserCreated: (user: User) => void;
 }
@@ -421,7 +421,7 @@ function CreateUserDialog({ open, onOpenChange, allRoles, allStores, allUsers, o
                 <SelectItem value="none">No Manager</SelectItem>
                 {allUsers.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.email})
+                    {(user as any).name || (user as any).full_name} ({user.email})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -446,8 +446,8 @@ interface EditUserDialogProps {
   user: User;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  allRoles: Role[];
-  allStores: TStore[];
+  allRoles: any[];
+  allStores: any[];
   allUsers: User[];
   onUserUpdated: (user: User) => void;
   onUserDeleted: (userId: string) => void;
@@ -457,29 +457,28 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
   const { toast } = useToast();
   const [isSubmitting, startSubmitting] = useTransition();
   const [isDeleting, startDeleting] = useTransition();
-  const [selectedRole, setSelectedRole] = useState<string>(user.roleIds?.[0] || ''); // Changed to single role
-  const [name, setName] = useState(user.name);
+  const [selectedRole, setSelectedRole] = useState<string>(((user as any).roleIds)?.[0] || ''); // Changed to single role
+  const [name, setName] = useState((user as any).name || (user as any).full_name || '');
   const [email, setEmail] = useState(user.email);
-  const [designation, setDesignation] = useState(user.designation || '');
-  const [storeId, setStoreId] = useState(user.storeId || '');
-  const [reportingManagerId, setReportingManagerId] = useState(user.reportsTo || '');
+  const [designation, setDesignation] = useState((user as any).designation || '');
+  const [storeId, setStoreId] = useState((user as any).storeId || '');
+  const [reportingManagerId, setReportingManagerId] = useState((user as any).reportsTo || '');
 
   const handleUpdate = () => {
     startSubmitting(async () => {
       try {
         const result = await updateUser(user.id, {
           roleIds: [selectedRole], // Convert to array for backend
-          designation,
-          storeId: storeId === 'none' ? undefined : storeId,
-          reportsTo: reportingManagerId === 'none' ? undefined : reportingManagerId,
-        });
+          name,
+          email,
+        } as any);
 
         if (result.success && 'updatedUser' in result && result.updatedUser) {
           const updated = result.updatedUser as User;
           onUserUpdated(updated);
           toast({
             title: 'User Updated',
-            description: `${user.name} has been updated successfully.`,
+            description: `${name || (user as any).name} has been updated successfully.`,
           });
           onOpenChange(false);
         } else {
@@ -496,7 +495,7 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
   };
 
   const handleDelete = () => {
-    if (!confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete ${(user as any).name || (user as any).full_name}? This action cannot be undone.`)) {
       return;
     }
 
@@ -507,7 +506,7 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
           onUserDeleted(user.id);
           toast({
             title: 'User Deleted',
-            description: `${user.name} has been deleted successfully.`,
+            description: `${(user as any).name || (user as any).full_name} has been deleted successfully.`,
           });
           onOpenChange(false);
         } else {
@@ -616,7 +615,7 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
                 <SelectItem value="none">No Manager</SelectItem>
                 {allUsers.filter(u => u.id !== user.id).map((u) => (
                   <SelectItem key={u.id} value={u.id}>
-                    {u.name} ({u.email})
+                    {(u as any).name || (u as any).full_name} ({u.email})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -649,7 +648,7 @@ function EditUserDialog({ user, open, onOpenChange, allRoles, allStores, allUser
 }
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

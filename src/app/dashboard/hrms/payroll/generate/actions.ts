@@ -6,25 +6,53 @@ import { getSalaryStructures, runPayroll as runPayrollServerAction } from '../ac
 import { getPayrollFormats } from '../formats/actions';
 import type { PayslipLayout } from '../formats/actions';
 
+// Database types for Supabase tables
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  [key: string]: any;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
+interface SalaryStructure {
+  id: string;
+  name: string;
+  description?: string;
+  components?: any[];
+  [key: string]: any;
+}
+
 export async function getPageData(): Promise<{
     staffList: User[];
     stores: Store[];
     salaryStructures: SalaryStructure[];
     payslipLayouts: PayslipLayout[];
 }> {
-    const [staffList, stores, salaryStructures, payslipLayouts] = await Promise.all([
+    const [staffResp, storesResp, structuresResp, payslipLayouts] = await Promise.all([
         getStaff(),
         getAllStores(),
         getSalaryStructures(),
         getPayrollFormats(),
     ]);
-    return { staffList, stores, salaryStructures, payslipLayouts };
+    
+    // Unwrap ActionResponse results
+    const staffList = (staffResp?.success && Array.isArray(staffResp.data)) ? staffResp.data : [];
+    const stores = (storesResp?.success && Array.isArray(storesResp.data)) ? storesResp.data : [];
+    const salaryStructures = (structuresResp?.success && Array.isArray(structuresResp.data)) ? structuresResp.data : [];
+    
+    return { staffList, stores, salaryStructures, payslipLayouts: Array.isArray(payslipLayouts) ? payslipLayouts : [] };
 }
 
 export { runPayrollServerAction as runPayroll };
 
 
-\n\n
+
 // Database types for Supabase tables
 interface User {
   id: string;

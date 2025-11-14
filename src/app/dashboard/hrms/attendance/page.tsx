@@ -16,6 +16,17 @@ import { Badge } from '@/components/ui/badge';
 import { Suspense, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface Shift {
+  id: string;
+  name: string;
+  start_time?: string;
+  end_time?: string;
+}
+
+interface Staff {
+  status: 'Clocked In' | 'On Break' | 'Clocked Out';
+}
+
 const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const shiftTypes = ['Morning', 'Evening', 'Night'];
 
@@ -28,8 +39,9 @@ function AttendanceDashboard() {
     async function loadData() {
       setLoading(true);
       const data = await getAttendanceData();
-      setShifts(data.shifts);
-      setAttendance(data.attendance);
+      const response = data as any;
+      setShifts(response.success && response.data?.shifts ? response.data.shifts : []);
+      setAttendance(response.success && response.data?.attendance ? response.data.attendance : []);
       setLoading(false);
     }
     loadData();
@@ -135,7 +147,6 @@ export default function HrmsAttendancePage() {
 }
 
 
-\n\n
 // Database types for Supabase tables
 interface User {
   id: string;
