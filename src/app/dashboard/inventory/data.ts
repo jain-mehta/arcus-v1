@@ -289,7 +289,10 @@ export async function getInventoryDashboardData() {
     const userContext = await buildUserContext(userId);
 
     // If there's no user or they don't have permission, return empty/default data.
-    if (!userContext || (!userContext.permissions.includes('view-all-inventory') && !userContext.permissions.includes('view-store-inventory'))) {
+    const permissions = userContext?.permissions;
+    const permissionsArray = Array.isArray(permissions) ? permissions : [];
+    
+    if (!userContext || (!permissionsArray.includes('view-all-inventory') && !permissionsArray.includes('view-store-inventory'))) {
         return {
             totalProducts: 0,
             totalStockValue: 0,

@@ -7,6 +7,8 @@ import { deleteAllProducts, addProduct, updateProduct, deleteProduct, simulateSa
 import { getCurrentUser } from '@/app/dashboard/sales/actions';
 import { getUserPermissions } from '@/lib/auth';
 import { getSubordinates } from '@/lib/rbac';
+import type { UserContext } from '@/lib/types';
+
 type User = { id: string; orgId?: string; [key: string]: any };
 type Product = {
     id: string;
@@ -16,12 +18,6 @@ type Product = {
     description?: string;
     stock?: number;
     [key: string]: any;
-};
-type UserContext = {
-    user: User;
-    permissions?: Record<string, any>;
-    subordinates?: any[];
-    orgId?: string;
 };
 import { Button, buttonVariants } from "@/components/ui/button";
 import {

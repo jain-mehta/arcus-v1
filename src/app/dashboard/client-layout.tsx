@@ -120,6 +120,9 @@ export function DashboardClientLayout({
 
   // Get the sub-nav items for the current module and filter them.
   const subNavItems = currentSubNavKey ? navConfig.subNavigation[currentSubNavKey] : [];
+  
+  // Filter sub-nav items based on user permissions
+  // filterNavItems will return all items if user is admin (detected by having all major modules)
   const accessibleSubNavItems = filterNavItems(subNavItems, userPermissions);
 
   // Map the sub-nav items to the local NavItem type, coercing the icon string to a valid Icons key

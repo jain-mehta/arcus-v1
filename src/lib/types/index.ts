@@ -8,7 +8,7 @@ export * from './domain';
 // ===== USER CONTEXT DOMAIN =====
 export interface UserContext {
   user: any; // User object from auth system
-  permissions: Record<string, any> | string[];
+  permissions: Record<string, any> | string[] | undefined;
   subordinates: any[];
   orgId: string;
 }

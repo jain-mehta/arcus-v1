@@ -132,21 +132,25 @@ export async function checkCasbin(req: CasbinCheckRequest): Promise<boolean> {
     const durationMs = Date.now() - startTime;
 
     // Log to PolicySyncLog for audit trail
-    try {
-      const syncLogRepo = await getControlRepo(PolicySyncLog);
-      if (syncLogRepo) {
-        await syncLogRepo.insert({
-          tenant_id: tenantId,
-          sync_status: allowed ? 'success' : 'denied',
-          payload: JSON.stringify(req),
-          response: JSON.stringify({ allowed }),
-          duration_ms: durationMs,
-          triggered_by: req.userId,
-          sync_type: 'check',
-        } as any);
+    // Skip if tenantId is null or a fallback string like "default-org"
+    const isValidUUID = tenantId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId);
+    if (isValidUUID) {
+      try {
+        const syncLogRepo = await getControlRepo(PolicySyncLog);
+        if (syncLogRepo) {
+          await syncLogRepo.insert({
+            tenant_id: tenantId,
+            sync_status: allowed ? 'success' : 'denied',
+            payload: JSON.stringify(req),
+            response: JSON.stringify({ allowed }),
+            duration_ms: durationMs,
+            triggered_by: req.userId,
+            sync_type: 'check',
+          } as any);
+        }
+      } catch (logError) {
+        console.warn('Failed to log Casbin check:', logError);
       }
-    } catch (logError) {
-      console.warn('Failed to log Casbin check:', logError);
     }
 
     console.log(
@@ -157,23 +161,25 @@ export async function checkCasbin(req: CasbinCheckRequest): Promise<boolean> {
   } catch (error: any) {
     const durationMs = Date.now() - startTime;
 
-    // Log error
-    try {
-      const syncLogRepo = await getControlRepo(PolicySyncLog);
-      if (syncLogRepo) {
-        await syncLogRepo.insert({
-          tenant_id: tenantId,
-          sync_status: 'error',
-          payload: JSON.stringify(req),
-          response: null,
-          error_message: error?.message || String(error),
-          duration_ms: durationMs,
-          triggered_by: req.userId,
-          sync_type: 'check',
-        } as any);
+    // Log error (skip if tenantId is null)
+    if (tenantId) {
+      try {
+        const syncLogRepo = await getControlRepo(PolicySyncLog);
+        if (syncLogRepo) {
+          await syncLogRepo.insert({
+            tenant_id: tenantId,
+            sync_status: 'error',
+            payload: JSON.stringify(req),
+            response: null,
+            error_message: error?.message || String(error),
+            duration_ms: durationMs,
+            triggered_by: req.userId,
+            sync_type: 'check',
+          } as any);
+        }
+      } catch (logError) {
+        console.warn('Failed to log Casbin error:', logError);
       }
-    } catch (logError) {
-      console.warn('Failed to log Casbin error:', logError);
     }
 
     console.error('❌ Casbin check failed:', error);

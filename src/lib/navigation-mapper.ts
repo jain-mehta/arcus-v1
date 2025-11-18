@@ -85,48 +85,60 @@ export function hasOldPermission(
     console.log('[Navigation] Checking permission string:', { permissionString, module, submodule, action });
 
     const modulePerms = permissions[module];
+    console.log('[Navigation] Module permissions found:', {
+      module,
+      exists: !!modulePerms,
+      keys: modulePerms ? Object.keys(modulePerms).slice(0, 10) : 'N/A',
+      sampleValue: modulePerms ? Object.entries(modulePerms)[0] : 'N/A'
+    });
+
     if (!modulePerms) {
       console.log('[Navigation] Module not found:', module);
       return false;
     }
 
-    // Strategy 1: Check if the exact permission key exists with true value
-    // Handle formats like 'vendor:viewAll', 'sales:leads:view', etc.
-    
-    // First try the direct key lookup (e.g., modulePerms['viewAll'])
+    // Strategy 1: Check for exact permission string as a key in the module
+    // Example: modulePerms['vendor:purchaseOrders:view'] or modulePerms['vendor:purchaseOrders']
+    if (modulePerms[permissionString] === true) {
+      console.log('[Navigation] Permission granted (exact string):', permissionString);
+      return true;
+    }
+
+    // Strategy 2: Check if just the module:submodule part exists
+    const submoduleKey = `${module}:${submodule}`;
+    if (modulePerms[submoduleKey] === true) {
+      console.log('[Navigation] Permission granted (module:submodule):', submoduleKey);
+      return true;
+    }
+
+    // Strategy 3: Check direct submodule key (e.g., modulePerms['purchaseOrders'])
     if (modulePerms[submodule] === true) {
       console.log('[Navigation] Permission granted (direct submodule):', submodule);
       return true;
     }
 
-    // Try nested permission with action (e.g., modulePerms['leads:view'])
+    // Strategy 4: Try nested permission with action (e.g., modulePerms['leads:view'])
     const nestedKey = `${submodule}:${action || 'view'}`;
     if (modulePerms[nestedKey] === true) {
       console.log('[Navigation] Permission granted (nested key):', nestedKey);
       return true;
     }
 
-    // Try the full dotted permission (e.g., modulePerms['sales:leads:view'])
+    // Strategy 5: Check the full dotted permission (e.g., modulePerms['sales:leads:view'])
     const fullKey = `${module}:${submodule}:${action || 'view'}`;
     if (modulePerms[fullKey] === true) {
       console.log('[Navigation] Permission granted (full key):', fullKey);
       return true;
     }
 
-    // Try checking if the full permission string is stored directly (e.g., modulePerms['inventory:products:view'])
-    if (modulePerms[permissionString] === true) {
-      console.log('[Navigation] Permission granted (full permission string):', permissionString);
-      return true;
-    }
-
-    // Strategy 2: Check if submodule value is a boolean true
+    // Strategy 6: If submodule value is a boolean true, grant access
     const submoduleValue = modulePerms[submodule];
     if (typeof submoduleValue === 'boolean' && submoduleValue) {
       console.log('[Navigation] Permission granted (boolean submodule):', submodule);
       return true;
     }
 
-    // Strategy 3: If submodule value is an object (nested actions), check if any action is true
+    // Strategy 7: If submodule value is an object (nested actions), check if any action is true
     if (typeof submoduleValue === 'object' && submoduleValue !== null) {
       // Check if we're looking for a specific action
       if (action) {
@@ -206,9 +218,19 @@ export function filterNavItems<T extends { permission?: string }>(
     permissionModuleNames: permissions ? Object.keys(permissions) : 'null'
   });
   
-  // If no permissions map provided, show all items (might happen for admins with fallback)
+  // If no permissions map provided, show all items (for admins)
   if (!permissions) {
     console.log('[Navigation] No permissions provided, showing all items');
+    return navItems;
+  }
+
+  // Check if this is an admin user by seeing if they have all major modules with full permissions
+  // Admin users will have dashboard, users, roles, permissions, store, sales, vendor, inventory, etc.
+  const majorModules = ['dashboard', 'users', 'roles', 'permissions', 'store', 'sales', 'vendor', 'inventory', 'hrms', 'settings'];
+  const hasAllMajorModules = majorModules.every(module => permissions[module]);
+  
+  if (hasAllMajorModules) {
+    console.log('[Navigation] User appears to be admin (has all major modules), showing all items');
     return navItems;
   }
 

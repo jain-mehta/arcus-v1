@@ -173,17 +173,7 @@ export async function getSessionClaims() {
     // Fetch additional user data from Supabase
     const supabaseAdmin = getSupabaseServerClient();
     if (!supabaseAdmin) {
-      console.log('[Session] No Supabase admin client, using fallback for:', decodedClaims.email);
-      // For admin@arcus.local, return with admin roleId as fallback
-      if (decodedClaims.email === 'admin@arcus.local') {
-        console.log('[Session] Returning admin role for admin@arcus.local');
-        return {
-          uid: decodedClaims.uid,
-          email: decodedClaims.email,
-          roleId: 'admin',
-          orgId: 'default-org', // Add default org for admin
-        };
-      }
+      console.log('[Session] No Supabase admin client, returning basic claims');
       return {
         uid: decodedClaims.uid,
         email: decodedClaims.email,
@@ -197,15 +187,7 @@ export async function getSessionClaims() {
       .single();
     
     if (error || !userData) {
-      // For admin@arcus.local, return with admin roleId as fallback
-      if (decodedClaims.email === 'admin@arcus.local') {
-        return {
-          uid: decodedClaims.uid,
-          email: decodedClaims.email,
-          roleId: 'admin',
-          orgId: 'default-org', // Add default org for admin
-        };
-      }
+      console.log('[Session] User not found in database, returning basic claims');
       return {
         uid: decodedClaims.uid,
         email: decodedClaims.email,
@@ -221,9 +203,18 @@ export async function getSessionClaims() {
 
     let roleId = userRoles?.[0]?.role_id || userData.role_ids?.[0];
     
-    // For admin@arcus.local, ensure roleId is 'admin'
-    if (decodedClaims.email === 'admin@arcus.local' && !roleId) {
-      roleId = 'admin';
+    console.log('[Session] User role fetched from database:', roleId);
+    
+    // Also fetch the role name for reference in RBAC checks
+    let roleName: string | null = null;
+    if (roleId) {
+      const { data: roleData } = await supabaseAdmin
+        .from('roles')
+        .select('id, name')
+        .eq('id', roleId)
+        .single();
+      roleName = roleData?.name || null;
+      console.log('[Session] Role name:', roleName);
     }
     
     return {
@@ -231,19 +222,11 @@ export async function getSessionClaims() {
       email: decodedClaims.email,
       orgId: userData.org_id,
       roleId: roleId,
+      roleName: roleName,  
       reportsTo: userData.reports_to,
     };
   } catch (error) {
     console.error('[Session] Error getting session claims:', error);
-    // For admin@arcus.local, return with admin roleId as fallback
-    if (decodedClaims.email === 'admin@arcus.local') {
-      return {
-        uid: decodedClaims.uid,
-        email: decodedClaims.email,
-        roleId: 'admin',
-        orgId: 'default-org', // Add default org for admin
-      };
-    }
     return {
       uid: decodedClaims.uid,
       email: decodedClaims.email,

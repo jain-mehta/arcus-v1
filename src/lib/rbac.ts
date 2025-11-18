@@ -42,6 +42,7 @@ export interface UserClaims {
   email?: string;
   orgId?: string;
   roleId?: string;
+  roleName?: string | null;  // Add role name for RBAC checks (can be null)
   reportsTo?: string;
   permissions?: PermissionMap;
 }
@@ -139,30 +140,19 @@ export async function checkPermission(
     return true;
   }
 
-  // FIRST: Check if user is admin by email (primary check)
-  const adminEmails = ['admin@arcus.local'];
-  console.log('[RBAC] Email check:', { 
-    userEmail: userClaims.email, 
-    isAdmin: userClaims.email ? adminEmails.includes(userClaims.email) : false 
-  });
-  
-  if (userClaims.email && adminEmails.includes(userClaims.email)) {
-    console.log('[RBAC] ✅ Admin user detected by email, granting all permissions');
-    return true;
-  }
-
-  // SECOND: Check if user has admin role
+  // FIRST: Check if user has admin role (by role name, from database)
   console.log('[RBAC] Role check:', { 
     userRole: userClaims.roleId, 
-    isAdmin: userClaims.roleId === 'admin' 
+    roleName: userClaims.roleName,
+    isAdmin: userClaims.roleName === 'Administrator' 
   });
   
-  if (userClaims.roleId === 'admin') {
-    console.log('[RBAC] ✅ Admin role detected, granting all permissions');
+  if (userClaims.roleName === 'Administrator') {
+    console.log('[RBAC] ✅ Administrator role detected, granting all permissions');
     return true;
   }
 
-  // THIRD: Use Casbin for permission check
+  // SECOND: Use Casbin for permission check
   const orgId = userClaims.orgId || 'default-org';
   try {
     // Build resource path
@@ -184,7 +174,7 @@ export async function checkPermission(
     // Fall through to legacy check
   }
 
-  // FOURTH: Fallback to legacy permission map (for backward compatibility)
+  // THIRD: Fallback to legacy permission map (for backward compatibility)
   const claimsPerms = (userClaims as any).permissions;
   if (claimsPerms) {
     const result = checkPermissionInMap(claimsPerms, moduleName, submoduleName);
@@ -292,15 +282,16 @@ export async function getSubordinates(managerId: string, orgId: string): Promise
 
 /**
  * Get role permissions
- * @param roleId - Role ID
+ * @param roleId - Role ID (UUID from database)
+ * @param roleName - Role name (e.g., 'Administrator')
  * @returns Permission map or null if not found
  */
-export async function getRolePermissions(roleId: string): Promise<PermissionMap | null> {
-  console.log('[RBAC] getRolePermissions called for roleId:', roleId);
+export async function getRolePermissions(roleId: string, roleName?: string | null): Promise<PermissionMap | null> {
+  console.log('[RBAC] getRolePermissions called for:', { roleId, roleName });
   
-  // If admin role, return full admin permissions
-  if (roleId === 'admin') {
-    console.log('[RBAC] Returning full admin permissions for admin role with 200+ submodule permissions');
+  // If admin role by NAME, return full admin permissions
+  if (roleName === 'Administrator') {
+    console.log('[RBAC] ✅ Administrator role detected, returning full admin permissions for admin role with 200+ submodule permissions');
     return {
       // MODULE 1: Dashboard
       dashboard: { 
@@ -366,13 +357,56 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'permissions:assign': true
       },
 
-      // MODULE 5: Store
+      // MODULE 5: Store (12 submodules from navigation config)
       store: { 
+        // From navigation config - ALL permission strings
+        'store:overview:view': true,  // Store Dashboard
+        'store:bills:view': true,  // POS Billing
+        'store:billingHistory:view': true,  // Billing History
+        'store:dashboard:view': true,  // Store Manager Dashboard
+        'store:debitNote:view': true,  // Create Debit Note
+        'store:invoiceFormat:view': true,  // Invoice Format Editor
+        'store:inventory:view': true,  // Store Inventory
+        'store:manage': true,  // Manage Stores (existing)
+        'store:receiving:view': true,  // Product Receiving
+        'store:reports:view': true,  // Store Reports & Comparison
+        'store:returns:view': true,  // Returns & Damaged Goods
+        'store:staff:view': true,  // Staff & Shift Logs
+        
+        // Additional store permissions
+        'store:bills:create': true,
+        'store:bills:edit': true,
+        'store:bills:delete': true,
+        'store:bills:print': true,
+        'store:billingHistory:export': true,
+        'store:debitNote:create': true,
+        'store:debitNote:edit': true,
+        'store:debitNote:approve': true,
+        'store:invoiceFormat:create': true,
+        'store:invoiceFormat:edit': true,
+        'store:invoiceFormat:delete': true,
+        'store:inventory:create': true,
+        'store:inventory:edit': true,
+        'store:inventory:transfer': true,
+        'store:manage:create': true,
+        'store:manage:edit': true,
+        'store:manage:delete': true,
+        'store:receiving:create': true,
+        'store:receiving:approve': true,
+        'store:reports:generate': true,
+        'store:reports:export': true,
+        'store:returns:create': true,
+        'store:returns:approve': true,
+        'store:staff:create': true,
+        'store:staff:edit': true,
+        'store:staff:delete': true,
+        'store:staff:assignShift': true,
+        
+        // Legacy support
         bills: true,
         invoices: true, 
         viewPastBills: true,
         customers: true,
-        manage: true,
         view: true,
         create: true,
         edit: true,
@@ -385,26 +419,19 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'store:create': true,
         'store:edit': true,
         'store:delete': true,
-        'store:manage': true,
         'store:debitNote': true,
         'store:creditNote': true,
-        'store:reports': true,
-        'store:returns': true,
-        'store:receiving': true,
         'store:viewBalance': true,
         'store:createProfile': true,
         'store:editProfile': true,
         'store:viewProfile': true,
         // Stores module submodules from UI
-        'store:dashboard': true,
         'store:manageStores': true,
         'store:manageStores:view': true,
         'store:manageStores:create': true,
         'store:manageStores:edit': true,
         'store:manageStores:delete': true,
         'store:billingHistory': true,
-        'store:billingHistory:view': true,
-        'store:billingHistory:export': true,
         'store:debitNotes': true,
         'store:debitNotes:view': true,
         'store:debitNotes:create': true,
@@ -416,9 +443,6 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'store:receiveProducts:create': true,
         'store:receiveProducts:edit': true,
         'store:receiveProducts:approve': true,
-        'store:reports:view': true,
-        'store:reports:generate': true,
-        'store:reports:export': true,
         'store:staffShifts': true,
         'store:staffShifts:view': true,
         'store:staffShifts:create': true,
@@ -440,12 +464,22 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'store:pos:openTill': true
       },
 
-      // MODULE 6: Sales
+      // MODULE 6: Sales (11 submodules from navigation config)
       sales: { 
-        // Dashboard
-        'sales:dashboard': true,
-        // Leads Management
-        'sales:leads:view': true,
+        // From navigation config - ALL permission strings
+        'sales:dashboard:view': true,  // Sales Dashboard
+        'sales:leads:view': true,      // Lead Management
+        'sales:opportunities:view': true,  // Sales Pipeline
+        'sales:quotations:view': true,  // Quotations
+        'sales:orders:view': true,     // Sales Orders
+        'sales:customers:view': true,  // Customer Accounts
+        'sales:activities:view': true, // Sales Activities Log
+        'sales:visits:view': true,     // Log a Dealer Visit
+        'sales:leaderboard:view': true, // Sales Leaderboard
+        'sales:reports:view': true,    // Sales Reports & KPIs
+        'sales:settings:edit': true,   // Sales Settings
+        
+        // Additional sales permissions
         'sales:leads:viewOwn': true,
         'sales:leads:viewTeam': true,
         'sales:leads:viewAll': true,
@@ -457,8 +491,6 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'sales:leads:assign': true,
         'sales:leads:export': true,
         'sales:leads:import': true,
-        // Opportunities
-        'sales:opportunities:view': true,
         'sales:opportunities:viewOwn': true,
         'sales:opportunities:viewTeam': true,
         'sales:opportunities:viewAll': true,
@@ -469,8 +501,6 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'sales:opportunities:updateStage': true,
         'sales:opportunities:assign': true,
         'sales:opportunities:export': true,
-        // Quotations
-        'sales:quotations:view': true,
         'sales:quotations:viewOwn': true,
         'sales:quotations:viewTeam': true,
         'sales:quotations:viewAll': true,
@@ -482,32 +512,37 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'sales:quotations:send': true,
         'sales:quotations:export': true,
         'sales:quotations:viewPricing': true,
-        // Invoices
-        'sales:invoices:view': true,
-        'sales:invoices:viewOwn': true,
-        'sales:invoices:viewAll': true,
-        'sales:invoices:create': true,
-        'sales:invoices:edit': true,
-        'sales:invoices:delete': true,
-        'sales:invoices:approve': true,
-        'sales:invoices:send': true,
-        'sales:invoices:export': true,
-        'sales:invoices:viewPayments': true,
-        // Other submodules
-        'sales:activities': true,
-        'sales:customers': true,
-        'sales:visits': true,
-        'sales:visitLogs': true,
-        'sales:leaderboard': true,
-        'sales:orders': true,
-        'sales:settings': true,
-        'sales:reports': true,
-        'sales:reportsKpis': true,
-        // Legacy
+        'sales:orders:viewOwn': true,
+        'sales:orders:viewAll': true,
+        'sales:orders:create': true,
+        'sales:orders:edit': true,
+        'sales:orders:delete': true,
+        'sales:orders:approve': true,
+        'sales:customers:viewAll': true,
+        'sales:customers:create': true,
+        'sales:customers:edit': true,
+        'sales:customers:delete': true,
+        'sales:activities:viewAll': true,
+        'sales:activities:create': true,
+        'sales:visits:viewAll': true,
+        'sales:visits:create': true,
+        'sales:visits:edit': true,
+        'sales:leaderboard:viewAll': true,
+        'sales:reports:viewAll': true,
+        'sales:reports:export': true,
+        'sales:settings:view': true,
+        // Legacy support
+        'sales:dashboard': true,
         quotations: true, 
         leads: true, 
         opportunities: true,
-        invoices: true,
+        orders: true,
+        customers: true,
+        activities: true,
+        visits: true,
+        leaderboard: true,
+        reports: true,
+        settings: true,
         viewAll: true,
         view: true,
         create: true,
@@ -571,16 +606,43 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'vendor:communicate': true
       },
 
-      // MODULE 8: Inventory
+      // MODULE 8: Inventory (11 submodules from navigation config)
       inventory: { 
-        viewStock: true,
-        editStock: true,
-        viewAll: true,
-        view: true,
-        create: true,
-        edit: true,
-        delete: true,
-        manage: true,
+        // From navigation config - ALL permission strings
+        'inventory:overview:view': true,  // Inventory Dashboard
+        'inventory:products:view': true,  // Product Master
+        'inventory:goodsInward:view': true,  // Goods Inward (GRN)
+        'inventory:goodsOutward:view': true,  // Goods Outward
+        'inventory:transfers:view': true,  // Stock Transfers
+        'inventory:counting:view': true,  // Cycle Counting & Auditing
+        'inventory:valuationReports:view': true,  // Inventory Valuation Reports
+        'inventory:qr:generate': true,  // QR Code Generator
+        'inventory:factory:view': true,  // Factory Inventory
+        'inventory:store:view': true,  // Store Inventory
+        'inventory:aiCatalog:view': true,  // AI Catalog Assistant
+        
+        // Additional inventory permissions
+        'inventory:products:create': true,
+        'inventory:products:edit': true,
+        'inventory:products:delete': true,
+        'inventory:goodsInward:create': true,
+        'inventory:goodsInward:edit': true,
+        'inventory:goodsOutward:create': true,
+        'inventory:goodsOutward:edit': true,
+        'inventory:transfers:create': true,
+        'inventory:transfers:edit': true,
+        'inventory:transfers:approve': true,
+        'inventory:counting:create': true,
+        'inventory:counting:edit': true,
+        'inventory:counting:approve': true,
+        'inventory:valuationReports:export': true,
+        'inventory:factory:create': true,
+        'inventory:factory:edit': true,
+        'inventory:store:create': true,
+        'inventory:store:edit': true,
+        'inventory:aiCatalog:manage': true,
+        
+        // Legacy support
         'inventory:viewStock': true,
         'inventory:editStock': true,
         'inventory:viewAll': true,
@@ -594,7 +656,6 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'inventory:goodsInward': true,
         'inventory:goodsOutward': true,
         'inventory:stockTransfers': true,
-        'inventory:valuationReports': true,
         'inventory:factory': true,
         'inventory:store': true,
         'inventory:qrCodeGenerator': true,
@@ -607,8 +668,6 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'inventory:inventoryByCategory': true,
         'inventory:recentStockAlerts': true,
         // Inventory sub-module permissions (3-level nested permissions)
-        'inventory:products:view': true,
-        'inventory:products:create': true,
         'inventory:stock:view': true,
         'inventory:stock:addStock': true,
         'inventory:stock:removeStock': true,
@@ -616,11 +675,97 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'inventory:stock:adjustStock': true,
         'inventory:stock:viewStockValue': true,
         'inventory:barcodes:generate': true,
-        'inventory:stockAlerts:view': true
+        'inventory:stockAlerts:view': true,
+        viewStock: true,
+        editStock: true,
+        viewAll: true,
+        view: true,
+        create: true,
+        edit: true,
+        delete: true,
+        manage: true
       },
 
-      // MODULE 9: HRMS
+      // MODULE 9: HRMS (11 submodules from navigation config)
       hrms: { 
+        // From navigation config - ALL permission strings
+        'hrms:overview:view': true,  // HRMS Dashboard
+        'hrms:announcements:view': true,  // Announcements
+        'hrms:attendance:view': true,  // Attendance & Shifts
+        'hrms:compliance:view': true,  // Compliance
+        'hrms:employees:view': true,  // Employee Directory
+        'hrms:leaves:view': true,  // Leave Management
+        'hrms:payroll:view': true,  // Payroll
+        'hrms:performance:view': true,  // Performance
+        'hrms:recruitment:view': true,  // Recruitment
+        'hrms:reports:view': true,  // Reports & Analytics
+        
+        // Additional HRMS permissions
+        'hrms:employees:viewAll': true,
+        'hrms:employees:viewOwn': true,
+        'hrms:employees:create': true,
+        'hrms:employees:edit': true,
+        'hrms:employees:delete': true,
+        'hrms:employees:viewSalary': true,
+        'hrms:employees:editSalary': true,
+        'hrms:employees:viewDocuments': true,
+        'hrms:employees:manageDocuments': true,
+        'hrms:employees:export': true,
+        'hrms:payroll:viewAll': true,
+        'hrms:payroll:process': true,
+        'hrms:payroll:approve': true,
+        'hrms:payroll:viewReports': true,
+        'hrms:payroll:generatePayslips': true,
+        'hrms:payroll:export': true,
+        'hrms:payroll:create': true,
+        'hrms:payroll:edit': true,
+        'hrms:payroll:manage': true,
+        'hrms:payroll:formats': true,
+        'hrms:payroll:generate': true,
+        'hrms:payroll:settlement': true,
+        'hrms:attendance:viewAll': true,
+        'hrms:attendance:viewOwn': true,
+        'hrms:attendance:mark': true,
+        'hrms:attendance:edit': true,
+        'hrms:attendance:approve': true,
+        'hrms:attendance:viewReports': true,
+        'hrms:attendance:manageShifts': true,
+        'hrms:attendance:export': true,
+        'hrms:settlement:view': true,
+        'hrms:settlement:viewAll': true,
+        'hrms:settlement:create': true,
+        'hrms:settlement:process': true,
+        'hrms:settlement:approve': true,
+        'hrms:settlement:viewDocuments': true,
+        'hrms:settlement:export': true,
+        'hrms:leaves:viewAll': true,
+        'hrms:leaves:viewOwn': true,
+        'hrms:leaves:apply': true,
+        'hrms:leaves:create': true,
+        'hrms:leaves:approve': true,
+        'hrms:leaves:reject': true,
+        'hrms:leaves:viewBalance': true,
+        'hrms:leaves:managePolicy': true,
+        'hrms:leaves:cancelLeave': true,
+        'hrms:performance:viewAll': true,
+        'hrms:performance:create': true,
+        'hrms:performance:manage': true,
+        'hrms:performance:edit': true,
+        'hrms:recruitment:manage': true,
+        'hrms:recruitment:applicants': true,
+        'hrms:recruitment:createJob': true,
+        'hrms:recruitment:viewCandidates': true,
+        'hrms:recruitment:scheduleInterview': true,
+        'hrms:recruitment:updateStatus': true,
+        'hrms:recruitment:makeOffer': true,
+        'hrms:announcements:create': true,
+        'hrms:announcements:edit': true,
+        'hrms:announcements:delete': true,
+        'hrms:compliance:manage': true,
+        'hrms:reports:generate': true,
+        'hrms:reports:export': true,
+        
+        // Legacy support
         payroll: true,
         attendance: true, 
         settlement: true,
@@ -629,6 +774,8 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         performance: true,
         recruitment: true,
         announcements: true,
+        compliance: true,
+        reports: true,
         view: true,
         create: true,
         edit: true,
@@ -647,84 +794,6 @@ export async function getRolePermissions(roleId: string): Promise<PermissionMap 
         'hrms:edit': true,
         'hrms:delete': true,
         'hrms:manage': true,
-        // Employee Management
-        'hrms:employees:view': true,
-        'hrms:employees:viewAll': true,
-        'hrms:employees:viewOwn': true,
-        'hrms:employees:create': true,
-        'hrms:employees:edit': true,
-        'hrms:employees:delete': true,
-        'hrms:employees:viewSalary': true,
-        'hrms:employees:editSalary': true,
-        'hrms:employees:viewDocuments': true,
-        'hrms:employees:manageDocuments': true,
-        'hrms:employees:export': true,
-        // Payroll
-        'hrms:payroll:view': true,
-        'hrms:payroll:viewAll': true,
-        'hrms:payroll:process': true,
-        'hrms:payroll:approve': true,
-        'hrms:payroll:viewReports': true,
-        'hrms:payroll:generatePayslips': true,
-        'hrms:payroll:export': true,
-        'hrms:payroll:create': true,
-        'hrms:payroll:edit': true,
-        'hrms:payroll:manage': true,
-        'hrms:payroll:formats': true,
-        'hrms:payroll:generate': true,
-        'hrms:payroll:settlement': true,
-        // Attendance
-        'hrms:attendance:view': true,
-        'hrms:attendance:viewAll': true,
-        'hrms:attendance:viewOwn': true,
-        'hrms:attendance:mark': true,
-        'hrms:attendance:edit': true,
-        'hrms:attendance:approve': true,
-        'hrms:attendance:viewReports': true,
-        'hrms:attendance:manageShifts': true,
-        'hrms:attendance:export': true,
-        // Settlement
-        'hrms:settlement:view': true,
-        'hrms:settlement:viewAll': true,
-        'hrms:settlement:create': true,
-        'hrms:settlement:process': true,
-        'hrms:settlement:approve': true,
-        'hrms:settlement:viewDocuments': true,
-        'hrms:settlement:export': true,
-        // Leaves
-        'hrms:leaves:view': true,
-        'hrms:leaves:viewAll': true,
-        'hrms:leaves:viewOwn': true,
-        'hrms:leaves:apply': true,
-        'hrms:leaves:create': true,
-        'hrms:leaves:approve': true,
-        'hrms:leaves:reject': true,
-        'hrms:leaves:viewBalance': true,
-        'hrms:leaves:managePolicy': true,
-        'hrms:leaves:cancelLeave': true,
-        // Performance
-        'hrms:performance:view': true,
-        'hrms:performance:viewAll': true,
-        'hrms:performance:create': true,
-        'hrms:performance:manage': true,
-        'hrms:performance:edit': true,
-        // Recruitment
-        'hrms:recruitment:view': true,
-        'hrms:recruitment:manage': true,
-        'hrms:recruitment:applicants': true,
-        'hrms:recruitment:createJob': true,
-        'hrms:recruitment:viewCandidates': true,
-        'hrms:recruitment:scheduleInterview': true,
-        'hrms:recruitment:updateStatus': true,
-        'hrms:recruitment:makeOffer': true,
-        // Announcements
-        'hrms:announcements:view': true,
-        'hrms:announcements:create': true,
-        'hrms:announcements:edit': true,
-        'hrms:announcements:delete': true,
-        // Compliance & Reports
-        'hrms:compliance': true,
-        'hrms:reports': true,
         // HRMS UI submodules from screenshot
         'hrms:dashboard': true,
         'hrms:dashboard:view': true,

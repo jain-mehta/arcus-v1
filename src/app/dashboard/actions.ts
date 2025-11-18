@@ -18,60 +18,88 @@ function getNavConfig() {
       { href: "/dashboard/store", label: "Stores", permission: "store:bills:view" },
       { href: "/dashboard/hrms", label: "HRMS", permission: "hrms:employees:view" },
       { href: "/dashboard/users", label: "User Management", permission: "users:viewAll" },
+      { href: "/dashboard/settings", label: "Settings", permission: "settings:view" },
+      { href: "/dashboard/supply-chain", label: "Supply Chain", permission: "supply-chain:view" },
     ],
     subNavigation: {
       "/dashboard/sales": [
-        { href: "/dashboard/sales/dashboard", label: "Dashboard", icon: "dashboard", permission: "dashboard:view" },
-        { href: "/dashboard/sales/leads", label: "Leads", icon: "logo", permission: "sales:leads:view" },
-        { href: "/dashboard/sales/opportunities", label: "Opportunities", icon: "folderKanban", permission: "sales:opportunities:view" },
+        { href: "/dashboard/sales", label: "Sales Dashboard", icon: "barChart2", permission: "sales:dashboard:view" },
+        { href: "/dashboard/sales/leads", label: "Lead Management", icon: "logo", permission: "sales:leads:view" },
+        { href: "/dashboard/sales/opportunities", label: "Sales Pipeline", icon: "folderKanban", permission: "sales:opportunities:view" },
         { href: "/dashboard/sales/quotations", label: "Quotations", icon: "fileText", permission: "sales:quotations:view" },
-        { href: "/dashboard/sales/orders", label: "Orders", icon: "shoppingCart", permission: "sales:orders:view" },
-        { href: "/dashboard/sales/customers", label: "Customers", icon: "users", permission: "sales:customers:view" },
-        { href: "/dashboard/sales/reports", label: "Reports", icon: "barChart", permission: "sales:reports:view" },
-        { href: "/dashboard/sales/settings", label: "Settings", icon: "settings", permission: "sales:settings:edit" },
+        { href: "/dashboard/sales/orders", label: "Sales Orders", icon: "shoppingCart", permission: "sales:orders:view" },
+        { href: "/dashboard/sales/customers", label: "Customer Accounts", icon: "users", permission: "sales:customers:view" },
+        { href: "/dashboard/sales/activities", label: "Sales Activities Log", icon: "activity", permission: "sales:activities:view" },
+        { href: "/dashboard/sales/visits", label: "Log a Dealer Visit", icon: "mapPin", permission: "sales:visits:view" },
+        { href: "/dashboard/sales/leaderboard", label: "Sales Leaderboard", icon: "trophy", permission: "sales:leaderboard:view" },
+        { href: "/dashboard/sales/reports", label: "Sales Reports & KPIs", icon: "barChart", permission: "sales:reports:view" },
+        { href: "/dashboard/sales/settings", label: "Sales Settings", icon: "settings", permission: "sales:settings:edit" },
       ],
       "/dashboard/vendor": [
-        { href: "/dashboard/vendor", label: "Dashboard", icon: "dashboard", permission: "vendor:dashboard:view" },
-        { href: "/dashboard/vendor/list", label: "Vendor List", icon: "users", permission: "vendor:viewAll" },
-        { href: "/dashboard/vendor/onboarding", label: "Onboarding", icon: "userPlus", permission: "vendor:onboard" },
-        { href: "/dashboard/vendor/purchase-orders", label: "Purchase Orders", icon: "shoppingCart", permission: "vendor:purchaseOrders:view" },
-        { href: "/dashboard/vendor/invoices", label: "Invoices", icon: "fileText", permission: "vendor:invoices:view" },
-        { href: "/dashboard/vendor/material-mapping", label: "Material Mapping", icon: "layers", permission: "vendor:mapping:view" },
-        { href: "/dashboard/vendor/price-comparison", label: "Price Comparison", icon: "barChart3", permission: "vendor:pricing:view" },
-        { href: "/dashboard/vendor/documents", label: "Documents", icon: "folder", permission: "vendor:documents:view" },
-        { href: "/dashboard/vendor/rating", label: "Rating", icon: "star", permission: "vendor:rating:view" },
+        { href: "/dashboard/vendor", label: "Vendor Dashboard", icon: "dashboard", permission: "vendor:view" },
+        { href: "/dashboard/vendor/list", label: "Vendor Profiles", icon: "users", permission: "vendor:viewAll" },
+        { href: "/dashboard/vendor/onboarding", label: "Vendor Onboarding", icon: "userPlus", permission: "vendor:onboarding" },
+        { href: "/dashboard/vendor/purchase-orders", label: "Purchase Orders & Bills", icon: "shoppingCart", permission: "vendor:purchaseOrders" },
+        { href: "/dashboard/vendor/invoices", label: "Invoice Management", icon: "fileText", permission: "vendor:invoices" },
+        { href: "/dashboard/vendor/material-mapping", label: "Raw Material Catalog", icon: "layers", permission: "vendor:materialMapping" },
+        { href: "/dashboard/vendor/price-comparison", label: "Vendor Price Comparison", icon: "barChart3", permission: "vendor:priceComparison" },
+        { href: "/dashboard/vendor/documents", label: "Contract Documents", icon: "folder", permission: "vendor:documents" },
+        { href: "/dashboard/vendor/rating", label: "Vendor Rating", icon: "star", permission: "vendor:rating" },
+        { href: "/dashboard/vendor/communication-log", label: "Communication Log", icon: "messageSquare", permission: "vendor:communicationLog" },
+        { href: "/dashboard/vendor/history", label: "Purchase History", icon: "history", permission: "vendor:history" },
+        { href: "/dashboard/vendor/reorder-management", label: "Reorder Management", icon: "refreshCw", permission: "vendor:reorderManagement" },
       ],
       "/dashboard/inventory": [
-        { href: "/dashboard/inventory", label: "Overview", icon: "package", permission: "inventory:overview:view" },
+        { href: "/dashboard/inventory", label: "Inventory Dashboard", icon: "package", permission: "inventory:overview:view" },
         { href: "/dashboard/inventory/product-master", label: "Product Master", icon: "database", permission: "inventory:products:view" },
-        { href: "/dashboard/inventory/goods-inward", label: "Goods Inward", icon: "arrowDownToLine", permission: "inventory:goodsInward:view" },
+        { href: "/dashboard/inventory/goods-inward", label: "Goods Inward (GRN)", icon: "arrowDownToLine", permission: "inventory:goodsInward:view" },
         { href: "/dashboard/inventory/goods-outward", label: "Goods Outward", icon: "arrowUpFromLine", permission: "inventory:goodsOutward:view" },
         { href: "/dashboard/inventory/stock-transfers", label: "Stock Transfers", icon: "arrowRightLeft", permission: "inventory:transfers:view" },
-        { href: "/dashboard/inventory/cycle-counting", label: "Cycle Counting", icon: "calculator", permission: "inventory:counting:view" },
+        { href: "/dashboard/inventory/cycle-counting", label: "Cycle Counting & Auditing", icon: "calculator", permission: "inventory:counting:view" },
+        { href: "/dashboard/inventory/valuation-reports", label: "Inventory Valuation Reports", icon: "barChart", permission: "inventory:valuationReports:view" },
         { href: "/dashboard/inventory/qr-code-generator", label: "QR Code Generator", icon: "qrCode", permission: "inventory:qr:generate" },
+        { href: "/dashboard/inventory/factory", label: "Factory Inventory", icon: "building2", permission: "inventory:factory:view" },
+        { href: "/dashboard/inventory/store", label: "Store Inventory", icon: "store", permission: "inventory:store:view" },
+        { href: "/dashboard/inventory/ai-catalog-assistant", label: "AI Catalog Assistant", icon: "sparkles", permission: "inventory:aiCatalog:view" },
       ],
       "/dashboard/store": [
-        { href: "/dashboard/store", label: "Overview", icon: "store", permission: "store:overview:view" },
-        { href: "/dashboard/store/manage", label: "Store Management", icon: "settings", permission: "store:manage" },
-        { href: "/dashboard/store/billing", label: "Billing/POS", icon: "calculator", permission: "store:bills:view" },
-        { href: "/dashboard/store/inventory", label: "Inventory", icon: "package", permission: "store:inventory:view" },
-        { href: "/dashboard/store/receiving", label: "Receiving", icon: "packageOpen", permission: "store:receiving:view" },
-        { href: "/dashboard/store/reports", label: "Reports", icon: "barChart", permission: "store:reports:view" },
+        { href: "/dashboard/store", label: "Store Dashboard", icon: "store", permission: "store:overview:view" },
+        { href: "/dashboard/store/billing", label: "POS Billing", icon: "calculator", permission: "store:bills:view" },
+        { href: "/dashboard/store/billing-history", label: "Billing History", icon: "history", permission: "store:billingHistory:view" },
+        { href: "/dashboard/store/dashboard", label: "Store Manager Dashboard", icon: "barChart2", permission: "store:dashboard:view" },
+        { href: "/dashboard/store/debit-note", label: "Create Debit Note", icon: "fileBarChart", permission: "store:debitNote:view" },
+        { href: "/dashboard/store/invoice-format", label: "Invoice Format Editor", icon: "fileText", permission: "store:invoiceFormat:view" },
+        { href: "/dashboard/store/inventory", label: "Store Inventory", icon: "package", permission: "store:inventory:view" },
+        { href: "/dashboard/store/manage", label: "Manage Stores", icon: "settings", permission: "store:manage" },
+        { href: "/dashboard/store/receiving", label: "Product Receiving", icon: "packageOpen", permission: "store:receiving:view" },
+        { href: "/dashboard/store/reports", label: "Store Reports & Comparison", icon: "barChart", permission: "store:reports:view" },
+        { href: "/dashboard/store/returns", label: "Returns & Damaged Goods", icon: "undo", permission: "store:returns:view" },
+        { href: "/dashboard/store/staff", label: "Staff & Shift Logs", icon: "users", permission: "store:staff:view" },
       ],
       "/dashboard/hrms": [
-        { href: "/dashboard/hrms", label: "Overview", icon: "users", permission: "hrms:overview:view" },
-        { href: "/dashboard/hrms/employees", label: "Employees", icon: "user", permission: "hrms:employees:view" },
-        { href: "/dashboard/hrms/attendance", label: "Attendance", icon: "clock", permission: "hrms:attendance:view" },
-        { href: "/dashboard/hrms/leaves", label: "Leaves", icon: "calendar", permission: "hrms:leaves:view" },
+        { href: "/dashboard/hrms", label: "HRMS Dashboard", icon: "users", permission: "hrms:overview:view" },
+        { href: "/dashboard/hrms/announcements", label: "Announcements", icon: "bell", permission: "hrms:announcements:view" },
+        { href: "/dashboard/hrms/attendance", label: "Attendance & Shifts", icon: "clock", permission: "hrms:attendance:view" },
+        { href: "/dashboard/hrms/compliance", label: "Compliance", icon: "shield", permission: "hrms:compliance:view" },
+        { href: "/dashboard/hrms/employees", label: "Employee Directory", icon: "user", permission: "hrms:employees:view" },
+        { href: "/dashboard/hrms/leaves", label: "Leave Management", icon: "calendar", permission: "hrms:leaves:view" },
         { href: "/dashboard/hrms/payroll", label: "Payroll", icon: "creditCard", permission: "hrms:payroll:view" },
         { href: "/dashboard/hrms/performance", label: "Performance", icon: "target", permission: "hrms:performance:view" },
         { href: "/dashboard/hrms/recruitment", label: "Recruitment", icon: "userPlus", permission: "hrms:recruitment:view" },
-        { href: "/dashboard/hrms/compliance", label: "Compliance", icon: "shield", permission: "hrms:compliance:view" },
-        { href: "/dashboard/hrms/reports", label: "Reports", icon: "barChart", permission: "hrms:reports:view" },
+        { href: "/dashboard/hrms/reports", label: "Reports & Analytics", icon: "barChart", permission: "hrms:reports:view" },
       ],
       "/dashboard/users": [
-        { href: "/dashboard/users", label: "Users", icon: "users", permission: "users:viewAll" },
-        { href: "/dashboard/users/roles", label: "Roles", icon: "userCog", permission: "users:roles:viewAll" },
+        { href: "/dashboard/users", label: "User Management", icon: "users", permission: "users:viewAll" },
+        { href: "/dashboard/users/roles", label: "Roles & Hierarchy", icon: "userCog", permission: "users:roles:viewAll" },
+        { href: "/dashboard/users/sessions", label: "Active Sessions", icon: "shield", permission: "users:sessions:view" },
+      ],
+      "/dashboard/settings": [
+        { href: "/dashboard/settings", label: "Settings", icon: "settings", permission: "settings:view" },
+        { href: "/dashboard/settings/profile", label: "Profile", icon: "user", permission: "settings:profile:view" },
+        { href: "/dashboard/settings/audit-log", label: "Audit Log", icon: "fileText", permission: "settings:auditLog:view" },
+      ],
+      "/dashboard/supply-chain": [
+        { href: "/dashboard/supply-chain", label: "Overview", icon: "network", permission: "supplyChain:view" },
       ],
     }
   };
@@ -113,24 +141,16 @@ export async function getLayoutData() {
 
   let userPermissions: PermissionMap | null = null;
   
-  // Check if user is admin by email (primary check)
-  const adminEmails = ['admin@arcus.local'];
-  const isAdminByEmail = sessionClaims.email && adminEmails.includes(sessionClaims.email);
-  
+  // Check user's role from session claims (from database JWT)
   console.log('[Dashboard] Checking permissions for:', { 
     email: sessionClaims.email, 
-    roleId: sessionClaims.roleId, 
-    isAdminByEmail 
+    roleId: sessionClaims.roleId,
+    roleName: sessionClaims.roleName
   });
   
-  if (isAdminByEmail || sessionClaims.roleId === 'admin') {
-    // Admin users should get all permissions
-    console.log('[Dashboard] User is admin, fetching admin permissions');
-    userPermissions = await getRolePermissions('admin');
-    console.log('[Dashboard] Admin permissions retrieved:', userPermissions ? Object.keys(userPermissions) : 'null');
-  } else if (sessionClaims?.roleId) {
-    console.log('[Dashboard] User has role:', sessionClaims.roleId);
-    userPermissions = await getRolePermissions(sessionClaims.roleId);
+  if (sessionClaims?.roleId) {
+    console.log('[Dashboard] User has role:', { id: sessionClaims.roleId, name: sessionClaims.roleName });
+    userPermissions = await getRolePermissions(sessionClaims.roleId, sessionClaims.roleName);
     console.log('[Dashboard] Role permissions retrieved:', userPermissions ? Object.keys(userPermissions) : 'null');
   } else {
     console.log('[Dashboard] User has no role defined');
